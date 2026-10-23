@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { startTransition, useActionState, useEffect, useRef } from "react";
 import { signIn, submitPrice } from "./actions";
 import { containers, destinations, origins } from "../../lib/rates";
 
@@ -30,7 +30,14 @@ export function SignIn() {
 }
 
 export function PriceForm({ today }: { today: string }) {
-  const [state, action, pending] = useActionState(submitPrice, "");
+  // A fresh object per submission, so two successes in a row both clear the form.
+  const [result, action, pending] = useActionState(
+    async (_: { message: string }, data: FormData) => ({
+      message: await submitPrice("", data),
+    }),
+    { message: "" },
+  );
+  const state = result.message;
   const form = useRef<HTMLFormElement>(null);
   const nameKey = "pool-submitted-by";
   useEffect(() => {
@@ -54,17 +61,19 @@ export function PriceForm({ today }: { today: string }) {
     for (const el of Array.from(form.current.elements) as HTMLInputElement[])
       if (el.name && !keep.includes(el.name)) el.value = "";
     (form.current.elements.namedItem("price") as HTMLInputElement).focus();
-  }, [state]);
+  }, [result]);
   return (
     <form
       ref={form}
-      action={action}
       className="pool-card pool-form"
       onSubmit={(e) => {
-        const name = (
-          e.currentTarget.elements.namedItem("submittedBy") as HTMLInputElement
-        ).value;
-        localStorage.setItem(nameKey, name);
+        // Submitting through `action={...}` makes React reset every field,
+        // even when the server rejects the entry. Dispatch manually instead;
+        // the effect above clears only the per-price fields after a success.
+        e.preventDefault();
+        const data = new FormData(e.currentTarget);
+        localStorage.setItem(nameKey, String(data.get("submittedBy")));
+        startTransition(() => action(data));
       }}
     >
       <fieldset className="tier-choice">
