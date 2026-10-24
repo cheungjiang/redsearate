@@ -270,7 +270,7 @@ Dangerous goods and battery cargo need separate review — flag them at the star
           aria-label={t("Main navigation", "主导航")}
         >
           <a onClick={() => setMenu(false)} href="#routes">
-            {t("Ocean rates", "海运运价")}
+            {t("Rates", "运价")}
           </a>
           <a onClick={() => setMenu(false)} href="#trends">
             {t("Market insights", "市场趋势")}
@@ -300,10 +300,10 @@ Dangerous goods and battery cargo need separate review — flag them at the star
             </a>
           )}
           <button
-            className="button small dark header-quote"
+            className="button small coral header-quote"
             onClick={() => openInquiry("quote")}
           >
-            {t("Get a quote", "获取报价")}
+            {t("Get an Estimate", "获取估价")}
             <ArrowUpRight size={15} />
           </button>
           <button
@@ -323,28 +323,38 @@ Dangerous goods and battery cargo need separate review — flag them at the star
               <span /> {t("CHINA → THE RED SEA", "中国 → 红海")}
             </div>
             <h1>
-              {t("Less guesswork.", "运价，心中有数。")}
+              {t("From China.", "从中国。")}
               <br />
-              {t("More", "出运，")} <em>{t("horizon.", "更有把握。")}</em>
+              {t("To the Red Sea.", "到红海。")}
             </h1>
             <p>
               {t(
-                "Know your freight. Plan your next move. Ocean rates from China to the Red Sea, from a team that books them every week.",
-                "从中国到红海，看清本周海运价格，规划下一步。价格来自每周真实订舱的团队。",
+                "Accurate ocean freight estimates, real market data and trusted insights for a more efficient route to the Red Sea.",
+                "准确的海运费估价、真实市场数据与可信洞察，让中国到红海的每一次出运更高效。",
               )}
             </p>
-            <a className="button coral" href="#estimate">
-              {t("Find your ocean rate", "估算我的海运费")}
-              <ArrowRight size={18} />
-            </a>
+            <div className="hero-actions">
+              <a className="button coral" href="#estimate">
+                {t("Get an Estimate", "获取海运估价")}
+                <ArrowRight size={18} />
+              </a>
+              <a className="text-link" href="#routes">
+                {t("Explore the route", "查看航线")}
+                <ArrowUpRight size={15} />
+              </a>
+            </div>
             <div className="hero-trust">
               <span>
                 <ShieldCheck size={16} />
-                {t("Dated, expiring prices", "价格标明有效期")}
+                {t("Real market rates", "真实市场运价")}
               </span>
               <span>
                 <Anchor size={16} />
-                {t("Port-to-port expertise", "专注港到港运输")}
+                {t("Port-to-port insights", "港到港洞察")}
+              </span>
+              <span>
+                <Globe2 size={16} />
+                {t("Built for global trade", "服务全球贸易")}
               </span>
             </div>
           </div>
@@ -364,27 +374,6 @@ Dangerous goods and battery cargo need separate review — flag them at the star
                 <span /> {t("YOUR NEXT CHAPTER, OVERSEAS", "下一程，向海而行")}
               </span>
               <ArrowUpRight size={24} />
-            </div>
-            <div className="route-overlay">
-              <div>
-                <span>CN</span>
-                <div>
-                  <small>{t("ORIGIN", "起运地")}</small>
-                  <strong>{t("China", "中国")}</strong>
-                </div>
-              </div>
-              <div className="route-line">
-                <span />
-                <Ship size={19} />
-                <span />
-              </div>
-              <div>
-                <div>
-                  <small>{t("DESTINATION", "目的地")}</small>
-                  <strong>{t("Red Sea", "红海")}</strong>
-                </div>
-                <span>RS</span>
-              </div>
             </div>
           </div>
         </section>
@@ -1114,8 +1103,8 @@ Dangerous goods and battery cargo need separate review — flag them at the star
           </a>
           <p>
             {t(
-              "A clearer course. From China to the Red Sea.",
-              "从中国到红海，让每一次出运更清晰。",
+              "More than a rate. A straighter course.",
+              "不止于运价，更是一条更直的航线。",
             )}
           </p>
           <a href="#estimate">

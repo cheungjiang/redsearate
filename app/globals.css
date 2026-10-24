@@ -12,6 +12,13 @@
   font-display: swap;
   src: url("/fonts/manrope.woff2") format("woff2");
 }
+@font-face {
+  font-family: "Playfair Display";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("/fonts/playfair-display.woff2") format("woff2");
+}
 :root {
   --ink: #142d33;
   --muted: #758084;
@@ -19,6 +26,7 @@
   --line: #e5e8e6;
   --paper: #fafbf8;
   --navy: #13363e;
+  --serif: "Playfair Display", "Songti SC", "Noto Serif SC", Georgia, serif;
 }
 * {
   box-sizing: border-box;
@@ -78,6 +86,11 @@ h1,
 h2,
 h3 {
   font-family: "Manrope", "DM Sans", Arial, sans-serif;
+}
+h1,
+h2 {
+  font-family: var(--serif);
+  font-weight: 500;
 }
 button svg,
 a svg {
@@ -196,7 +209,7 @@ a svg {
   gap: 40px;
   padding-top: 18px;
   position: relative;
-  padding-bottom: 54px;
+  padding-bottom: 0;
 }
 .hero-copy {
   padding-top: 44px;
@@ -218,17 +231,31 @@ a svg {
   border-radius: 50%;
 }
 .hero h1 {
-  font-size: clamp(42px, 4.45vw, 64px);
+  font-size: clamp(46px, 5.2vw, 76px);
   font-weight: 500;
-  line-height: 1.13;
-  letter-spacing: -2.8px;
-  margin-top: 23px;
+  line-height: 1.04;
+  letter-spacing: -1.4px;
+  margin-top: 20px;
 }
-.hero h1 em {
-  font-family: Georgia, serif;
-  font-weight: 400;
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  flex-wrap: wrap;
+}
+.text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 550;
+  color: var(--ink);
+  border-bottom: 1px solid #c9d2cf;
+  padding-bottom: 3px;
+}
+.text-link:hover {
   color: var(--coral);
-  letter-spacing: -2px;
+  border-color: var(--coral);
 }
 .hero-copy > p {
   font-size: 14px;
@@ -254,9 +281,9 @@ a svg {
 }
 .hero-visual {
   position: relative;
-  border-radius: 9px;
+  border-radius: 4px;
   overflow: hidden;
-  min-height: 435px;
+  min-height: 520px;
   background: var(--navy);
 }
 .hero-visual > img {
@@ -352,6 +379,10 @@ a svg {
   padding: 25px 28px 17px;
   box-shadow: 0 8px 25px #12332c05;
   scroll-margin-top: 35px;
+  position: relative;
+  z-index: 2;
+  margin-top: -54px;
+  background: #fff;
 }
 .estimate-top {
   display: flex;
@@ -363,6 +394,7 @@ a svg {
   display: flex;
   gap: 10px;
   align-items: center;
+  font-family: "Manrope", "DM Sans", Arial, sans-serif;
   font-size: 17px;
   letter-spacing: -0.5px;
   font-weight: 650;
@@ -1603,8 +1635,8 @@ dialog::backdrop {
   }
   .hero h1 {
     font-size: 46px;
-    letter-spacing: -2px;
-    line-height: 1.12;
+    letter-spacing: -1px;
+    line-height: 1.08;
     margin-top: 19px;
   }
   .hero-copy > p {
