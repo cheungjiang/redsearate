@@ -38,6 +38,6 @@ Hosting needs a Node 22.5+ server with a persistent disk (a VPS or a container w
 
 ## Before public launch
 
-Enter real prices, set the WhatsApp number, add company and legal details, back up `PRICE_DB`, and decide whether China mainland visitors need a mainland host or CDN. Guide content is short first-version copy; compliance topics need review by someone with hands-on experience.
+Enter real prices, set the WhatsApp number, add company and legal details, back up `PRICE_DB`, and decide whether China mainland visitors need a mainland host or CDN. Guide content is first-version copy; compliance topics need review by someone with hands-on experience.
 
 SEO: server-rendered localized pages with prices in the HTML, correct HTML language, per-language metadata, canonical and hreflang, Open Graph, robots (`/pool` disallowed) and sitemap. Latin fonts are self-hosted under their bundled SIL Open Font Licenses; Chinese uses system fonts. No external requests.
