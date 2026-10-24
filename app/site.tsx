@@ -1061,6 +1061,36 @@ Dangerous goods and battery cargo need separate review — flag them at the star
                   "通过微信或 WhatsApp 发送订舱需求。我们与您确认船期和价格后，舱位才算预留。",
                 ),
               },
+              {
+                q: t(
+                  "Which ports in China do you load from?",
+                  "中国哪些港口可以起运？",
+                ),
+                a: t(
+                  "Shanghai, Ningbo, Shenzhen and Qingdao. If your cargo is inland, tell us the nearest origin port when you enquire.",
+                  "上海、宁波、深圳和青岛。如果货物在内陆，询价时告诉我们最近的起运港。",
+                ),
+              },
+              {
+                q: t(
+                  "What do you need from me to quote?",
+                  "询价需要提供什么？",
+                ),
+                a: t(
+                  "Cargo description and HS code, dimensions and gross weight, the cargo-ready date, your Incoterms, and the origin and destination ports. For FCL, add the container type and quantity; for LCL, the volume and weight. Dangerous goods and battery cargo need a separate review.",
+                  "品名与 HS 编码、尺寸与毛重、备货日期、贸易条款（Incoterms），以及起运港和目的港。整箱请补充柜型和数量；拼箱请补充体积和重量。危险品和带电池的货物需要单独审核。",
+                ),
+              },
+              {
+                q: t(
+                  "Who handles customs, duties and inland delivery?",
+                  "清关、税费和内陆运输由谁负责？",
+                ),
+                a: t(
+                  "Our estimate is port-to-port ocean freight only. Import customs, duties, destination charges, insurance and inland delivery are arranged separately by you or your consignee's broker. Compare quotes on the same scope before you decide.",
+                  "本站估价只含港到港海运费。进口清关、税费、目的港费用、保险和内陆运输由您或收货人的报关行另行安排。比较报价前，请先对齐费用范围。",
+                ),
+              },
             ].map((f) => (
               <details key={f.q}>
                 <summary>
