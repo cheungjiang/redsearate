@@ -185,8 +185,16 @@ export default function Home({
         "哪些因素真正影响红海运价？",
       ),
       body: t(
-        "Capacity, seasonality, equipment availability and routing all affect a freight quote. Compare the same scope and sailing window, not just the headline number. Our trend chart shows weekly medians of prices our team collects in the market, with outliers removed; it is not an official index.",
-        "运力、季节、设备供应和航线安排都会影响报价。比较报价时，应确保费用范围和出运窗口一致，而不只是比较数字。本页趋势是团队在市场上收集报价的周中位数，已剔除异常值，并非官方指数。",
+        `Four forces sit behind almost every Red Sea freight quote. Capacity: how much vessel space carriers deploy on the lane. Seasonality: cargo demand rises and falls through the year. Equipment availability: whether empty containers are on hand at your origin port. Routing: which services and transshipments a sailing relies on. When any of them moves, the same container on the same lane can quote differently within weeks.
+
+That is why two numbers are comparable only when the scope matches. Our estimates are port-to-port ocean freight for the shipment you enter; local handling, customs, duties, insurance and inland transport sit outside the number. Check the sailing window and container type before judging any headline figure.
+
+Our trend chart plots weekly medians of the prices our team collects in the market. Outliers far from the median are dropped, gaps are never filled with estimates, and the chart stays empty until real data exists. It is a reading of the market we see — not an official index, and not a bookable offer. Space and the final price are confirmed on WeChat or WhatsApp.`,
+        `几乎每一份红海运价的背后，都有四种力量。运力：船公司在航线上投放的舱位多少。季节：全年货运需求有起有落。设备供应：起运港的空箱是否充足。航线安排：一班船依赖的经停与中转结构。任何一项变动，同一条航线上的同一个箱子，几周内报价就可能不同。
+
+所以两个数字只有在口径一致时才可比。本站估价是按您所填货量计算的港到港海运费；本地操作、清关、税费、保险和内陆运输都不在这个数字里。判断任何报价之前，先核对出运窗口和柜型。
+
+趋势图展示团队在市场上收集报价的周中位数。偏离中位数过远的样本会被剔除，缺口不用估算补位，没有真实数据时图表留空。它是我们看到的市场读数，不是官方指数，也不是可直接订舱的报价。舱位和最终价格以微信或 WhatsApp 确认为准。`,
       ),
     },
     {
@@ -196,8 +204,16 @@ export default function Home({
         "吉达、苏赫纳或亚喀巴：如何选择门户港？",
       ),
       body: t(
-        "Jeddah serves western Saudi Arabia; Sokhna connects to the Egyptian market; Aqaba is Jordan’s maritime gateway. Confirm inland delivery, customs requirements and destination charges before choosing a port. Port Sudan services require additional operational checks.",
-        "吉达服务沙特西部，苏赫纳连接埃及市场，亚喀巴是约旦的海运门户。选择前请确认内陆配送、清关要求和目的港费用。苏丹港航线需额外核实运营条件。",
+        `Three gateways anchor most China–Red Sea moves. Jeddah serves western Saudi Arabia. Sokhna connects to the Egyptian market. Aqaba is Jordan’s maritime gateway. Port Sudan is on our map too, but services there require additional operational checks, so confirm with us case by case.
+
+The sea leg is only part of the journey. Our prices are port-to-port: inland delivery, destination charges and customs sit outside the quote, so the lowest port-to-port number is not always the lowest landed cost. Before choosing a port, confirm inland delivery, customs requirements and destination charges for your cargo and consignee.
+
+Compare gateways with the same discipline you compare rates: same scope, same sailing window. If you are unsure which gateway fits, run the route through the estimator first, then bring the details to us on WeChat or WhatsApp.`,
+        `中国到红海的运输，通常围绕三个门户港。吉达服务沙特西部；苏赫纳连接埃及市场；亚喀巴是约旦的海运门户。苏丹港也在本站航线图上，但相关服务需额外核实运营条件，请逐票与我们确认。
+
+海运只是全程的一部分。本站价格是港到港口径：内陆配送、目的港费用和清关不在报价之内，所以港到港最低的数字，未必是落地成本最低的选择。选定门户港之前，请先确认这票货的内陆配送、清关要求和目的港费用。
+
+比较门户港，请用比较运价的同一套方法：口径一致、出运窗口一致。如果不确定哪个门户港合适，先用估价器跑一程，再通过微信或 WhatsApp 把细节发给我们。`,
       ),
     },
     {
@@ -207,8 +223,16 @@ export default function Home({
         "首次出运？从这份清单开始。",
       ),
       body: t(
-        "Prepare cargo descriptions, HS codes, dimensions, gross weight, ready date and Incoterms. Check commercial invoice, packing list and consignee details. Dangerous goods and batteries need separate review. Ask for a written, itemized quote and confirmed sailing before committing.",
-        "准备品名、HS 编码、尺寸、毛重、备货日期及贸易条款。核对商业发票、装箱单及收货人资料。危险品、电池货物需要单独审核。确认书面费用清单及实际船期后，再安排出运。",
+        `A smooth first shipment starts with a complete enquiry. Prepare: cargo description and HS code, dimensions and gross weight, the date your cargo will be ready, and your Incoterms. Check the commercial invoice, packing list and consignee details early, so documents never become the bottleneck.
+
+Match your details to the way ocean freight is quoted. FCL is priced per container — 20GP, 40GP or 40HC — so settle the container type and quantity first. LCL is priced per W/M, billed at the larger of cubic metres or metric tonnes, minimum 1 W/M. Port-to-port freight excludes origin and destination charges, customs, duties, insurance and inland transport — budget those separately.
+
+Dangerous goods and battery cargo need separate review — flag them at the start, not after the quote. Then ask for a written, itemised quote and a confirmed sailing before committing. Space is reserved only after we confirm the sailing and price with you.`,
+        `第一次出运顺利，从一份完整的询价开始。准备好：品名与 HS 编码、尺寸与毛重、备货日期、贸易条款（Incoterms）。商业发票、装箱单和收货人资料尽早核对，别让单证成为瓶颈。
+
+信息口径要和海运计费方式对上。整箱按柜计价——20GP、40GP 或 40HC——先定柜型和数量。拼箱按 W/M 计费，取立方米与公吨中较大者，最低 1 W/M。港到港海运费不含起运港及目的港费用、清关、税费、保险和内陆运输，请单独预算。
+
+危险品和带电池的货物需要单独审核——一开始就说明，不要等报价之后。确认前，请拿到书面、分项的报价和确认的船期。我们与您确认船期和价格后，舱位才算预留。`,
       ),
     },
   ];
@@ -1209,14 +1233,18 @@ export default function Home({
             ? t("Privacy, without the fine print.", "关于隐私，清楚说明。")
             : guides[article ?? 0].title}
         </h2>
-        <p>
-          {article === 3
-            ? t(
-                "This website does not collect names, emails or other personal data, and uses no analytics or advertising cookies. When you contact us, your message is handled in WeChat or WhatsApp under those apps' terms. Prices shown are aggregated from our team's records; individual market quotes are never published.",
-                "本网站不收集姓名、邮箱等个人信息，也不使用统计或广告 Cookie。您联系我们时，消息在微信或 WhatsApp 中处理，适用各自的条款。页面价格来自团队记录的汇总，单条市场报价不会公开。",
-              )
-            : guides[article ?? 0].body}
-        </p>
+        {article === 3 ? (
+          <p>
+            {t(
+              "This website does not collect names, emails or other personal data, and uses no analytics or advertising cookies. When you contact us, your message is handled in WeChat or WhatsApp under those apps' terms. Prices shown are aggregated from our team's records; individual market quotes are never published.",
+              "本网站不收集姓名、邮箱等个人信息，也不使用统计或广告 Cookie。您联系我们时，消息在微信或 WhatsApp 中处理，适用各自的条款。页面价格来自团队记录的汇总，单条市场报价不会公开。",
+            )}
+          </p>
+        ) : (
+          guides[article ?? 0].body
+            .split("\n\n")
+            .map((paragraph, index) => <p key={index}>{paragraph}</p>)
+        )}
         {article !== 3 && (
           <button
             className="button coral"
