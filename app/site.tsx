@@ -241,18 +241,6 @@ Dangerous goods and battery cargo need separate review — flag them at the star
       <a className="skip" href="#main">
         {t("Skip to content", "跳至正文")}
       </a>
-      <div className="announcement">
-        <span>
-          {t(
-            "A clearer course for China–Red Sea shipping.",
-            "让中国至红海的每一次出运，更有把握。",
-          )}
-        </span>
-        <a href="#estimate">
-          {t("Plan your next shipment", "规划下一次出运")}{" "}
-          <ArrowUpRight size={12} />
-        </a>
-      </div>
       <header className="header wrap">
         <a
           href={zh ? "/zh" : "/"}

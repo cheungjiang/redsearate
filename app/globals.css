@@ -205,15 +205,18 @@ a svg {
 }
 .hero {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 0.86fr 1.14fr;
   gap: 40px;
   padding-top: 18px;
   position: relative;
   padding-bottom: 0;
 }
+body {
+  overflow-x: clip;
+}
 .hero-copy {
-  padding-top: 44px;
-  padding-bottom: 36px;
+  padding-top: 78px;
+  padding-bottom: 60px;
 }
 .eyebrow {
   font-size: 10px;
@@ -258,11 +261,11 @@ a svg {
   border-color: var(--coral);
 }
 .hero-copy > p {
-  font-size: 14px;
-  line-height: 1.85;
+  font-size: 15px;
+  line-height: 1.8;
   color: #6d787c;
-  max-width: 385px;
-  margin: 23px 0 27px;
+  max-width: 405px;
+  margin: 24px 0 28px;
 }
 .hero-trust {
   display: flex;
@@ -281,10 +284,11 @@ a svg {
 }
 .hero-visual {
   position: relative;
-  border-radius: 4px;
+  border-radius: 0;
   overflow: hidden;
-  min-height: 520px;
+  min-height: 640px;
   background: var(--navy);
+  margin-right: calc((100vw - min(1240px, 100vw - 112px)) / -2);
 }
 .hero-visual > img {
   width: 100%;
@@ -292,13 +296,16 @@ a svg {
   object-fit: cover;
   position: absolute;
   inset: 0;
-  object-position: 50% 50%;
+  object-position: 52% 46%;
+  filter: saturate(1.06) contrast(1.04);
 }
 .hero-visual:after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, #062e3650, transparent 35%, #08282c99);
+  background:
+    linear-gradient(90deg, #fff 0%, #ffffff00 7%),
+    linear-gradient(180deg, #062e3626 0%, #062e3600 30%, #08282cc4 100%);
 }
 .image-top {
   position: absolute;
@@ -2318,4 +2325,21 @@ html:lang(zh-CN) .hero h1 {
 .mobile-bar .icon-only {
   flex: 0 0 46px;
   padding: 0;
+}
+
+@media (max-width: 1150px) {
+  .hero-visual {
+    margin-right: -32px;
+  }
+}
+@media (max-width: 800px) {
+  .hero-visual {
+    margin-right: -20px;
+  }
+}
+@media (max-width: 540px) {
+  .hero-visual {
+    margin-right: 0;
+    border-radius: 4px;
+  }
 }
