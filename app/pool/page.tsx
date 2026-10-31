@@ -31,8 +31,7 @@ export default async function PoolPage() {
         <a href="/zh" className="brand">
           <span className="brand-symbol">≈</span>
           <span>
-            redsea<span className="brand-light">rate</span>
-            <span className="brand-dot">.</span>
+            RedSeaRate
           </span>
         </a>
         {member && (

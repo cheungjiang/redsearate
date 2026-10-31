@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "../globals.css";
 
 export const metadata: Metadata = {
-  title: "价格池 | Red Sea Rate",
+  title: "价格池 | RedSeaRate",
   robots: { index: false, follow: false },
 };
 

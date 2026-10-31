@@ -195,6 +195,14 @@ export const defaultShipment: Shipment = {
 };
 export const shipmentKey = (s: Shipment) =>
   laneKey(s.origin, s.destination, s.mode === "LCL" ? "LCL" : s.container);
+export function laneView(snapshot: Snapshot, shipment: Shipment) {
+  const key = shipmentKey(shipment);
+  return {
+    equipment: shipment.mode === "LCL" ? "LCL" : shipment.container,
+    lane: snapshot.lanes[key],
+    trend: snapshot.trends[key] ?? [],
+  };
+}
 
 // Scales the per-container or per-W/M lane prices to the whole shipment.
 // LCL bills the larger of cubic metres and metric tonnes, with a 1 W/M minimum.

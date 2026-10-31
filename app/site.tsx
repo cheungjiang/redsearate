@@ -9,14 +9,12 @@ import {
   Globe2,
   Menu,
   X,
-  Check,
   ShieldCheck,
   Clock3,
   MapPin,
   MoveRight,
   ChevronDown,
   Box,
-  Info,
   Copy,
   MessageCircle,
 } from "lucide-react";
@@ -25,15 +23,16 @@ import {
   destinations,
   origins,
   estimate,
-  laneKey,
-  shipmentKey,
+  laneView,
   MARKET_WINDOW_DAYS,
   MIN_MARKET_SAMPLES,
   type Shipment,
   type Snapshot,
 } from "../lib/rates";
+import { platformNavigation } from "../lib/platform";
+import { CommunityPreview, IndexSnapshot, LatestPosts, RatesPreview } from "./platform-sections";
 
-export type Contact = { operator: string; wechat: string; whatsapp: string[] };
+export type Contact = { wechat: string; whatsapp: string[] };
 
 export default function Home({
   lang,
@@ -51,10 +50,7 @@ export default function Home({
     null,
   );
   const [menu, setMenu] = useState(false);
-  const trend =
-    snapshot.trends[shipmentKey(shipment)] ??
-    snapshot.trends[laneKey(shipment.origin, shipment.destination, "40HC")] ??
-    [];
+  const { lane, trend, equipment } = laneView(snapshot, shipment);
   const trendValues = trend.map((p) => p.median);
   const trendTop = Math.ceil((Math.max(...trendValues) * 1.05) / 100) * 100;
   const trendBottom = Math.floor((Math.min(...trendValues) * 0.95) / 100) * 100;
@@ -114,7 +110,6 @@ export default function Home({
     setCopied("");
     dialog.current?.showModal();
   }
-  const lane = snapshot.lanes[shipmentKey(shipment)];
   const quoted = (() => {
     try {
       return estimate(lane, shipment);
@@ -125,10 +120,10 @@ export default function Home({
   const inquiryText = [
     intent === "quote"
       ? t(
-          "Ocean freight quote request (redsearate.com)",
-          "海运询价（redsearate.com）",
+          "RedSeaRate ocean freight quote request (redsearate.com)",
+          "RedSeaRate 海运询价（redsearate.com）",
         )
-      : t("Booking request (redsearate.com)", "订舱需求（redsearate.com）"),
+      : t("RedSeaRate booking request (redsearate.com)", "RedSeaRate 订舱需求（redsearate.com）"),
     `${t("Route", "航线")}: ${port(shipment.origin)} → ${port(shipment.destination)}`,
     shipment.mode === "FCL"
       ? `${t("Equipment", "柜型")}: ${shipment.quantity} × ${shipment.container}`
@@ -175,7 +170,7 @@ export default function Home({
     setResult(null);
     document
       .getElementById("estimate")
-      ?.scrollIntoView({ behavior: "smooth", block: "center" });
+      ?.scrollIntoView({ block: "center" });
   }
   const guides = [
     {
@@ -237,7 +232,7 @@ Dangerous goods and battery cargo need separate review — flag them at the star
     },
   ];
   return (
-    <>
+    <div className="editorial-site">
       <a className="skip" href="#main">
         {t("Skip to content", "跳至正文")}
       </a>
@@ -245,27 +240,27 @@ Dangerous goods and battery cargo need separate review — flag them at the star
         <a
           href={zh ? "/zh" : "/"}
           className="brand"
-          aria-label="Red Sea Rate home"
+          aria-label="RedSeaRate home"
         >
-          <span className="brand-symbol">≈</span>
+          <span className="brand-symbol" aria-hidden="true">≈</span>
           <span>
-            redsea<span className="brand-light">rate</span>
-            <span className="brand-dot">.</span>
+            RedSeaRate
           </span>
         </a>
         <nav
+          id="main-navigation"
           className={menu ? "navigation open" : "navigation"}
           aria-label={t("Main navigation", "主导航")}
         >
-          <a onClick={() => setMenu(false)} href="#routes">
-            {t("Rates", "运价")}
-          </a>
-          <a onClick={() => setMenu(false)} href="#trends">
-            {t("Market insights", "市场趋势")}
-          </a>
-          <a onClick={() => setMenu(false)} href="#guides">
-            {t("Shipping guides", "运输指南")}
-          </a>
+          {platformNavigation.map((item) => (
+            <a key={item.id} onClick={() => setMenu(false)} href={`#${item.id}`}>
+              {t(item.en, item.zh)}
+            </a>
+          ))}
+          <div className="mobile-menu-actions">
+            <a className="button small join-button" href="#join" onClick={() => setMenu(false)}>{t("Join", "加入")}</a>
+            <button className="button small coral" onClick={() => { setMenu(false); openInquiry("quote"); }}>{t("Get a quote", "获取报价")}</button>
+          </div>
         </nav>
         <div className="header-actions">
           <a
@@ -276,26 +271,17 @@ Dangerous goods and battery cargo need separate review — flag them at the star
             <Globe2 size={16} />
             {zh ? "EN" : "中文"}
           </a>
-          {whatsappNumber && (
-            <a
-              className="button small whatsapp header-quote"
-              href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(inquiryText)}`}
-              target="_blank"
-              rel="noopener"
-            >
-              <MessageCircle size={15} />
-              WhatsApp
-            </a>
-          )}
+          <a className="button small join-button header-join" href="#join">{t("Join", "加入")}</a>
           <button
             className="button small coral header-quote"
             onClick={() => openInquiry("quote")}
           >
-            {t("Get an Estimate", "获取估价")}
+            {t("Get a quote", "获取报价")}
             <ArrowUpRight size={15} />
           </button>
           <button
             className="menu-toggle"
+            aria-controls="main-navigation"
             aria-expanded={menu}
             aria-label={t("Toggle navigation", "展开导航")}
             onClick={() => setMenu(!menu)}
@@ -308,7 +294,7 @@ Dangerous goods and battery cargo need separate review — flag them at the star
         <section className="hero wrap">
           <div className="hero-copy">
             <div className="eyebrow">
-              <span /> {t("CHINA → THE RED SEA", "中国 → 红海")}
+              {t("OCEAN FREIGHT · CHINA → RED SEA", "海运整箱与拼箱 · 中国 → 红海")}
             </div>
             <h1>
               {t("From China.", "从中国。")}
@@ -317,8 +303,8 @@ Dangerous goods and battery cargo need separate review — flag them at the star
             </h1>
             <p>
               {t(
-                "Accurate ocean freight estimates, real market data and trusted insights for a more efficient route to the Red Sea.",
-                "准确的海运费估价、真实市场数据与可信洞察，让中国到红海的每一次出运更高效。",
+                "Ocean freight from China to Jeddah, Sokhna, Aqaba and Port Sudan. Compare the route. Know the costs. Plan your next shipment.",
+                "从中国出发，连接吉达、苏赫纳、亚喀巴与苏丹港。看清航线与费用，再安排下一程。",
               )}
             </p>
             <div className="hero-actions">
@@ -326,7 +312,7 @@ Dangerous goods and battery cargo need separate review — flag them at the star
                 {t("Get an Estimate", "获取海运估价")}
                 <ArrowRight size={18} />
               </a>
-              <a className="text-link" href="#routes">
+              <a className="text-link" href="#rates">
                 {t("Explore the route", "查看航线")}
                 <ArrowUpRight size={15} />
               </a>
@@ -334,15 +320,15 @@ Dangerous goods and battery cargo need separate review — flag them at the star
             <div className="hero-trust">
               <span>
                 <ShieldCheck size={16} />
-                {t("Real market rates", "真实市场运价")}
+                <span><strong>{t("Clear rate scope", "费用口径清楚")}</strong><small>{t("Ocean freight, port to port", "港到港海运费")}</small></span>
               </span>
               <span>
                 <Anchor size={16} />
-                {t("Port-to-port insights", "港到港洞察")}
+                <span><strong>{t("Dated references", "参考价有有效期")}</strong><small>{t("No expired quotes", "不展示过期报价")}</small></span>
               </span>
               <span>
                 <Globe2 size={16} />
-                {t("Built for global trade", "服务全球贸易")}
+                <span><strong>{t("Talk to our team", "直接联系团队")}</strong><small>{t("WeChat & WhatsApp", "微信与 WhatsApp")}</small></span>
               </span>
             </div>
           </div>
@@ -359,20 +345,24 @@ Dangerous goods and battery cargo need separate review — flag them at the star
             />
             <div className="image-top">
               <span className="image-label">
-                <span /> {t("YOUR NEXT CHAPTER, OVERSEAS", "下一程，向海而行")}
+                {t("A CLEARER ROUTE.", "下一程，向海而行。")}<br />
+                {t("A BROADER HORIZON.", "先看清，再出发。")}
               </span>
               <ArrowUpRight size={24} />
             </div>
           </div>
         </section>
+        <IndexSnapshot lang={lang} />
+        <RatesPreview lang={lang} snapshot={snapshot} shipment={shipment} onSelect={selectRoute} />
+        <LatestPosts lang={lang} />
         <section id="estimate" className="estimator wrap">
           <div className="estimate-top">
             <div>
               <h2>
                 <Ship size={20} />
                 {t(
-                  "A smarter start to your shipment.",
-                  "从清晰的海运估价开始。",
+                  "Get an ocean freight estimate",
+                  "查一程海运，心中有数",
                 )}
               </h2>
               <p>
@@ -528,8 +518,8 @@ Dangerous goods and battery cargo need separate review — flag them at the star
             )}
             <span>
               {t(
-                `USD · Updated ${snapshot.today}`,
-                `美元 · ${snapshot.today} 更新`,
+                `USD · Checked ${snapshot.today}`,
+                `美元 · ${snapshot.today} 查询`,
               )}
             </span>
           </div>
@@ -611,170 +601,16 @@ Dangerous goods and battery cargo need separate review — flag them at the star
             </div>
           )}
         </section>
-        <div className="benefit-strip wrap">
-          <span>{t("BUILT FOR YOUR NEXT MOVE", "为下一次出运而来")}</span>
-          <div>
-            <Check size={15} />
-            {t("Major China origins", "覆盖中国主要港口")}
-          </div>
-          <div>
-            <Check size={15} />
-            {t("Red Sea gateways", "连接红海门户港")}
-          </div>
-          <div>
-            <Check size={15} />
-            {t("FCL & LCL options", "整柜与拼箱方案")}
-          </div>
-          <div>
-            <Check size={15} />
-            {t("Human support, start to finish", "从咨询到出运的支持")}
-          </div>
-        </div>
-        <section id="routes" className="section wrap">
-          <div className="section-heading">
-            <div>
-              <div className="eyebrow muted">
-                {t("FIND YOUR WAY", "找到您的航线")}
-              </div>
-              <h2>
-                {t("One sea. More possibilities.", "一片红海，更多可能。")}
-              </h2>
-              <p>
-                {t(
-                  "Explore the gateways connecting your business to what’s next.",
-                  "探索连接中国与红海市场的海运门户。",
-                )}
-              </p>
-            </div>
-            <a href="#estimate" className="text-button">
-              {t("Explore your route", "规划我的航线")}
-              <ArrowUpRight size={17} />
-            </a>
-          </div>
-          <div className="route-cards">
-            {destinations.map((p) => {
-              const card = snapshot.lanes[laneKey("Shanghai", p.id, "40HC")];
-              return (
-                <button
-                  key={p.id}
-                  className="route-card"
-                  onClick={() => selectRoute(p.id)}
-                >
-                  <div className="route-card-top">
-                    <span className="port-code">{p.code}</span>
-                    <ArrowUpRight size={18} />
-                  </div>
-                  <span className="route-country">
-                    {zh ? p.countryZh : p.country}
-                  </span>
-                  <h3>
-                    {zh ? p.zh : p.id}
-                    <span>↗</span>
-                  </h3>
-                  <div className="card-path">
-                    {t("Shanghai", "上海")}
-                    <span>⟶</span>
-                    {zh ? p.zh : p.id}
-                  </div>
-                  <div className="card-price">
-                    <small>
-                      {card?.offer
-                        ? t("Our offer from", "本站报价起")
-                        : card?.market
-                          ? t("Market median", "市场中位数")
-                          : t("No current price", "暂无有效价格")}
-                    </small>
-                    <strong>
-                      {card?.offer
-                        ? money(card.offer.low)
-                        : card?.market
-                          ? money(card.market.median)
-                          : t("On request", "请询价")}
-                      {(card?.offer || card?.market) && <span> / 40HC</span>}
-                    </strong>
-                  </div>
-                  <div className="card-bottom">
-                    <span>
-                      <Clock3 size={13} />
-                      {card?.offer?.transitMin
-                        ? `${card.offer.transitMin}–${card.offer.transitMax ?? card.offer.transitMin} ${t("days", "天")}`
-                        : t("Transit on request", "航程请询价")}
-                    </span>
-                    <span className={card?.offer ? "badge" : "badge amber"}>
-                      {card?.offer
-                        ? `${t("Valid to", "有效至")} ${card.offer.validUntil.slice(5)}`
-                        : card?.market
-                          ? t("Market reference", "市场参考")
-                          : t("Ask us", "联系询价")}
-                    </span>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-          <p className="fine-print">
-            <Info size={13} />
-            {t(
-              "Shanghai → destination, USD per 40HC, port-to-port ocean freight. Our offers are prices we can book; market references summarise prices collected by our team. Expired prices switch to “on request”.",
-              "上海起运，美元 / 40HC，港到港海运费。本站报价是我们能订到的价格；市场参考是团队收集的市场报价统计。过期价格自动显示为请询价。",
-            )}
-          </p>
-        </section>
-        <section id="trends" className="insights-section">
-          <div className="wrap insight-layout">
-            <div className="insight-copy">
-              <div className="eyebrow muted">
-                {t("SEE THE BIGGER PICTURE", "看见市场的另一面")}
-              </div>
-              <h2>
-                {t("The market moves.", "市场在变化。")}
-                <br />
-                {t("Stay a step ahead.", "规划快一步。")}
-              </h2>
-              <p>
-                {t(
-                  "A rate is only one part of the story. Understand the forces behind it and make your next shipping decision with more perspective.",
-                  "运价只是故事的一部分。了解影响价格的因素，让下一次出运决策更从容。",
-                )}
-              </p>
-              <div className="market-note">
-                <span className="mini-line" />
-                <div>
-                  <strong>
-                    {t(
-                      "Plan for a range, not a promise.",
-                      "用区间规划，不把估价当承诺。",
-                    )}
-                  </strong>
-                  <p>
-                    {t(
-                      "Routing changes and capacity constraints can affect both cost and transit time. Confirm before booking.",
-                      "航线调整与运力变化会影响费用及航程，订舱前请确认最新情况。",
-                    )}
-                  </p>
-                </div>
-              </div>
-              <button
-                className="text-button"
-                onClick={() => {
-                  setArticle(0);
-                  articleDialog.current?.showModal();
-                }}
-              >
-                {t("Understand the market", "了解运价影响因素")}
-                <ArrowUpRight size={16} />
-              </button>
-            </div>
+        <div className="brief-overview wrap">
+        <section id="brief" className="trend-section" aria-label={t("Brief: market reference", "市场简报：运价参考")}>
             <div className="chart-card">
               <div className="chart-top">
                 <div>
-                  <h3>
-                    {port(shipment.origin)} → {port(shipment.destination)}
-                  </h3>
+                  <h2>{t("Rate trend", "运价走势")} <span>{port(shipment.origin)} → {port(shipment.destination)}</span></h2>
                   <p>
                     {t(
-                      `Weekly median of team-collected market prices · USD / ${trend.length && !snapshot.trends[shipmentKey(shipment)] ? "40HC" : shipment.mode === "LCL" ? "W/M" : shipment.container}`,
-                      `团队收集的市场报价周中位数 · 美元 / ${trend.length && !snapshot.trends[shipmentKey(shipment)] ? "40HC" : shipment.mode === "LCL" ? "W/M" : shipment.container}`,
+                      `Weekly market median · USD / ${equipment === "LCL" ? "W/M" : equipment}`,
+                      `市场报价周中位数 · 美元 / ${equipment === "LCL" ? "W/M" : equipment}`,
                     )}
                   </p>
                 </div>
@@ -885,7 +721,21 @@ Dangerous goods and battery cargo need separate review — flag them at the star
                 </span>
               </div>
             </div>
-          </div>
+        </section>
+        </div>
+        <CommunityPreview lang={lang} onContact={() => openInquiry("quote")} />
+        <section className="approach wrap">
+          <h2>
+            {t("More than a rate.", "不只是一个价格。")}<br />
+            <span>{t("A straighter course.", "是一条更清楚的路。")}</span>
+          </h2>
+          <p>{t(
+            "A useful quote starts with a clear scope. We connect your cargo, route and timing, then confirm the details with you.",
+            "一份有用的报价，先把费用范围说清楚。从货物、航线到出运时间，我们与您逐项确认，让下一程更有把握。",
+          )}</p>
+          <button className="text-button" onClick={() => openInquiry("quote")}>
+            {t("Discuss your shipment", "聊聊您的出运计划")}<ArrowRight size={20} />
+          </button>
         </section>
         <section id="guides" className="section wrap">
           <div className="section-heading">
@@ -918,46 +768,6 @@ Dangerous goods and battery cargo need separate review — flag them at the star
                   articleDialog.current?.showModal();
                 }}
               >
-                <div className={"guide-art art-" + i}>
-                  {i === 0 ? (
-                    <svg viewBox="0 0 300 140" aria-hidden="true">
-                      <path
-                        d="M0 115L40 90L65 102L100 51L130 73L170 34L200 52L245 14L300 35"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      />
-                      <path
-                        d="M0 137L45 115L100 130L150 89L210 108L260 67L300 77"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1"
-                        opacity=".35"
-                      />
-                    </svg>
-                  ) : i === 1 ? (
-                    <>
-                      <span className="map-word">
-                        {t("THE RED SEA", "红海")}
-                      </span>
-                      <div className="map-route">
-                        <span /> <span /> <span />
-                      </div>
-                      <span className="map-caption">
-                        JEDDAH — SOKHNA — AQABA
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <div className="container-line" />
-                      <Box size={64} strokeWidth={0.7} />
-                      <span className="check-art">
-                        <Check size={26} />
-                      </span>
-                    </>
-                  )}
-                  <ArrowUpRight size={18} className="art-arrow" />
-                </div>
                 <span className="article-tag">
                   {g.tag} <span>{t("QUICK READ", "出运速读")}</span>
                 </span>
@@ -1083,11 +893,8 @@ Dangerous goods and battery cargo need separate review — flag them at the star
       <footer className="wrap">
         <div className="footer-main">
           <a href={zh ? "/zh" : "/"} className="brand">
-            <span className="brand-symbol">≈</span>
-            <span>
-              redsea<span className="brand-light">rate</span>
-              <span className="brand-dot">.</span>
-            </span>
+            <span className="brand-symbol" aria-hidden="true">≈</span>
+            <span>RedSeaRate</span>
           </a>
           <p>
             {t(
@@ -1101,11 +908,11 @@ Dangerous goods and battery cargo need separate review — flag them at the star
           </a>
         </div>
         <div className="footer-bottom">
-          <span>© {new Date().getFullYear()} Red Sea Rate</span>
+          <span>© {new Date().getFullYear()} RedSeaRate</span>
           <span>
             {t(
-              `Operated by ${contact.operator}`,
-              `由 ${contact.operator} 运营`,
+              "Operator details pending confirmation",
+              "运营信息待确认",
             )}
           </span>
           <button
@@ -1164,8 +971,8 @@ Dangerous goods and battery cargo need separate review — flag them at the star
         </h2>
         <p className="dialog-intro">
           {t(
-            "We reply on WeChat or WhatsApp, usually the same working day.",
-            "我们通过微信或 WhatsApp 回复，通常当个工作日内。",
+            "Share your shipment details on WeChat or WhatsApp for a tailored quote.",
+            "通过微信或 WhatsApp 发送出运信息，与团队确认专属报价。",
           )}
         </p>
         <label>
@@ -1265,6 +1072,6 @@ Dangerous goods and battery cargo need separate review — flag them at the star
           </button>
         )}
       </dialog>
-    </>
+    </div>
   );
 }

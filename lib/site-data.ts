@@ -3,7 +3,6 @@ import { listEntries } from "./db";
 import { shanghaiDate, summarize } from "./rates";
 
 export const contact = {
-  operator: process.env.SITE_OPERATOR ?? "chinairantrucks",
   wechat: process.env.SITE_WECHAT ?? "uarmside",
   // Comma-separated; each visitor is assigned one number at random.
   whatsapp: (

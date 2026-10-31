@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import { estimate, summarize, laneKey, defaultShipment } from "./rates.ts";
 // @ts-ignore Node runs TypeScript directly.
 import type { PriceEntry } from "./rates.ts";
+import * as rates from "./rates.ts";
 
 const today = "2026-10-23";
 let id = 0;
@@ -24,6 +25,26 @@ const entry = (over: Partial<PriceEntry>): PriceEntry => ({
   ...over,
 });
 const key = laneKey("Shanghai", "Jeddah", "40HC");
+
+test("lane view follows the selected origin and equipment without borrowing another trend", () => {
+  assert.equal(typeof rates.laneView, "function");
+  const selected = { ...defaultShipment, origin: "Qingdao", container: "20GP" };
+  const selectedKey = laneKey("Qingdao", "Jeddah", "20GP");
+  const snapshot = {
+    today,
+    lanes: { [selectedKey]: { market: { median: 3400, count: 5 } } },
+    trends: { [key]: [{ week: "2026-10-19", median: 6000, count: 5 }] },
+  };
+  assert.deepEqual(rates.laneView(snapshot, selected), {
+    equipment: "20GP",
+    lane: snapshot.lanes[selectedKey],
+    trend: [],
+  });
+  assert.deepEqual(
+    rates.laneView(snapshot, { ...selected, mode: "LCL" }),
+    { equipment: "LCL", lane: undefined, trend: [] },
+  );
+});
 
 test("public snapshot never exposes internal prices, sources or single market quotes", () => {
   const snapshot = summarize(
