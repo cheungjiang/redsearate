@@ -27,6 +27,13 @@ export const destinations = [
     code: "JOAQJ",
   },
   {
+    id: "Djibouti",
+    zh: "吉布提",
+    country: "Djibouti",
+    countryZh: "吉布提",
+    code: "DJJIB",
+  },
+  {
     id: "Port Sudan",
     zh: "苏丹港",
     country: "Sudan",

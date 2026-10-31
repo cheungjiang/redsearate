@@ -1,6 +1,7 @@
 import { connection } from "next/server";
 import { listEntries } from "./db";
 import { shanghaiDate, summarize } from "./rates";
+import { simulationPreview } from "./simulation.server";
 
 export const contact = {
   wechat: process.env.SITE_WECHAT ?? "uarmside",
@@ -18,5 +19,5 @@ export const contact = {
 // up immediately without a rebuild.
 export async function homeData() {
   await connection();
-  return { snapshot: summarize(listEntries(), shanghaiDate()), contact };
+  return { snapshot: summarize(listEntries(), shanghaiDate()), contact, simulation: simulationPreview() };
 }

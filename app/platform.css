@@ -118,6 +118,25 @@
 .editorial-site .index-change[data-direction="flat"] {
   color: var(--muted);
 }
+.editorial-site .index-trend {
+  margin: 14px 0 10px;
+}
+.editorial-site .index-sparkline {
+  display: block;
+  width: 100%;
+  height: 48px;
+  color: var(--coral);
+}
+.editorial-site .sparkline-baseline {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+.editorial-site .index-trend figcaption {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.7;
+  margin-top: 5px;
+}
 .editorial-site .platform-section {
   padding-block: 36px;
   border-bottom: 1px solid var(--line);
@@ -142,6 +161,67 @@
   height: 26px;
   border-radius: var(--radius-control);
 }
+.editorial-site .grade-badge[data-grade="A"] {
+  background: var(--ink);
+  color: var(--paper);
+}
+.editorial-site .grade-badge[data-grade="B"] {
+  border-color: var(--coral);
+  color: var(--coral);
+}
+.editorial-site .grade-badge[data-grade="C"] {
+  color: var(--muted);
+}
+.editorial-site .grade-legend > div {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-right: 16px;
+}
+.editorial-site .grade-legend dd {
+  margin: 0;
+}
+.editorial-site .grade-explanation,
+.editorial-site .sample-notice {
+  margin-bottom: 16px;
+}
+.editorial-site .sample-notice strong {
+  color: var(--coral);
+  font-weight: 500;
+}
+.editorial-site .rates-preview-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.editorial-site .rates-table tbody th small {
+  display: block;
+  max-width: 150px;
+  margin-top: 5px;
+  color: var(--coral);
+  font-size: 10px;
+  line-height: 1.7;
+}
+.editorial-site .rates-table .rate-group th {
+  padding-top: 22px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.editorial-site .rates-table .rate-group {
+  border-bottom-color: var(--ink);
+}
+.editorial-site.rates-page {
+  min-height: 100dvh;
+}
+.editorial-site .rates-page-intro {
+  padding-block: 30px 10px;
+}
+.editorial-site .rates-page-intro h1 {
+  margin-top: 20px;
+  font-size: 48px;
+  line-height: 1.2;
+}
 .editorial-site .rates-scroll {
   overflow-x: auto;
   overscroll-behavior-x: contain;
@@ -153,7 +233,7 @@
 }
 .editorial-site .rates-table {
   width: 100%;
-  min-width: 840px;
+  min-width: 1100px;
   border-collapse: collapse;
   text-align: left;
   font-size: 13px;
@@ -327,18 +407,7 @@
     gap: 24px 16px;
   }
   .editorial-site .index-port:last-child {
-    grid-column: 1 / -1;
-  }
-  .editorial-site .index-port:last-child h3 {
-    min-height: 0;
-  }
-  .editorial-site .index-port:last-child dl {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-  .editorial-site .index-port:last-child dl > div {
-    flex-direction: column;
+    grid-column: auto;
   }
   .editorial-site .platform-section {
     padding-block: 28px;
@@ -360,5 +429,52 @@
   }
   .editorial-site .footer-bottom {
     align-items: flex-start;
+  }
+}
+@media (max-width: 800px) {
+  .editorial-site .rates-table {
+    display: block;
+    min-width: 0;
+  }
+  .editorial-site .rates-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .editorial-site .rates-table tbody {
+    display: grid;
+    gap: 16px;
+  }
+  .editorial-site .rates-table tbody tr {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    padding-block: 20px;
+  }
+  .editorial-site .rates-table tbody th,
+  .editorial-site .rates-table td {
+    min-width: 0;
+    padding: 0;
+    overflow-wrap: anywhere;
+  }
+  .editorial-site .rates-table [data-label]::before {
+    content: attr(data-label);
+    display: block;
+    color: var(--muted);
+    font-size: 11px;
+    margin-bottom: 6px;
+  }
+  .editorial-site .rates-table td:nth-child(9) {
+    grid-column: 1 / -1;
+  }
+  .editorial-site .rates-table .rate-group {
+    display: block;
+    padding-bottom: 12px;
+  }
+  .editorial-site .rates-table .rate-group th {
+    padding: 0;
   }
 }

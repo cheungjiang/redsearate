@@ -12,10 +12,13 @@ test("platform navigation has the six requested destinations in order", () => {
   assert.equal(new Set(platform.platformNavigation.map((item) => item.id)).size, 6);
 });
 
-test("index does not borrow 40HC medians or invent a fifth destination", () => {
+test("index has the approved five ports without borrowing real 40HC medians", () => {
   assert.ok(Array.isArray(platform.indexCandidates));
   assert.equal(platform.indexCandidates.length, 5);
-  assert.equal(platform.indexCandidates[4].port, null);
+  assert.deepEqual(platform.indexCandidates.map((row) => row.port?.id), [
+    "Jeddah", "Sokhna", "Aqaba", "Djibouti", "Port Sudan",
+  ]);
+  assert.equal(platform.indexCandidates[3].port?.code, "DJJIB");
   for (const item of platform.indexCandidates) {
     assert.equal(item.median, null);
     assert.equal(item.weekChange, null);
@@ -38,7 +41,7 @@ test("rate preview follows selected equipment and exposes no invented grades or 
   };
   const selected = { ...defaultShipment, origin: "Qingdao", container: "20GP", quantity: 3 };
   const rows = platform.publicRateRows(snapshot, selected);
-  assert.equal(rows.length, 4);
+  assert.equal(rows.length, 5);
   assert.deepEqual(rows[0], {
     origin: "Qingdao", destination: "Jeddah", equipment: "20GP",
     offer: { low: 2100, high: 2400, validUntil: "2026-11-05" },

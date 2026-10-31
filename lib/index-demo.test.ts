@@ -16,12 +16,25 @@ test("demo index explicitly identifies its simulated scope and covers rising, fa
   assert.ok(rows.some((row) => row.weekChange !== null && row.weekChange > 0));
   assert.ok(rows.some((row) => row.weekChange !== null && row.weekChange < 0));
   assert.ok(rows.some((row) => row.weekChange === 0));
-  for (const row of rows.slice(0, 4)) {
+  for (const row of rows) {
     assert.ok(row.port);
     assert.ok(Number.isFinite(row.median) && row.median! > 0);
     assert.ok(Number.isInteger(row.sampleSize) && row.sampleSize! > 0);
   }
-  assert.deepEqual(rows[4], { port: null, median: null, weekChange: null, sampleSize: null });
+  assert.deepEqual(rows.map((row) => row.port?.id), ["Jeddah", "Sokhna", "Aqaba", "Djibouti", "Port Sudan"]);
+  assert.equal(rows[3].port?.code, "DJJIB");
+});
+
+test("simulated sparklines end at the displayed median and match the displayed weekly change", () => {
+  for (const row of demo.demoIndex.entries) {
+    assert.ok(Array.isArray(row.weeklyMedians));
+    assert.equal(row.weeklyMedians.length, 8);
+    assert.ok(row.weeklyMedians.every((price) => Number.isFinite(price) && price > 0));
+    assert.equal(row.weeklyMedians.at(-1), row.median);
+    const last = row.weeklyMedians.at(-1)!;
+    const previous = row.weeklyMedians.at(-2)!;
+    assert.equal(Number(((last / previous - 1) * 100).toFixed(1)), row.weekChange);
+  }
 });
 
 test("demo fixtures do not fill the unpublished real index, rate table or estimator", () => {

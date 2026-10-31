@@ -36,6 +36,42 @@ Set these environment variables for the server:
 
 Hosting needs a Node 22.5+ server with a persistent disk (a VPS or a container with a volume), not a static host or serverless platform, because the pool writes to SQLite.
 
+### Simulated data
+
+`SHOW_SIMULATED_DATA` is a server-only flag controlling the demonstration index,
+sparklines and the four TEST DATA rows on the homepage and `/rates` (`/zh/rates`
+in Simplified Chinese).
+
+- Unset in development: enabled.
+- Unset in production (`next start`): disabled.
+- Exactly `true`: enabled, with simulation and non-bookable warnings on every sample row.
+- Exactly `false`, an empty value or any unrecognized value: disabled.
+
+For a local production-build preview with fixtures:
+
+```sh
+npm run build
+SHOW_SIMULATED_DATA=true npm start -- --hostname 127.0.0.1 --port 3100
+```
+
+For production, leave the flag unset or set it to `false`:
+
+```sh
+SHOW_SIMULATED_DATA=false npm start
+```
+
+The decision is made per request on the server, not through a `NEXT_PUBLIC`
+variable, URL parameter or local storage. Disabled fixtures are not sent in HTML,
+client props or public browser bundles; the browser cannot re-enable them.
+The index falls back to "尚未发布" and the real rates table uses approved public
+references or "请询价". Existing records without evidence remain ungraded, and
+missing carrier or timestamp fields stay unavailable.
+
+Fixtures are fixed UI examples, including all carriers, grade assignments, dates,
+timestamps and sample counts. They never enter the price pool, estimator, inquiry
+text or booking actions. A/B/C describes evidence status (verified record,
+source-attributed record, indicative record), not guaranteed price or space.
+
 ## Before public launch
 
 Enter real prices, set the WhatsApp number, add company and legal details, back up `PRICE_DB`, and decide whether China mainland visitors need a mainland host or CDN. Guide content is first-version copy; compliance topics need review by someone with hands-on experience.

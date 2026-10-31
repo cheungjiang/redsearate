@@ -9,6 +9,15 @@ export default function sitemap() {
         },
       },
     },
+    ...["/rates", "/zh/rates"].map((path) => ({
+      url: `https://redsearate.com${path}`,
+      alternates: {
+        languages: {
+          en: "https://redsearate.com/rates",
+          "zh-CN": "https://redsearate.com/zh/rates",
+        },
+      },
+    })),
     {
       url: "https://redsearate.com/zh",
       alternates: {
