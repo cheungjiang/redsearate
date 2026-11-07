@@ -37,7 +37,7 @@ Visitors inquire through WeChat (copy a prefilled message) or WhatsApp (opens a 
 
 ## Configuration
 
-Build-time environment variables: `SITE_WECHAT` (default `uarmside`) and `SITE_WHATSAPP` (comma-separated international numbers; defaults to the team's three. Each visitor is assigned one at random and keeps it on later visits).
+Build-time environment variables: `SITE_WECHAT` (default `uarmside`) and `SITE_WHATSAPP` (comma-separated international numbers; defaults to the team's four. Each visitor is assigned one at random and keeps it on later visits).
 
 ### Simulated data
 

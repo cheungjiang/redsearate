@@ -7,7 +7,7 @@ export const contact = {
   // Comma-separated; each visitor is assigned one number at random.
   whatsapp: (
     process.env.SITE_WHATSAPP ??
-    "+86 132 3740 1856,+86 158 1879 6370,+86 158 7620 7182"
+    "+86 132 3740 1856,+86 158 1879 6370,+86 158 7620 7182,+86 134 5470 1600"
   )
     .split(",")
     .map((n) => n.trim())
