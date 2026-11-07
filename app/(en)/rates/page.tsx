@@ -1,18 +1,24 @@
 import type { Metadata } from "next";
 import RatesPage from "../../rates-page";
 import { homeData } from "../../../lib/site-data";
+import { indexSentences, pageMetadata, ratesJsonLd } from "../../../lib/seo";
+import { JsonLd } from "../../json-ld";
 
-export const metadata: Metadata = {
-  title: "Rates | RedSeaRate",
-  description: "China to Red Sea port-to-port freight references, grade explanations and clearly labeled demonstration rates.",
-  alternates: {
-    canonical: "/rates/",
-    languages: { en: "/rates/", "zh-CN": "/zh/rates/", "x-default": "/rates/" },
-  },
-  openGraph: { title: "Rates | RedSeaRate", url: "/rates/" },
-};
+export const metadata: Metadata = pageMetadata({
+  lang: "en",
+  path: "/rates/",
+  alternates: { en: "/rates/", zh: "/zh/rates/" },
+  title: "China to Red Sea Freight Rates: Jeddah, Sokhna, Aqaba, Djibouti | RedSeaRate",
+  description:
+    "Current 40HQ ocean freight market medians from China to Jeddah, Sokhna, Aqaba, Djibouti and Port Sudan, built from collected quotes, plus port-to-port references by origin.",
+});
 
 export default async function Page() {
-  const { snapshot, simulation } = await homeData();
-  return <RatesPage lang="en" snapshot={snapshot} simulation={simulation} />;
+  const { snapshot, index, simulation } = await homeData();
+  return (
+    <>
+      <JsonLd data={ratesJsonLd(index, snapshot.today, "en")} />
+      <RatesPage lang="en" snapshot={snapshot} index={index} summary={indexSentences(index, snapshot.today, "en")} simulation={simulation} />
+    </>
+  );
 }

@@ -48,3 +48,18 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+      # IndexNow feeds Bing (and ChatGPT search through it), Yandex and others.
+      # Every push sends the whole sitemap; hourly rebuilds send the price pages once a day.
+      - name: Notify IndexNow
+        env:
+          EVENT: ${{ github.event_name }}
+        run: |
+          if [ "$EVENT" = schedule ] && [ "$(date -u +%H)" != "01" ]; then exit 0; fi
+          if [ "$EVENT" = schedule ]; then
+            urls='["https://redsearate.com/","https://redsearate.com/zh/","https://redsearate.com/rates/","https://redsearate.com/zh/rates/"]'
+          else
+            urls=$(curl -fsS https://redsearate.com/sitemap.xml | grep -o '<loc>[^<]*</loc>' | sed 's#</\?loc>##g' | jq -R . | jq -sc .)
+          fi
+          curl -sS -o /dev/null -w "IndexNow HTTP %{http_code}\n" -X POST https://api.indexnow.org/indexnow \
+            -H 'Content-Type: application/json; charset=utf-8' \
+            -d "{\"host\":\"redsearate.com\",\"key\":\"0780df4f6089aa1190147867ac87b0bc\",\"keyLocation\":\"https://redsearate.com/0780df4f6089aa1190147867ac87b0bc.txt\",\"urlList\":$urls}"

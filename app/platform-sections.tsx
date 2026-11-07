@@ -9,7 +9,7 @@ type Locale = { lang: "en" | "zh" };
 const translate = (lang: Locale["lang"]) =>
   (en: string, zh: string) => lang === "zh" ? zh : en;
 
-export function IndexSnapshot({ lang, liveEntries, demoEntries }: Locale & { liveEntries: IndexEntry[]; demoEntries: IndexEntry[] | null }) {
+export function IndexSnapshot({ lang, liveEntries, demoEntries, asOf }: Locale & { liveEntries: IndexEntry[]; demoEntries: IndexEntry[] | null; asOf: string }) {
   const t = translate(lang);
   const [showDemo, setShowDemo] = useState(demoEntries !== null);
   const displayingDemo = demoEntries !== null && showDemo;
@@ -36,8 +36,8 @@ export function IndexSnapshot({ lang, liveEntries, demoEntries }: Locale & { liv
           "Demo only: illustrative Shanghai departures, USD per 40HQ. Rates, trends, weekly changes and sample counts are all simulated, not actual quotes or booking prices. Each line uses its own vertical scale. Live index rules remain unconfirmed.",
           "演示数据：模拟上海起运，美元 / 40HQ。运价、走势、周环比和样本量均为模拟，非实际报价，不可用于订舱。各折线独立缩放纵轴，不用于比较波动幅度。正式指数口径仍待确认。",
         ) : t(
-          "Median of 40HQ market quotes collected in the last 28 days from all China origins, USD per container, port-to-port ocean freight. Shown once a port has 5 or more quotes after outliers are dropped; week on week compares with the same 28-day reading a week earlier. A market reading, not a bookable offer.",
-          "各港口近 28 天收集的中国各起运港 40HQ 市场报价中位数，美元/柜，仅港到港海运费。剔除异常值后满 5 条才显示；周环比对比一周前的同口径读数。这是市场读数，不是可订舱报价。",
+          `Median of 40HQ market quotes collected in the last 28 days from all China origins, USD per container, port-to-port ocean freight. Shown once a port has 5 or more quotes after outliers are dropped; week on week compares with the same 28-day reading a week earlier. A market reading, not a bookable offer. Data as of ${asOf}.`,
+          `各港口近 28 天收集的中国各起运港 40HQ 市场报价中位数，美元/柜，仅港到港海运费。剔除异常值后满 5 条才显示；周环比对比一周前的同口径读数。这是市场读数，不是可订舱报价。数据截至 ${asOf}。`,
         )}
       </p>
       <div id="index-values" className="index-grid" aria-live="polite">
@@ -105,10 +105,7 @@ export function RatesPreview({
         </div>
       </div>
       <RatesTable lang={lang} snapshot={snapshot} shipment={shipment} samples={samples} onSelect={onSelect} />
-      <p className="platform-note">{fullPage ? t(
-        "Public references are separate from any labeled test rows. Local charges, customs and inland transport are excluded. Update times are unavailable until their source is defined.",
-        "公开参考价与标注的测试数据分开。费用不含港杂、清关和内陆运输。更新时间口径确认前暂不展示。",
-      ) : t(
+      <p className="platform-note">{t(
         "Per-origin public references; the index above pools all origins. Local charges, customs and inland transport are excluded. Update times are unavailable until their source is defined.",
         "按起运港分列的公开参考价；上方指数合并所有起运港。费用不含港杂、清关和内陆运输。更新时间口径确认前暂不展示。",
       )}</p>

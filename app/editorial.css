@@ -109,6 +109,17 @@
   margin-top: 21px;
   white-space: nowrap;
 }
+.editorial-site .hero h1.hero-title {
+  margin-top: 0;
+}
+.editorial-site .hero-title .eyebrow {
+  font-family: "DM Sans", Arial, "Microsoft Yahei", sans-serif;
+  white-space: normal;
+}
+.editorial-site .hero-title .hero-headline {
+  display: block;
+  margin-top: 21px;
+}
 .editorial-site .hero-copy > p {
   font-size: 16px;
   line-height: 1.65;

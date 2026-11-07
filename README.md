@@ -76,3 +76,10 @@ source-attributed record, indicative record), not guaranteed price or space.
 Approve real prices in Notion, set the WhatsApp number, add company and legal details, and decide whether China mainland visitors need a mainland host or CDN. Guide content is first-version copy; compliance topics need review by someone with hands-on experience.
 
 SEO: prerendered localized pages with prices in the HTML, correct HTML language, per-language metadata, canonical and hreflang, Open Graph, robots and sitemap. Latin fonts are self-hosted under their bundled SIL Open Font Licenses; Chinese uses system fonts. No external requests.
+
+## SEO
+
+- Metadata, canonical/hreflang and Open Graph come from `pageMetadata` in `lib/seo.ts`; structured data (Organization, WebSite, FAQPage, Article, Dataset, BreadcrumbList) is built there too and rendered by `app/json-ld.tsx`.
+- Guides live in `lib/content.ts`, one page per guide at `/guides/<slug>/` and `/zh/guides/<slug>/`. Add a guide there and it gets a page, sitemap entry and JSON-LD.
+- The rates pages open with one plain sentence per port generated from the live index, so search engines and AI answers can quote a dated figure.
+- After each push the workflow pings IndexNow (Bing, Yandex, Seznam, Naver); hourly rebuilds re-ping the home and rates pages once a day. The key file is `public/0780df4f6089aa1190147867ac87b0bc.txt`.
