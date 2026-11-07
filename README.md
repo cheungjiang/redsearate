@@ -31,7 +31,7 @@ Visitors inquire through WeChat (copy a prefilled message) or WhatsApp (opens a 
 
 ## Deployment
 
-`.github/workflows/deploy.yml` tests, fetches prices from Notion, builds and publishes `out/` to GitHub Pages on every push to `main`, every hour, and on manual runs (Actions → Deploy to GitHub Pages → Run workflow). Pages are prerendered, so a Notion change, including marking a row 拒绝, appears after the next run. The hourly run also retires expired prices.
+`.github/workflows/deploy.yml` tests, fetches prices from Notion, builds and publishes `out/` to GitHub Pages on every push to `main`, every 10 minutes, and on manual runs (Actions → Deploy to GitHub Pages → Run workflow). Pages are prerendered, so a Notion change, including marking a row 拒绝, appears after the next run. The scheduled runs also retire expired prices.
 
 - Repository secret `NOTION_TOKEN`: an internal Notion integration token with read access to "RedSeaRate 报价库". Without it the workflow fails and the last deployed site stays up.
 - `NOTION_DATA_SOURCE_ID` (default: the 报价库 data source) and `PUBLIC_PRICES` (default `.data/public-prices.json`) are optional overrides.
@@ -82,4 +82,4 @@ SEO: prerendered localized pages with prices in the HTML, correct HTML language,
 - Metadata, canonical/hreflang and Open Graph come from `pageMetadata` in `lib/seo.ts`; structured data (Organization, WebSite, FAQPage, Article, Dataset, BreadcrumbList) is built there too and rendered by `app/json-ld.tsx`.
 - Guides live in `lib/content.ts`, one page per guide at `/guides/<slug>/` and `/zh/guides/<slug>/`. Add a guide there and it gets a page, sitemap entry and JSON-LD.
 - The rates pages open with one plain sentence per port generated from the live index, so search engines and AI answers can quote a dated figure.
-- After each push the workflow pings IndexNow (Bing, Yandex, Seznam, Naver); hourly rebuilds re-ping the home and rates pages once a day. The key file is `public/0780df4f6089aa1190147867ac87b0bc.txt`.
+- After each push the workflow pings IndexNow (Bing, Yandex, Seznam, Naver); scheduled rebuilds (every 10 minutes) re-ping the home and rates pages once a day. The key file is `public/0780df4f6089aa1190147867ac87b0bc.txt`.

@@ -3,9 +3,11 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
-  # Hourly, so Notion approvals and expiry dates reach the site without a push.
+  # Every 10 minutes, so new Notion quotes and expiry dates reach the site without a push.
   schedule:
-    - cron: "17 * * * *"
+    - cron: "*/10 * * * *"
+    # Daily rebuild that also re-sends the price pages to IndexNow.
+    - cron: "5 1 * * *"
   workflow_dispatch:
 
 permissions:
@@ -49,12 +51,13 @@ jobs:
       - id: deployment
         uses: actions/deploy-pages@v4
       # IndexNow feeds Bing (and ChatGPT search through it), Yandex and others.
-      # Every push sends the whole sitemap; hourly rebuilds send the price pages once a day.
+      # Every push sends the whole sitemap; scheduled rebuilds send the price pages once a day.
       - name: Notify IndexNow
         env:
           EVENT: ${{ github.event_name }}
+          SCHEDULE: ${{ github.event.schedule }}
         run: |
-          if [ "$EVENT" = schedule ] && [ "$(date -u +%H)" != "01" ]; then exit 0; fi
+          if [ "$EVENT" = schedule ] && [ "$SCHEDULE" != "5 1 * * *" ]; then exit 0; fi
           if [ "$EVENT" = schedule ]; then
             urls='["https://redsearate.com/","https://redsearate.com/zh/","https://redsearate.com/rates/","https://redsearate.com/zh/rates/"]'
           else
