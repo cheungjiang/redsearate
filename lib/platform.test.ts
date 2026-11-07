@@ -91,7 +91,7 @@ test("rate preview follows selected equipment and exposes no invented grades or 
   assert.deepEqual(rows[0], {
     origin: "Qingdao", destination: "Jeddah", equipment: "20GP",
     offer: { low: 2100, high: 2400, validUntil: "2026-11-05" },
-    market: { median: 2300, count: 5 }, carriers: [], grade: null, updatedAt: null,
+    market: { median: 2300, count: 5 }, carriers: [], rating: "good",
   });
   assert.equal(rows[1].offer, null);
   assert.equal(rows[1].market, null);
@@ -115,6 +115,23 @@ test("rate rows fall back to the best-covered origin when the selected one has n
   assert.equal(rows[1].origin, "Shanghai");
   assert.equal(rows[2].origin, "Shanghai");
   assert.equal(rows[2].market, null);
+});
+
+test("rows are rated good, or excellent when at least 10% below the all-origin median", () => {
+  const snapshot: Snapshot = {
+    today: "2026-11-07",
+    lanes: {
+      [laneKey("Shanghai", "Jeddah", "40HC")]: { market: { median: 2700, count: 2 } },
+      [laneKey("Ningbo", "Jeddah", "40HC")]: { market: { median: 3000, count: 1 } },
+      [laneKey("Qingdao", "Jeddah", "40HC")]: { market: { median: 3100, count: 1 } },
+      [laneKey("Shanghai", "Sokhna", "40HC")]: { market: { median: 2800, count: 3 } },
+      [laneKey("Ningbo", "Sokhna", "40HC")]: { market: { median: 3000, count: 1 } },
+      [laneKey("Shanghai", "Aqaba", "40HC")]: { market: { median: 2000, count: 1 } },
+    },
+    trends: {},
+  };
+  const rows = platform.publicRateRows(snapshot, defaultShipment);
+  assert.deepEqual(rows.map((r) => r.rating), ["excellent", "good", "good", null, null]);
 });
 
 test("public rate projection drops expired offers even from a stale snapshot", () => {

@@ -75,11 +75,32 @@ export function liveIndex(entries: PriceEntry[], today: string): IndexEntry[] {
   });
 }
 
+export type Rating = "excellent" | "good";
+export const EXCELLENT_DISCOUNT = 0.1;
+
 // One row per destination: the shipment's origin when it has a current price,
 // otherwise the origin with a live offer or the most market samples.
+// Every priced row is rated good; it is excellent when its price is at least
+// 10% below the median of all origins' prices for that destination and equipment.
+function rate(price: number | undefined, benchmark: number | undefined): Rating | null {
+  if (price === undefined) return null;
+  return benchmark !== undefined && price <= benchmark * (1 - EXCELLENT_DISCOUNT) ? "excellent" : "good";
+}
+
 export function publicRateRows(snapshot: Snapshot, shipment: Shipment) {
-  const priced = (lane: Lane | undefined) =>
-    Boolean((lane?.offer && lane.offer.validUntil >= snapshot.today) || lane?.market);
+  const live = (lane: Lane | undefined) =>
+    lane?.offer && lane.offer.validUntil >= snapshot.today ? lane.offer : undefined;
+  const priced = (lane: Lane | undefined) => Boolean(live(lane) || lane?.market);
+  const price = (lane: Lane | undefined) => live(lane)?.low ?? lane?.market?.median;
+  const benchmark = (destination: string, equipment: string) => {
+    const prices = Object.entries(snapshot.lanes)
+      .filter(([key]) => key.split("|")[1] === destination && key.split("|")[2] === equipment)
+      .flatMap(([, lane]) => price(lane) ?? [])
+      .sort((a, b) => a - b);
+    if (prices.length < 2) return undefined;
+    const middle = Math.floor(prices.length / 2);
+    return prices.length % 2 ? prices[middle] : (prices[middle - 1] + prices[middle]) / 2;
+  };
   return destinations.map((destination) => {
     const view = laneView(snapshot, { ...shipment, destination: destination.id });
     const { equipment } = view;
@@ -103,9 +124,7 @@ export function publicRateRows(snapshot: Snapshot, shipment: Shipment) {
         ? { median: market.median, count: market.count }
         : null,
       carriers: lane?.details?.carriers ?? [],
-      // These public summaries have no grading evidence or trusted update source.
-      grade: null,
-      updatedAt: null,
+      rating: rate(price(lane), benchmark(destination.id, equipment)),
     };
   });
 }

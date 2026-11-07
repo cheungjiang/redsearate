@@ -1,5 +1,5 @@
 import { ArrowRight } from "lucide-react";
-import { publicRateRows, type Grade, type SampleRate } from "../lib/platform";
+import { publicRateRows, type Rating, type SampleRate } from "../lib/platform";
 import { addDays, destinations, extraOriginNames, origins, type Shipment, type Snapshot } from "../lib/rates";
 
 export function RatesTable({
@@ -22,10 +22,11 @@ export function RatesTable({
     t("Valid from", "有效期起"), t("Valid until", "有效至"), t("Updated", "更新时间"),
     ...(onSelect ? [t("Action", "操作")] : []),
   ];
-  const legend: { grade: Grade; label: string }[] = [
-    { grade: "A", label: t("Verified record", "已核验记录") },
-    { grade: "B", label: t("Source-attributed record", "来源可追溯") },
-    { grade: "C", label: t("Indicative record", "指示性参考") },
+  const ratingLabel = (rating: Rating) =>
+    rating === "excellent" ? t("Excellent", "优秀") : t("Good", "友好");
+  const legend: { rating: Rating; label: string }[] = [
+    { rating: "excellent", label: t("At least 10% below the median of all China origins", "比中国各起运港中位数低 10% 以上") },
+    { rating: "good", label: t("Current market level", "当前市场水平") },
   ];
   const testLabel = t("TEST DATA · Simulated · not bookable", "TEST DATA · 模拟数据 · 不可订舱");
   const unavailable = t("Unavailable", "暂不可用");
@@ -34,15 +35,15 @@ export function RatesTable({
   return (
     <>
       <dl className="grade-key grade-legend" aria-label={t("Grade legend", "等级说明")}>
-        {legend.map(({ grade, label }) => (
-          <div key={grade}>
-            <dt><span className="grade-badge" data-grade={grade}>{grade}</span></dt>
+        {legend.map(({ rating, label }) => (
+          <div key={rating}>
+            <dt><span className="rating" data-rating={rating}>{ratingLabel(rating)}</span></dt>
             <dd>{label}</dd>
           </div>
         ))}
       </dl>
       <p className="platform-note grade-explanation">
-        {t("Grades describe supporting evidence, not guaranteed price or space. Ungraded records have no assigned grade.", "等级说明记录的证据状态，不保证价格或舱位。未评级记录没有已分配的等级。")}
+        {t("Ratings compare each price with the same destination and equipment from every China origin. They do not guarantee price or space.", "评级把每个价格与中国各起运港到同一目的港、同一柜型的价格比较，不保证价格或舱位。")}
       </p>
       {samples.length > 0 && (
         <p className="sample-notice platform-note">
@@ -87,7 +88,7 @@ export function RatesTable({
                   <small>{row.offer ? t("Bookable offer", "本站报价") : row.market ? (row.market.count === 1 ? t("Market price · 1 quote", "市场价 · 1 条报价") : t(`Market median · ${row.market.count} quotes`, `市场中位数 · ${row.market.count} 条报价`)) : t("No current price", "暂无有效价格")}</small>
                 </td>
                 <td data-label={labels[4]}>{row.carriers.length ? row.carriers.join(", ") : unavailable}</td>
-                <td data-label={labels[5]}><span className="ungraded">{t("Ungraded", "未评级")}</span></td>
+                <td data-label={labels[5]}>{row.rating ? <span className="rating" data-rating={row.rating}>{ratingLabel(row.rating)}</span> : unavailable}</td>
                 <td data-label={labels[6]}><time dateTime={today}>{today}</time></td>
                 <td data-label={labels[7]}><time dateTime={validUntil}>{validUntil}</time></td>
                 <td data-label={labels[8]}><time dateTime={today}>{today}</time></td>

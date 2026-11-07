@@ -556,3 +556,16 @@
 .editorial-site.rates-page .index-snapshot {
   margin-top: 20px;
 }
+.editorial-site .rating {
+  display: inline-block;
+  padding: 3px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.editorial-site .rating[data-rating="excellent"] {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
