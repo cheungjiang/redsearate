@@ -23,7 +23,7 @@ Prices live in the Notion database "RedSeaRate 报价库". Every row reaches the
 
 A row is skipped unless its currency is USD and its unit is USD/柜 (USD/W/M for LCL). Shekou counts as Shenzhen. Only Shanghai, Ningbo, Shenzhen and Qingdao have estimator lanes; quotes from other origins count only towards the port index. `40HQ` is stored as the site's `40HC`. 报价日期 dates the price for the 28-day window and the weekly trend (blank: the row's creation date). 有效期 sets the valid-until date, using the end of a range; a blank 有效期 means 7 days after the quote date. The fetch log lists skipped rows by reason. This mapping lives in `lib/notion-prices.ts`.
 
-The index snapshot shows, for each destination port, the median of 40HQ market quotes dated in the last 7 days from all China origins, once 5 or more remain after outliers are dropped. Week on week compares with the median of the 7 days before. Offers are not included. This lives in `liveIndex` in `lib/platform.ts`.
+The index snapshot shows, for each destination port, the median of 40HQ market quotes dated in the last 28 days from all China origins, once 5 or more remain after outliers are dropped. Week on week compares with the same 28-day median as of 7 days earlier. Offers are not included. This lives in `liveIndex` in `lib/platform.ts`.
 
 Prices are port-to-port USD, per container for FCL and per W/M for LCL. Expired prices drop out and lanes without data show "请询价". The weekly trend chart plots weekly market medians and stays empty until real data exists. Source links, notes, carriers and single quotes are never fetched, so they cannot appear on the site. The aggregation lives in `lib/rates.ts` and is covered by `lib/rates.test.ts`.
 

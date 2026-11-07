@@ -42,11 +42,11 @@ export type SampleRate = {
 };
 export type SimulationPreview = { index: IndexEntry[]; rates: SampleRate[] };
 
-export const INDEX_WINDOW_DAYS = 7;
+export const INDEX_WINDOW_DAYS = 28;
 
 // Per destination: market quotes for 40HQ (stored as 40HC) from every China
-// origin, dated in the last 7 days. The median needs 5 quotes after outliers
-// are dropped. Week on week compares with the 7 days before that window.
+// origin, dated in the last 28 days. The median needs 5 quotes after outliers
+// are dropped. Week on week compares with the same window ending 7 days ago.
 export function liveIndex(entries: PriceEntry[], today: string): IndexEntry[] {
   const windowMedian = (destination: string, end: string) => {
     const start = addDays(end, 1 - INDEX_WINDOW_DAYS);
@@ -62,7 +62,7 @@ export function liveIndex(entries: PriceEntry[], today: string): IndexEntry[] {
   };
   return destinations.map((port) => {
     const current = windowMedian(port.id, today);
-    const previous = windowMedian(port.id, addDays(today, -INDEX_WINDOW_DAYS));
+    const previous = windowMedian(port.id, addDays(today, -7));
     return {
       port,
       median: current?.median ?? null,

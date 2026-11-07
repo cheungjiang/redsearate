@@ -44,21 +44,21 @@ test("index has the approved five ports and stays unavailable without data", () 
   }
 });
 
-test("index pools 40HQ market quotes from all origins over the last 7 days", () => {
-  const origins = ["Shanghai", "Ningbo", "Shenzhen", "Qingdao", "Shanghai"];
+test("index pools 40HQ market quotes from all origins over the last 28 days", () => {
+  const origins = ["Shanghai", "Ningbo", "Shenzhen", "Qingdao", "Dalian"];
   const entries = [
     ...[3000, 3100, 3200, 3300, 3400].map((price, i) =>
-      quote({ price, origin: origins[i], createdAt: on("2026-11-01") })),
-    quote({ price: 3500, createdAt: on("2026-10-31") }),
+      quote({ price, origin: origins[i], createdAt: on("2026-11-03") })),
     quote({ price: 9000, tier: "offer", createdAt: on("2026-11-05") }),
     quote({ price: 9000, container: "20GP", createdAt: on("2026-11-05") }),
-    ...[2900, 2900, 3000, 3000, 3000].map((price) =>
-      quote({ price, createdAt: on("2026-10-28") })),
+    quote({ price: 2000, createdAt: on("2026-10-03") }),
+    ...[2900, 2900, 2900, 3000, 3000].map((price) =>
+      quote({ price, createdAt: on("2026-10-20") })),
   ];
   const jeddah = platform.liveIndex(entries, "2026-11-07")[0];
-  assert.equal(jeddah.median, 3200);
-  assert.equal(jeddah.sampleSize, 5);
-  assert.equal(jeddah.weekChange, 6.7);
+  assert.equal(jeddah.median, 3000);
+  assert.equal(jeddah.sampleSize, 10);
+  assert.equal(jeddah.weekChange, 3.4);
 });
 
 test("index needs 5 quotes after outliers and leaves week on week blank without a prior week", () => {
