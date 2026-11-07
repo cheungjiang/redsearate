@@ -109,8 +109,8 @@ export function RatesPreview({
         "Public references are separate from any labeled test rows. Local charges, customs and inland transport are excluded. Update times are unavailable until their source is defined.",
         "公开参考价与标注的测试数据分开。费用不含港杂、清关和内陆运输。更新时间口径确认前暂不展示。",
       ) : t(
-        "Existing public references, separate from the unpublished index above. Local charges, customs and inland transport are excluded. Update times are unavailable until their source is defined.",
-        "现有公开参考价，与上方尚未发布的指数分开。费用不含港杂、清关和内陆运输。更新时间口径确认前暂不展示。",
+        "Per-origin public references; the index above pools all origins. Local charges, customs and inland transport are excluded. Update times are unavailable until their source is defined.",
+        "按起运港分列的公开参考价；上方指数合并所有起运港。费用不含港杂、清关和内陆运输。更新时间口径确认前暂不展示。",
       )}</p>
     </section>
   );
