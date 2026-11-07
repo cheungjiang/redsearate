@@ -102,6 +102,7 @@ export function publicRateRows(snapshot: Snapshot, shipment: Shipment) {
       market: market && market.count >= MIN_MARKET_SAMPLES
         ? { median: market.median, count: market.count }
         : null,
+      carriers: lane?.details?.carriers ?? [],
       // These public summaries have no grading evidence or trusted update source.
       grade: null,
       updatedAt: null,

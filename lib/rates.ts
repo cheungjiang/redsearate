@@ -65,6 +65,7 @@ export type PriceEntry = {
   container: Container;
   price: number;
   validUntil: string;
+  carrier?: string;
   transitMin: number | null;
   transitMax: number | null;
   source: string;
@@ -80,7 +81,9 @@ export type Offer = {
   transitMax: number | null;
 };
 export type Market = { median: number; count: number };
-export type Lane = { offer?: Offer; market?: Market };
+// Carriers named on the quotes behind a lane's price, for the rates table.
+export type LaneDetails = { carriers: string[] };
+export type Lane = { offer?: Offer; market?: Market; details?: LaneDetails };
 export type TrendPoint = { week: string; median: number; count: number };
 export type Snapshot = {
   today: string;
@@ -128,6 +131,17 @@ export function marketSummary(prices: number[]): Market | undefined {
   return { median: Math.round(median(kept) / 10) * 10, count: kept.length };
 }
 
+function marketUsed(entries: PriceEntry[]) {
+  const kept = withoutOutliers(entries.map((e) => e.price));
+  return entries.filter((e) => e.price >= kept[0] && e.price <= kept[kept.length - 1]);
+}
+function laneDetails(entries: PriceEntry[]): LaneDetails {
+  const carriers = new Set(
+    entries.flatMap((e) => (e.carrier ?? "").split(/[,，/、;；]+/).map((c) => c.trim()).filter(Boolean)),
+  );
+  return { carriers: [...carriers].sort() };
+}
+
 // Builds the only price data that reaches public pages: internal entries are
 // never included, and market prices appear as medians with their sample size.
 export function summarize(entries: PriceEntry[], today: string): Snapshot {
@@ -161,16 +175,17 @@ export function summarize(entries: PriceEntry[], today: string): Snapshot {
       };
     }
     const market = list.filter((e) => e.tier === "market");
-    lane.market = marketSummary(
-      market
-        .filter(
-          (e) =>
-            e.validUntil >= today &&
-            shanghaiDate(new Date(e.createdAt)) >= marketSince,
-        )
-        .map((e) => e.price),
+    const current = market.filter(
+      (e) =>
+        e.validUntil >= today &&
+        shanghaiDate(new Date(e.createdAt)) >= marketSince,
     );
-    if (lane.offer || lane.market) snapshot.lanes[key] = lane;
+    lane.market = marketSummary(current.map((e) => e.price));
+    if (lane.offer || lane.market) {
+      const used = offers.length ? offers : marketUsed(current);
+      lane.details = laneDetails(used);
+      snapshot.lanes[key] = lane;
+    }
     const weeks = new Map<string, number[]>();
     for (const entry of market) {
       const week = weekStart(shanghaiDate(new Date(entry.createdAt)));

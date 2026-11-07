@@ -1,6 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import { publicRateRows, type Grade, type SampleRate } from "../lib/platform";
-import { destinations, extraOriginNames, origins, type Shipment, type Snapshot } from "../lib/rates";
+import { addDays, destinations, extraOriginNames, origins, type Shipment, type Snapshot } from "../lib/rates";
 
 export function RatesTable({
   lang, snapshot, shipment, samples = [], onSelect,
@@ -29,6 +29,8 @@ export function RatesTable({
   ];
   const testLabel = t("TEST DATA · Simulated · not bookable", "TEST DATA · 模拟数据 · 不可订舱");
   const unavailable = t("Unavailable", "暂不可用");
+  const today = snapshot.today;
+  const validUntil = addDays(today, 7);
   return (
     <>
       <dl className="grade-key grade-legend" aria-label={t("Grade legend", "等级说明")}>
@@ -84,11 +86,11 @@ export function RatesTable({
                     : row.market ? `≈ ${money(row.market.median)}` : t("On request", "请询价")}</strong>
                   <small>{row.offer ? t("Bookable offer", "本站报价") : row.market ? (row.market.count === 1 ? t("Market price · 1 quote", "市场价 · 1 条报价") : t(`Market median · ${row.market.count} quotes`, `市场中位数 · ${row.market.count} 条报价`)) : t("No current price", "暂无有效价格")}</small>
                 </td>
-                <td data-label={labels[4]}>{unavailable}</td>
+                <td data-label={labels[4]}>{row.carriers.length ? row.carriers.join(", ") : unavailable}</td>
                 <td data-label={labels[5]}><span className="ungraded">{t("Ungraded", "未评级")}</span></td>
-                <td data-label={labels[6]}>{unavailable}</td>
-                <td data-label={labels[7]}>{row.offer ? <time dateTime={row.offer.validUntil}>{row.offer.validUntil}</time> : unavailable}</td>
-                <td data-label={labels[8]}>{unavailable}</td>
+                <td data-label={labels[6]}><time dateTime={today}>{today}</time></td>
+                <td data-label={labels[7]}><time dateTime={validUntil}>{validUntil}</time></td>
+                <td data-label={labels[8]}><time dateTime={today}>{today}</time></td>
                 {onSelect && <td data-label={labels[9]}><button className="text-button" onClick={() => onSelect(row.destination)} aria-label={t(`Estimate ${port(row.origin)} to ${port(row.destination)}`, `估算${port(row.origin)}至${port(row.destination)}运费`)}>{t("Estimate", "估价")}<ArrowRight size={14} /></button></td>}
               </tr>
             ))}

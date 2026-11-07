@@ -14,6 +14,7 @@ const quote = (over: Partial<NotionQuote> = {}): NotionQuote => ({
   currency: "USD",
   unit: "USD/柜",
   price: 3200,
+  carrier: "",
   quoteDate: "2026-11-05",
   validFrom: "2026-11-20",
   validTo: null,
@@ -59,7 +60,7 @@ test("origins outside the estimator are kept for the port index", () => {
   assert.equal(result.entry.origin, "Dalian");
 });
 
-test("Shekou maps to Shenzhen and private Notion fields never reach the entry", () => {
+test("Shekou maps to Shenzhen, the carrier is kept and private Notion fields never reach the entry", () => {
   const page = {
     created_time: "2026-11-07T14:07:00.000Z",
     properties: {
@@ -82,6 +83,7 @@ test("Shekou maps to Shenzhen and private Notion fields never reach the entry", 
   assert.ok("entry" in result);
   assert.equal(result.entry.tier, "offer");
   assert.equal(result.entry.origin, "Shenzhen");
+  assert.equal(result.entry.carrier, "CMA");
   const text = JSON.stringify(result.entry);
-  for (const secret of ["secret note", "example.com", "CMA"]) assert.ok(!text.includes(secret));
+  for (const secret of ["secret note", "example.com"]) assert.ok(!text.includes(secret));
 });

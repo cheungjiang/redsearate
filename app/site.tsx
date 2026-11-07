@@ -927,8 +927,8 @@ export default function Home({
         </h2>
         <p>
           {t(
-            "This website does not collect names, emails or other personal data, and uses no analytics or advertising cookies. When you contact us, your message is handled in WeChat or WhatsApp under those apps' terms. Market prices are shown without their source or carrier.",
-            "本网站不收集姓名、邮箱等个人信息，也不使用统计或广告 Cookie。您联系我们时，消息在微信或 WhatsApp 中处理，适用各自的条款。市场价格展示时不包含来源和船公司信息。",
+            "This website does not collect names, emails or other personal data, and uses no analytics or advertising cookies. When you contact us, your message is handled in WeChat or WhatsApp under those apps' terms. Market prices are shown without their source.",
+            "本网站不收集姓名、邮箱等个人信息，也不使用统计或广告 Cookie。您联系我们时，消息在微信或 WhatsApp 中处理，适用各自的条款。市场价格展示时不包含来源信息。",
           )}
         </p>
       </dialog>

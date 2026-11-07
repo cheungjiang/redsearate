@@ -106,8 +106,8 @@ export function RatesPreview({
       </div>
       <RatesTable lang={lang} snapshot={snapshot} shipment={shipment} samples={samples} onSelect={onSelect} />
       <p className="platform-note">{t(
-        "Per-origin public references; the index above pools all origins. Local charges, customs and inland transport are excluded. Update times are unavailable until their source is defined.",
-        "按起运港分列的公开参考价；上方指数合并所有起运港。费用不含港杂、清关和内陆运输。更新时间口径确认前暂不展示。",
+        "Per-origin public references; the index above pools all origins. Local charges, customs and inland transport are excluded. Carriers are those named on the quotes behind each price.",
+        "按起运港分列的公开参考价；上方指数合并所有起运港。费用不含港杂、清关和内陆运输。船公司为该价格所依据报价上的船公司。",
       )}</p>
     </section>
   );

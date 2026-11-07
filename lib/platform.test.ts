@@ -91,7 +91,7 @@ test("rate preview follows selected equipment and exposes no invented grades or 
   assert.deepEqual(rows[0], {
     origin: "Qingdao", destination: "Jeddah", equipment: "20GP",
     offer: { low: 2100, high: 2400, validUntil: "2026-11-05" },
-    market: { median: 2300, count: 5 }, grade: null, updatedAt: null,
+    market: { median: 2300, count: 5 }, carriers: [], grade: null, updatedAt: null,
   });
   assert.equal(rows[1].offer, null);
   assert.equal(rows[1].market, null);

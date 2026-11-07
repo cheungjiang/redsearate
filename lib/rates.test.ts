@@ -85,6 +85,19 @@ test("market reference uses every current price, drops outliers and expired or o
   assert.deepEqual(snapshot.lanes[key].market, { median: 2100, count: 5 });
 });
 
+test("lane details list the carriers behind the price, without outliers or internal quotes", () => {
+  const lane = summarize(
+    [
+      entry({ price: 2000, carrier: "MSC / CMA" }),
+      entry({ price: 2100, carrier: "COSCO" }),
+      entry({ price: 9000, carrier: "Outlier Line" }),
+      entry({ price: 2050, carrier: "msc", tier: "internal" }),
+    ],
+    today,
+  ).lanes[key];
+  assert.deepEqual(lane.details, { carriers: ["CMA", "COSCO", "MSC"] });
+});
+
 test("offers expire at the end of their valid date and combine into one range", () => {
   const offers = [
     entry({

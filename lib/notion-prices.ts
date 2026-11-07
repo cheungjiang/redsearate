@@ -1,8 +1,8 @@
 import { addDays, containers, destinations, type PriceEntry, type Tier } from "./rates.ts";
 
 // One row of the Notion "RedSeaRate 报价库" data source, reduced to the fields
-// the public site may use. Source links, notes, carriers and reviewers are
-// never read, so they cannot reach the build output.
+// the public site may use. Source links, notes and reviewers are never read,
+// so they cannot reach the build output.
 export type NotionQuote = {
   status: string;
   type: string;
@@ -12,6 +12,7 @@ export type NotionQuote = {
   currency: string;
   unit: string;
   price: number | null;
+  carrier: string;
   quoteDate: string | null;
   validFrom: string | null;
   validTo: string | null;
@@ -33,6 +34,7 @@ type Property = {
   number?: number | null;
   date?: { start: string; end: string | null } | null;
   title?: { plain_text: string }[];
+  rich_text?: { plain_text: string }[];
 };
 export type NotionPage = {
   created_time: string;
@@ -40,6 +42,7 @@ export type NotionPage = {
 };
 
 const select = (p?: Property) => p?.select?.name ?? "";
+const text = (p?: Property) => (p?.rich_text ?? []).map((t) => t.plain_text).join("").trim();
 const day = (value?: string | null) => (value ? value.slice(0, 10) : null);
 
 export function fromNotionPage(page: NotionPage): NotionQuote {
@@ -53,6 +56,7 @@ export function fromNotionPage(page: NotionPage): NotionQuote {
     currency: select(p["币种"]),
     unit: select(p["计费单位"]),
     price: p["价格"]?.number ?? null,
+    carrier: text(p["船公司"]),
     quoteDate: day(p["报价日期"]?.date?.start),
     validFrom: day(p["有效期"]?.date?.start),
     validTo: day(p["有效期"]?.date?.end),
@@ -86,6 +90,7 @@ export function toPublicEntry(
     container: container as PriceEntry["container"],
     price: q.price ?? NaN,
     validUntil: q.validTo ?? q.validFrom ?? addDays(date, 7),
+    carrier: q.carrier,
     transitMin: null,
     transitMax: null,
     source: "",
