@@ -112,7 +112,7 @@ function withoutOutliers(prices: number[]) {
     (price) => price >= middle * 0.5 && price <= middle * 1.5,
   );
 }
-function marketSummary(prices: number[]): Market | undefined {
+export function marketSummary(prices: number[]): Market | undefined {
   const kept = withoutOutliers(prices);
   if (kept.length < MIN_MARKET_SAMPLES) return undefined;
   return { median: Math.round(median(kept) / 10) * 10, count: kept.length };

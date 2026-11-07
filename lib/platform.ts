@@ -1,5 +1,12 @@
-import { destinations, laneView, MIN_MARKET_SAMPLES } from "./rates.ts";
-import type { Shipment, Snapshot } from "./rates.ts";
+import {
+  addDays,
+  destinations,
+  laneView,
+  marketSummary,
+  MIN_MARKET_SAMPLES,
+  shanghaiDate,
+} from "./rates.ts";
+import type { PriceEntry, Shipment, Snapshot } from "./rates.ts";
 
 export const platformNavigation = [
   { id: "rates", en: "Rates", zh: "运价" },
@@ -35,15 +42,38 @@ export type SampleRate = {
 };
 export type SimulationPreview = { index: IndexEntry[]; rates: SampleRate[] };
 
-// The approved ports are known, but the live index methodology is not.
-// Never relabel real 40HC market references as simulated 40HQ index values.
-export const indexCandidates: IndexEntry[] = destinations.map((port) => ({
-  port,
-  median: null,
-  weekChange: null,
-  sampleSize: null,
-  weeklyMedians: [],
-}));
+export const INDEX_WINDOW_DAYS = 7;
+
+// Per destination: market quotes for 40HQ (stored as 40HC) from every China
+// origin, dated in the last 7 days. The median needs 5 quotes after outliers
+// are dropped. Week on week compares with the 7 days before that window.
+export function liveIndex(entries: PriceEntry[], today: string): IndexEntry[] {
+  const windowMedian = (destination: string, end: string) => {
+    const start = addDays(end, 1 - INDEX_WINDOW_DAYS);
+    return marketSummary(
+      entries
+        .filter((e) => {
+          const date = shanghaiDate(new Date(e.createdAt));
+          return e.tier === "market" && e.container === "40HC" &&
+            e.destination === destination && date >= start && date <= end;
+        })
+        .map((e) => e.price),
+    );
+  };
+  return destinations.map((port) => {
+    const current = windowMedian(port.id, today);
+    const previous = windowMedian(port.id, addDays(today, -INDEX_WINDOW_DAYS));
+    return {
+      port,
+      median: current?.median ?? null,
+      weekChange: current && previous
+        ? Math.round(((current.median - previous.median) / previous.median) * 1000) / 10
+        : null,
+      sampleSize: current?.count ?? null,
+      weeklyMedians: [],
+    };
+  });
+}
 
 export function publicRateRows(snapshot: Snapshot, shipment: Shipment) {
   return destinations.map((destination) => {

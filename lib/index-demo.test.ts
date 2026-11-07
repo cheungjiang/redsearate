@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import * as demo from "./index-demo.ts";
-import { indexCandidates, publicRateRows } from "./platform.ts";
+import { liveIndex, publicRateRows } from "./platform.ts";
 import { defaultShipment, estimate } from "./rates.ts";
 import type { Snapshot } from "./rates.ts";
 
@@ -39,7 +39,7 @@ test("simulated sparklines end at the displayed median and match the displayed w
 
 test("demo fixtures do not fill the unpublished real index, rate table or estimator", () => {
   assert.ok(demo.demoIndex);
-  for (const row of indexCandidates) {
+  for (const row of liveIndex([], "2026-10-31")) {
     assert.equal(row.median, null);
     assert.equal(row.weekChange, null);
     assert.equal(row.sampleSize, null);

@@ -1,5 +1,4 @@
-import { addDays, destinations, origins, type PriceEntry, type Tier } from "./rates.ts";
-import { checkEntry } from "./price-records.ts";
+import { addDays, containers, destinations, type PriceEntry, type Tier } from "./rates.ts";
 
 // One row of the Notion "RedSeaRate 报价库" data source, reduced to the fields
 // the public site may use. Source links, notes, carriers and reviewers are
@@ -69,10 +68,12 @@ export function toPublicEntry(
   if (q.status !== PUBLISHED) return { skip: "未允许发布" };
   const tier = tierNames[q.type];
   if (!tier) return { skip: `报价类型不公开：${q.type || "空"}` };
+  // Origins outside the estimator's four still count towards the port index.
   const origin = originNames[q.origin] ?? q.origin;
-  if (!origins.some((o) => o.id === origin)) return { skip: `起运港暂不支持：${q.origin || "空"}` };
+  if (!origin) return { skip: "起运港为空" };
   if (!destinations.some((d) => d.id === q.destination)) return { skip: `目的港暂不支持：${q.destination || "空"}` };
   const container = q.container === "40HQ" ? "40HC" : q.container;
+  if (!(containers as readonly string[]).includes(container)) return { skip: `柜型不支持：${q.container || "空"}` };
   if (q.currency !== "USD") return { skip: `币种不是 USD：${q.currency || "空"}` };
   if (q.unit !== unitFor(container)) return { skip: `计费单位与柜型不符：${q.unit || "空"}` };
   const date = q.quoteDate ?? day(q.createdTime)!;
@@ -91,6 +92,6 @@ export function toPublicEntry(
     submittedBy: "Notion",
     createdAt: new Date(`${date}T12:00:00+08:00`).toISOString(),
   };
-  const error = checkEntry(entry);
-  return error ? { skip: error } : { entry };
+  if (!(entry.price > 0 && entry.price <= 50000)) return { skip: "价格需在 0–50000 美元之间" };
+  return { entry };
 }

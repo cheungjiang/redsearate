@@ -12,7 +12,7 @@ import {
 
 export type NewEntry = Omit<PriceEntry, "id" | "createdAt">;
 
-// Shared by the Notion import and the CSV import, so both accept the same prices.
+// Validates CSV imports.
 export function checkEntry(entry: NewEntry): string {
   if (
     !tiers.includes(entry.tier) ||

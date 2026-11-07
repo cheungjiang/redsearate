@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { shanghaiDate, summarize, type PriceEntry } from "./rates";
+import { liveIndex } from "./platform";
 import { simulationPreview } from "./simulation.server";
 
 export const contact = {
@@ -22,5 +23,11 @@ export async function homeData() {
   const entries: PriceEntry[] = existsSync(pricesFile)
     ? JSON.parse(readFileSync(pricesFile, "utf8"))
     : [];
-  return { snapshot: summarize(entries, shanghaiDate()), contact, simulation: simulationPreview() };
+  const today = shanghaiDate();
+  return {
+    snapshot: summarize(entries, today),
+    index: liveIndex(entries, today),
+    contact,
+    simulation: simulationPreview(),
+  };
 }

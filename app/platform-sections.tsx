@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
-import { indexCandidates, type IndexEntry, type SampleRate } from "../lib/platform";
+import { type IndexEntry, type SampleRate } from "../lib/platform";
 import { sparklinePoints } from "../lib/sparkline";
 import { RatesTable } from "./rates-table";
 import { destinations, origins, type Shipment, type Snapshot } from "../lib/rates";
@@ -9,22 +9,23 @@ type Locale = { lang: "en" | "zh" };
 const translate = (lang: Locale["lang"]) =>
   (en: string, zh: string) => lang === "zh" ? zh : en;
 
-export function IndexSnapshot({ lang, demoEntries }: Locale & { demoEntries: IndexEntry[] | null }) {
+export function IndexSnapshot({ lang, liveEntries, demoEntries }: Locale & { liveEntries: IndexEntry[]; demoEntries: IndexEntry[] | null }) {
   const t = translate(lang);
   const [showDemo, setShowDemo] = useState(demoEntries !== null);
   const displayingDemo = demoEntries !== null && showDemo;
-  const entries = displayingDemo ? demoEntries : indexCandidates;
+  const entries = displayingDemo ? demoEntries : liveEntries;
+  const live = liveEntries.some((entry) => entry.median !== null);
   const changeText = (change: number | null) => change === null
     ? t("Unavailable", "暂不可用")
     : change > 0 ? `↑ +${change.toFixed(1)}%`
     : change < 0 ? `↓ ${change.toFixed(1)}%`
     : t("0.0% · Flat", "0.0% · 持平");
   return (
-    <section id="index" className="index-snapshot wrap" aria-labelledby="index-title" aria-describedby="index-disclaimer" data-mode={displayingDemo ? "demo" : "unpublished"}>
+    <section id="index" className="index-snapshot wrap" aria-labelledby="index-title" aria-describedby="index-disclaimer" data-mode={displayingDemo ? "demo" : live ? "live" : "unpublished"}>
       <div className="platform-heading">
         <h2 id="index-title">{t("Red Sea index snapshot", "红海运价指数快照")}</h2>
         <div className="index-mode">
-          <span className="platform-status">{displayingDemo ? t("Simulated data", "模拟数据") : t("Not yet published", "尚未发布")}</span>
+          <span className="platform-status">{displayingDemo ? t("Simulated data", "模拟数据") : live ? t("Market data", "市场数据") : t("Not enough data yet", "样本不足")}</span>
           {demoEntries !== null && <button className="text-button" type="button" aria-pressed={displayingDemo} aria-controls="index-values" onClick={() => setShowDemo((value) => !value)}>
             {showDemo ? t("Hide demo", "隐藏模拟") : t("Show demo", "查看模拟")}
           </button>}
@@ -35,8 +36,8 @@ export function IndexSnapshot({ lang, demoEntries }: Locale & { demoEntries: Ind
           "Demo only: illustrative Shanghai departures, USD per 40HQ. Rates, trends, weekly changes and sample counts are all simulated, not actual quotes or booking prices. Each line uses its own vertical scale. Live index rules remain unconfirmed.",
           "演示数据：模拟上海起运，美元 / 40HQ。运价、走势、周环比和样本量均为模拟，非实际报价，不可用于订舱。各折线独立缩放纵轴，不用于比较波动幅度。正式指数口径仍待确认。",
         ) : t(
-          "The live 40HQ index has not been published. The calculation rules are awaiting confirmation.",
-          "正式 40HQ 指数尚未发布，计算口径仍待确认。",
+          "Median of 40HQ market quotes collected in the last 7 days from all China origins, USD per container, port-to-port ocean freight. Shown once a port has 5 or more quotes after outliers are dropped; week on week compares with the 7 days before. A market reading, not a bookable offer.",
+          "各港口近 7 天收集的中国各起运港 40HQ 市场报价中位数，美元/柜，仅港到港海运费。剔除异常值后满 5 条才显示；周环比对比前 7 天。这是市场读数，不是可订舱报价。",
         )}
       </p>
       <div id="index-values" className="index-grid" aria-live="polite">

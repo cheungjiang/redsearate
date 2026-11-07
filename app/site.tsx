@@ -29,7 +29,7 @@ import {
   type Shipment,
   type Snapshot,
 } from "../lib/rates";
-import { platformNavigation, type SimulationPreview } from "../lib/platform";
+import { platformNavigation, type IndexEntry, type SimulationPreview } from "../lib/platform";
 import { CommunityPreview, IndexSnapshot, LatestPosts, RatesPreview } from "./platform-sections";
 
 export type Contact = { wechat: string; whatsapp: string[] };
@@ -37,11 +37,13 @@ export type Contact = { wechat: string; whatsapp: string[] };
 export default function Home({
   lang,
   snapshot,
+  index,
   contact,
   simulation,
 }: {
   lang: "en" | "zh";
   snapshot: Snapshot;
+  index: IndexEntry[];
   contact: Contact;
   simulation: SimulationPreview | null;
 }) {
@@ -354,7 +356,7 @@ Dangerous goods and battery cargo need separate review — flag them at the star
             </div>
           </div>
         </section>
-        <IndexSnapshot lang={lang} demoEntries={simulation?.index ?? null} />
+        <IndexSnapshot lang={lang} liveEntries={index} demoEntries={simulation?.index ?? null} />
         <RatesPreview lang={lang} snapshot={snapshot} shipment={shipment} samples={simulation?.rates ?? []} onSelect={selectRoute} />
         <LatestPosts lang={lang} />
         <section id="estimate" className="estimator wrap">

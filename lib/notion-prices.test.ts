@@ -37,7 +37,7 @@ test("unapproved, internal, non-USD and mismatched-unit quotes are not published
     { currency: "CNY" },
     { unit: "USD/CBM" },
     { container: "LCL", unit: "USD/柜" },
-    { origin: "Dalian" },
+    { origin: "" },
     { price: null },
   ])
     assert.ok("skip" in toPublicEntry(quote(over), 1), JSON.stringify(over));
@@ -51,6 +51,12 @@ test("validity falls back to the range end, then seven days after the quote date
   assert.equal(ranged.entry.validUntil, "2026-11-30");
   assert.equal(missing.entry.validUntil, "2026-11-12");
   assert.equal(undated.entry.validUntil, "2026-11-14");
+});
+
+test("origins outside the estimator are kept for the port index", () => {
+  const result = toPublicEntry(quote({ origin: "Dalian" }), 1);
+  assert.ok("entry" in result);
+  assert.equal(result.entry.origin, "Dalian");
 });
 
 test("Shekou maps to Shenzhen and private Notion fields never reach the entry", () => {
