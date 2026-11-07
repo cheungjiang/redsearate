@@ -18,7 +18,8 @@ export type NotionQuote = {
   createdTime: string;
 };
 
-export const PUBLISHED = "允许发布";
+// Rows publish without manual review unless marked 拒绝.
+export const REJECTED = "拒绝";
 const tierNames: Record<string, Tier> = {
   AI收集的市场价: "market",
   你们可提供的报价: "offer",
@@ -65,7 +66,7 @@ export function toPublicEntry(
   q: NotionQuote,
   id: number,
 ): { entry: PriceEntry } | { skip: string } {
-  if (q.status !== PUBLISHED) return { skip: "未允许发布" };
+  if (q.status === REJECTED) return { skip: "已拒绝" };
   const tier = tierNames[q.type];
   if (!tier) return { skip: `报价类型不公开：${q.type || "空"}` };
   // Origins outside the estimator's four still count towards the port index.

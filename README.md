@@ -13,7 +13,7 @@ Production: `npm run build` writes a static site to `out/`. Checks: `npm test` a
 
 ## How prices work
 
-Prices live in the Notion database "RedSeaRate 报价库". Only rows whose 审核状态 is 允许发布 reach the site; 待审核 and 拒绝 rows never leave Notion. `npm run fetch-prices` (`scripts/fetch-notion.ts`) queries those rows and writes `.data/public-prices.json`, which the build reads. Each row maps to a tier:
+Prices live in the Notion database "RedSeaRate 报价库". Every row reaches the site without manual review unless its 审核状态 is 拒绝; rejected rows never leave Notion. `npm run fetch-prices` (`scripts/fetch-notion.ts`) queries the rows that are not rejected and writes `.data/public-prices.json`, which the build reads. Each row maps to a tier:
 
 | 报价类型          | Tier     | What the public site shows                                                                                                          |
 | ----------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------- |
@@ -31,7 +31,7 @@ Visitors inquire through WeChat (copy a prefilled message) or WhatsApp (opens a 
 
 ## Deployment
 
-`.github/workflows/deploy.yml` tests, fetches prices from Notion, builds and publishes `out/` to GitHub Pages on every push to `main`, every hour, and on manual runs (Actions → Deploy to GitHub Pages → Run workflow). Pages are prerendered, so a Notion change appears after the next run. The hourly run also retires expired prices.
+`.github/workflows/deploy.yml` tests, fetches prices from Notion, builds and publishes `out/` to GitHub Pages on every push to `main`, every hour, and on manual runs (Actions → Deploy to GitHub Pages → Run workflow). Pages are prerendered, so a Notion change, including marking a row 拒绝, appears after the next run. The hourly run also retires expired prices.
 
 - Repository secret `NOTION_TOKEN`: an internal Notion integration token with read access to "RedSeaRate 报价库". Without it the workflow fails and the last deployed site stays up.
 - `NOTION_DATA_SOURCE_ID` (default: the 报价库 data source) and `PUBLIC_PRICES` (default `.data/public-prices.json`) are optional overrides.

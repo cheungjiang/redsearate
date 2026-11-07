@@ -6,7 +6,7 @@ import { fromNotionPage, toPublicEntry } from "./notion-prices.ts";
 import type { NotionQuote } from "./notion-prices.ts";
 
 const quote = (over: Partial<NotionQuote> = {}): NotionQuote => ({
-  status: "允许发布",
+  status: "待审核",
   type: "AI收集的市场价",
   origin: "Shanghai",
   destination: "Jeddah",
@@ -21,7 +21,7 @@ const quote = (over: Partial<NotionQuote> = {}): NotionQuote => ({
   ...over,
 });
 
-test("approved Notion quotes become public market entries with 40HQ stored as 40HC", () => {
+test("unreviewed Notion quotes become public market entries with 40HQ stored as 40HC", () => {
   const result = toPublicEntry(quote(), 1);
   assert.ok("entry" in result);
   assert.equal(result.entry.tier, "market");
@@ -30,9 +30,9 @@ test("approved Notion quotes become public market entries with 40HQ stored as 40
   assert.equal(result.entry.createdAt, "2026-11-05T04:00:00.000Z");
 });
 
-test("unapproved, internal, non-USD and mismatched-unit quotes are not published", () => {
+test("rejected, internal, non-USD and mismatched-unit quotes are not published", () => {
   for (const over of [
-    { status: "待审核" },
+    { status: "拒绝" },
     { type: "内部底价" },
     { currency: "CNY" },
     { unit: "USD/CBM" },

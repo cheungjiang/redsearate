@@ -1,11 +1,11 @@
-// Pulls approved quotes from the Notion price database into
+// Pulls every quote not marked 拒绝 from the Notion price database into
 // .data/public-prices.json, which the build reads. Usage:
 //   NOTION_TOKEN=... npm run fetch-prices
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import {
   fromNotionPage,
-  PUBLISHED,
+  REJECTED,
   toPublicEntry,
   type NotionPage,
 } from "../lib/notion-prices.ts";
@@ -44,7 +44,7 @@ do {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        filter: { property: "审核状态", select: { equals: PUBLISHED } },
+        filter: { property: "审核状态", select: { does_not_equal: REJECTED } },
         page_size: 100,
         start_cursor: cursor,
       }),
@@ -71,5 +71,5 @@ pages.forEach((page, index) => {
   else skipped.set(result.skip, (skipped.get(result.skip) ?? 0) + 1);
 });
 save(entries);
-console.log(`Notion: ${pages.length} approved, ${entries.length} published.`);
+console.log(`Notion: ${pages.length} not rejected, ${entries.length} published.`);
 for (const [reason, count] of skipped) console.log(`  skipped ${count}: ${reason}`);
