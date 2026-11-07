@@ -87,7 +87,7 @@ export function RatesPreview({
   const port = (id: string) => lang === "zh"
     ? [...origins, ...destinations].find((p) => p.id === id)?.zh ?? id
     : id;
-  const home = lang === "zh" ? "/zh" : "/";
+  const home = lang === "zh" ? "/zh/" : "/";
   return (
     <section id="rates" className="platform-section wrap" aria-labelledby="rates-title">
       <div className="platform-heading">
@@ -99,7 +99,7 @@ export function RatesPreview({
           )}</p>
         </div>
         <div className="rates-preview-actions">
-          {!fullPage && <a className="text-button" href={lang === "zh" ? "/zh/rates" : "/rates"}>{t("All rates", "全部运价")}<ArrowUpRight size={16} /></a>}
+          {!fullPage && <a className="text-button" href={lang === "zh" ? "/zh/rates/" : "/rates/"}>{t("All rates", "全部运价")}<ArrowUpRight size={16} /></a>}
           <a className="text-button" href={fullPage ? `${home}#estimate` : "#estimate"}>{t("Estimate your shipment", "按货量估价")}<ArrowUpRight size={16} /></a>
         </div>
       </div>

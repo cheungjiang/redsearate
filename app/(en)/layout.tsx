@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     "Plan your shipment from China to the Red Sea. Explore indicative ocean freight ranges, transit times and shipping insights. Request a tailored quote.",
   alternates: {
     canonical: "/",
-    languages: { en: "/", "zh-CN": "/zh", "x-default": "/" },
+    languages: { en: "/", "zh-CN": "/zh/", "x-default": "/" },
   },
   openGraph: {
     title: "RedSeaRate — A clearer course for your cargo.",

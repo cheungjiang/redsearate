@@ -1,6 +1,8 @@
+export const dynamic = "force-static";
+
 export default function robots() {
   return {
-    rules: { userAgent: "*", allow: "/", disallow: ["/pool", "/api"] },
+    rules: { userAgent: "*", allow: "/" },
     sitemap: "https://redsearate.com/sitemap.xml",
   };
 }

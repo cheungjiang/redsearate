@@ -1,31 +1,16 @@
+export const dynamic = "force-static";
+
+const site = "https://redsearate.com";
+const pages = [
+  { en: "/", zh: "/zh/" },
+  { en: "/rates/", zh: "/zh/rates/" },
+];
+
 export default function sitemap() {
-  return [
-    {
-      url: "https://redsearate.com",
-      alternates: {
-        languages: {
-          en: "https://redsearate.com",
-          "zh-CN": "https://redsearate.com/zh",
-        },
-      },
-    },
-    ...["/rates", "/zh/rates"].map((path) => ({
-      url: `https://redsearate.com${path}`,
-      alternates: {
-        languages: {
-          en: "https://redsearate.com/rates",
-          "zh-CN": "https://redsearate.com/zh/rates",
-        },
-      },
+  return pages.flatMap(({ en, zh }) =>
+    [en, zh].map((path) => ({
+      url: `${site}${path}`,
+      alternates: { languages: { en: `${site}${en}`, "zh-CN": `${site}${zh}` } },
     })),
-    {
-      url: "https://redsearate.com/zh",
-      alternates: {
-        languages: {
-          en: "https://redsearate.com",
-          "zh-CN": "https://redsearate.com/zh",
-        },
-      },
-    },
-  ];
+  );
 }

@@ -240,7 +240,7 @@ Dangerous goods and battery cargo need separate review — flag them at the star
       </a>
       <header className="header wrap">
         <a
-          href={zh ? "/zh" : "/"}
+          href={zh ? "/zh/" : "/"}
           className="brand"
           aria-label="RedSeaRate home"
         >
@@ -267,7 +267,7 @@ Dangerous goods and battery cargo need separate review — flag them at the star
         <div className="header-actions">
           <a
             className="language"
-            href={zh ? "/" : "/zh"}
+            href={zh ? "/" : "/zh/"}
             lang={zh ? "en" : "zh-CN"}
           >
             <Globe2 size={16} />
@@ -894,7 +894,7 @@ Dangerous goods and battery cargo need separate review — flag them at the star
       </main>
       <footer className="wrap">
         <div className="footer-main">
-          <a href={zh ? "/zh" : "/"} className="brand">
+          <a href={zh ? "/zh/" : "/"} className="brand">
             <span className="brand-symbol" aria-hidden="true">≈</span>
             <span>RedSeaRate</span>
           </a>

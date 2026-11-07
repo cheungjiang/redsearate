@@ -1,6 +1,5 @@
-import { connection } from "next/server";
-import { listEntries } from "./db";
-import { shanghaiDate, summarize } from "./rates";
+import { existsSync, readFileSync } from "node:fs";
+import { shanghaiDate, summarize, type PriceEntry } from "./rates";
 import { simulationPreview } from "./simulation.server";
 
 export const contact = {
@@ -15,9 +14,13 @@ export const contact = {
     .filter(Boolean),
 };
 
-// Reads the price pool per request so team submissions and expiry dates show
-// up immediately without a rebuild.
+const pricesFile = process.env.PUBLIC_PRICES ?? ".data/public-prices.json";
+
+// Pages are prerendered, so prices and expiry reflect the last build. The
+// scheduled deploy rebuilds from Notion to keep them current.
 export async function homeData() {
-  await connection();
-  return { snapshot: summarize(listEntries(), shanghaiDate()), contact, simulation: simulationPreview() };
+  const entries: PriceEntry[] = existsSync(pricesFile)
+    ? JSON.parse(readFileSync(pricesFile, "utf8"))
+    : [];
+  return { snapshot: summarize(entries, shanghaiDate()), contact, simulation: simulationPreview() };
 }
