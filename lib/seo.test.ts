@@ -10,10 +10,10 @@ const index = [
   { port: sokhna, median: null, weekChange: null, sampleSize: null, weeklyMedians: [] },
 ];
 
-test("index sentences state the median and sample size, or say it is withheld", () => {
+test("index sentences state the median and sample size, or say there are none yet", () => {
   assert.deepEqual(indexSentences(index, "2026-11-07", "en"), [
     "As of 2026-11-07, the median 40HQ ocean freight market rate from China to Jeddah is US$8,550 per container (7 quotes in the last 28 days, -2.5% week on week).",
-    "Sokhna: fewer than 5 40HQ market quotes in the last 28 days, so no median is published yet.",
+    "Sokhna: no 40HQ market quotes in the last 28 days yet.",
   ]);
   assert.match(indexSentences(index, "2026-11-07", "zh")[0], /截至 2026-11-07，中国至吉达 40HQ 海运市场中位数为每柜 US\$8,550/);
 });

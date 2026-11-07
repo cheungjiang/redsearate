@@ -25,7 +25,6 @@ import {
   estimate,
   laneView,
   MARKET_WINDOW_DAYS,
-  MIN_MARKET_SAMPLES,
   type Shipment,
   type Snapshot,
 } from "../lib/rates";
@@ -519,8 +518,8 @@ export default function Home({
                           `市场参考：近 ${MARKET_WINDOW_DAYS} 天团队收集的 ${result.market.count} 条报价，中位数 ${money(result.market.median)}。`,
                         )
                       : t(
-                          `Market reference appears once ${MIN_MARKET_SAMPLES} current prices are collected for this lane.`,
-                          `该航线收集满 ${MIN_MARKET_SAMPLES} 条有效市场报价后显示市场参考。`,
+                          "No current market price for this lane yet. Ask us for a quote.",
+                          "该航线暂无有效市场报价，欢迎直接询价。",
                         )}
                 </p>
               </div>
@@ -650,8 +649,8 @@ export default function Home({
                   <strong>{t("Collecting prices", "价格收集中")}</strong>
                   <p>
                     {t(
-                      `A weekly trend appears once a week has ${MIN_MARKET_SAMPLES} or more market prices for this lane. We do not fill gaps with estimates.`,
-                      `该航线某一周收集满 ${MIN_MARKET_SAMPLES} 条市场报价后显示周趋势，不用估算数据补空。`,
+                      "No market prices collected for this lane yet. We do not fill gaps with estimates.",
+                      "该航线暂未收集到市场报价，不用估算数据补空。",
                     )}
                   </p>
                 </div>
@@ -928,8 +927,8 @@ export default function Home({
         </h2>
         <p>
           {t(
-            "This website does not collect names, emails or other personal data, and uses no analytics or advertising cookies. When you contact us, your message is handled in WeChat or WhatsApp under those apps' terms. Prices shown are aggregated from our team's records; individual market quotes are never published.",
-            "本网站不收集姓名、邮箱等个人信息，也不使用统计或广告 Cookie。您联系我们时，消息在微信或 WhatsApp 中处理，适用各自的条款。页面价格来自团队记录的汇总，单条市场报价不会公开。",
+            "This website does not collect names, emails or other personal data, and uses no analytics or advertising cookies. When you contact us, your message is handled in WeChat or WhatsApp under those apps' terms. Market prices are shown without their source or carrier.",
+            "本网站不收集姓名、邮箱等个人信息，也不使用统计或广告 Cookie。您联系我们时，消息在微信或 WhatsApp 中处理，适用各自的条款。市场价格展示时不包含来源和船公司信息。",
           )}
         </p>
       </dialog>

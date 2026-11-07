@@ -61,15 +61,15 @@ test("index pools 40HQ market quotes from all origins over the last 28 days", ()
   assert.equal(jeddah.weekChange, 3.4);
 });
 
-test("index needs 5 quotes after outliers and leaves week on week blank without a prior week", () => {
+test("index uses every quote after outliers and leaves week on week blank without a prior week", () => {
+  const single = platform.liveIndex([quote({ price: 3000 })], "2026-11-07")[0];
+  assert.equal(single.median, 3000);
+  assert.equal(single.sampleSize, 1);
   const four = [3000, 3100, 3200, 3300].map((price) => quote({ price }));
-  assert.equal(platform.liveIndex(four, "2026-11-07")[0].median, null);
-  const withOutlier = [...four, quote({ price: 9000 })];
-  assert.equal(platform.liveIndex(withOutlier, "2026-11-07")[0].median, null);
-  const five = [...four, quote({ price: 3400 })];
-  const jeddah = platform.liveIndex(five, "2026-11-07")[0];
-  assert.equal(jeddah.median, 3200);
-  assert.equal(jeddah.weekChange, null);
+  const withOutlier = platform.liveIndex([...four, quote({ price: 9000 })], "2026-11-07")[0];
+  assert.equal(withOutlier.median, 3150);
+  assert.equal(withOutlier.sampleSize, 4);
+  assert.equal(withOutlier.weekChange, null);
 });
 
 test("rate preview follows selected equipment and exposes no invented grades or update times", () => {
@@ -96,6 +96,25 @@ test("rate preview follows selected equipment and exposes no invented grades or 
   assert.equal(rows[1].offer, null);
   assert.equal(rows[1].market, null);
   assert.equal(platform.publicRateRows(snapshot, { ...selected, mode: "LCL" })[0].offer, null);
+});
+
+test("rate rows fall back to the best-covered origin when the selected one has no price", () => {
+  const snapshot: Snapshot = {
+    today: "2026-11-07",
+    lanes: {
+      [laneKey("Shenzhen", "Jeddah", "40HC")]: { market: { median: 3000, count: 1 } },
+      [laneKey("Guangzhou (Nansha)", "Jeddah", "40HC")]: { market: { median: 3200, count: 2 } },
+      [laneKey("Ningbo", "Sokhna", "40HC")]: { market: { median: 3600, count: 1 } },
+      [laneKey("Shanghai", "Sokhna", "40HC")]: { market: { median: 3500, count: 1 } },
+    },
+    trends: {},
+  };
+  const rows = platform.publicRateRows(snapshot, defaultShipment);
+  assert.equal(rows[0].origin, "Guangzhou (Nansha)");
+  assert.deepEqual(rows[0].market, { median: 3200, count: 2 });
+  assert.equal(rows[1].origin, "Shanghai");
+  assert.equal(rows[2].origin, "Shanghai");
+  assert.equal(rows[2].market, null);
 });
 
 test("public rate projection drops expired offers even from a stale snapshot", () => {

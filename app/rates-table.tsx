@@ -1,6 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import { publicRateRows, type Grade, type SampleRate } from "../lib/platform";
-import { destinations, origins, type Shipment, type Snapshot } from "../lib/rates";
+import { destinations, extraOriginNames, origins, type Shipment, type Snapshot } from "../lib/rates";
 
 export function RatesTable({
   lang, snapshot, shipment, samples = [], onSelect,
@@ -13,7 +13,7 @@ export function RatesTable({
 }) {
   const t = (en: string, zh: string) => lang === "zh" ? zh : en;
   const port = (id: string) => lang === "zh"
-    ? [...origins, ...destinations].find((p) => p.id === id)?.zh ?? id
+    ? [...origins, ...destinations].find((p) => p.id === id)?.zh ?? extraOriginNames[id] ?? id
     : id;
   const money = (price: number) => `$${price.toLocaleString("en-US")}`;
   const labels = [
@@ -82,7 +82,7 @@ export function RatesTable({
                   <strong className="rate-value">{row.offer
                     ? `${money(row.offer.low)}${row.offer.low !== row.offer.high ? `–${money(row.offer.high)}` : ""}`
                     : row.market ? `≈ ${money(row.market.median)}` : t("On request", "请询价")}</strong>
-                  <small>{row.offer ? t("Bookable offer", "本站报价") : row.market ? t(`Market median · ${row.market.count} samples`, `市场中位数 · ${row.market.count} 条样本`) : t("No current price", "暂无有效价格")}</small>
+                  <small>{row.offer ? t("Bookable offer", "本站报价") : row.market ? (row.market.count === 1 ? t("Market price · 1 quote", "市场价 · 1 条报价") : t(`Market median · ${row.market.count} quotes`, `市场中位数 · ${row.market.count} 条报价`)) : t("No current price", "暂无有效价格")}</small>
                 </td>
                 <td data-label={labels[4]}>{unavailable}</td>
                 <td data-label={labels[5]}><span className="ungraded">{t("Ungraded", "未评级")}</span></td>

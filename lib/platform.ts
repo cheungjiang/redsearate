@@ -6,7 +6,7 @@ import {
   MIN_MARKET_SAMPLES,
   shanghaiDate,
 } from "./rates.ts";
-import type { PriceEntry, Shipment, Snapshot } from "./rates.ts";
+import type { Lane, PriceEntry, Shipment, Snapshot } from "./rates.ts";
 
 export const platformNavigation = [
   { id: "rates", en: "Rates", zh: "运价" },
@@ -45,8 +45,8 @@ export type SimulationPreview = { index: IndexEntry[]; rates: SampleRate[] };
 export const INDEX_WINDOW_DAYS = 28;
 
 // Per destination: market quotes for 40HQ (stored as 40HC) from every China
-// origin, dated in the last 28 days. The median needs 5 quotes after outliers
-// are dropped. Week on week compares with the same window ending 7 days ago.
+// origin, dated in the last 28 days, outliers dropped. Week on week compares
+// with the same window ending 7 days ago.
 export function liveIndex(entries: PriceEntry[], today: string): IndexEntry[] {
   const windowMedian = (destination: string, end: string) => {
     const start = addDays(end, 1 - INDEX_WINDOW_DAYS);
@@ -75,16 +75,25 @@ export function liveIndex(entries: PriceEntry[], today: string): IndexEntry[] {
   });
 }
 
+// One row per destination: the shipment's origin when it has a current price,
+// otherwise the origin with a live offer or the most market samples.
 export function publicRateRows(snapshot: Snapshot, shipment: Shipment) {
+  const priced = (lane: Lane | undefined) =>
+    Boolean((lane?.offer && lane.offer.validUntil >= snapshot.today) || lane?.market);
   return destinations.map((destination) => {
-    const { lane, equipment } = laneView(snapshot, {
-      ...shipment,
-      destination: destination.id,
-    });
+    const view = laneView(snapshot, { ...shipment, destination: destination.id });
+    const { equipment } = view;
+    const fallback = priced(view.lane) ? undefined : Object.entries(snapshot.lanes)
+      .map(([key, lane]) => ({ key: key.split("|"), lane }))
+      .filter(({ key, lane }) => key[1] === destination.id && key[2] === equipment && priced(lane))
+      .sort((a, b) =>
+        Number(Boolean(b.lane.offer)) - Number(Boolean(a.lane.offer)) ||
+        (b.lane.market?.count ?? 0) - (a.lane.market?.count ?? 0))[0];
+    const lane = fallback?.lane ?? view.lane;
     const offer = lane?.offer;
     const market = lane?.market;
     return {
-      origin: shipment.origin,
+      origin: fallback?.key[0] ?? shipment.origin,
       destination: destination.id,
       equipment,
       offer: offer && offer.validUntil >= snapshot.today

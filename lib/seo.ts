@@ -141,8 +141,8 @@ export function indexSentences(index: IndexEntry[], today: string, lang: Lang) {
     const name = portName(entry, lang);
     if (entry.median === null)
       return lang === "zh"
-        ? `${name}：近 ${INDEX_WINDOW_DAYS} 天 40HQ 市场报价不足 5 条，暂不发布中位数。`
-        : `${name}: fewer than 5 40HQ market quotes in the last ${INDEX_WINDOW_DAYS} days, so no median is published yet.`;
+        ? `${name}：近 ${INDEX_WINDOW_DAYS} 天暂无 40HQ 市场报价。`
+        : `${name}: no 40HQ market quotes in the last ${INDEX_WINDOW_DAYS} days yet.`;
     const price = `US$${entry.median.toLocaleString("en-US")}`;
     const change = entry.weekChange === null
       ? ""
@@ -151,7 +151,7 @@ export function indexSentences(index: IndexEntry[], today: string, lang: Lang) {
         : `, ${entry.weekChange > 0 ? "+" : ""}${entry.weekChange.toFixed(1)}% week on week`;
     return lang === "zh"
       ? `截至 ${today}，中国至${name} 40HQ 海运市场中位数为每柜 ${price}（近 ${INDEX_WINDOW_DAYS} 天 ${entry.sampleSize} 条报价${change}）。`
-      : `As of ${today}, the median 40HQ ocean freight market rate from China to ${name} is ${price} per container (${entry.sampleSize} quotes in the last ${INDEX_WINDOW_DAYS} days${change}).`;
+      : `As of ${today}, the median 40HQ ocean freight market rate from China to ${name} is ${price} per container (${entry.sampleSize} ${entry.sampleSize === 1 ? "quote" : "quotes"} in the last ${INDEX_WINDOW_DAYS} days${change}).`;
   });
 }
 
@@ -165,8 +165,8 @@ export function ratesJsonLd(index: IndexEntry[], today: string, lang: Lang) {
         "@type": "Dataset",
         name: zh ? "中国至红海 40HQ 海运市场运价指数" : "China to Red Sea 40HQ ocean freight market index",
         description: zh
-          ? `中国各起运港至吉达、苏赫纳、亚喀巴、吉布提和苏丹港的 40HQ 港到港海运费市场中位数，基于近 ${INDEX_WINDOW_DAYS} 天收集的报价，剔除异常值后满 5 条才发布。`
-          : `Median port-to-port 40HQ ocean freight market rates from China to Jeddah, Sokhna, Aqaba, Djibouti and Port Sudan, from quotes collected in the last ${INDEX_WINDOW_DAYS} days. A port is published once 5 quotes remain after outliers are dropped.`,
+          ? `中国各起运港至吉达、苏赫纳、亚喀巴、吉布提和苏丹港的 40HQ 港到港海运费市场中位数，基于近 ${INDEX_WINDOW_DAYS} 天收集的报价，已剔除异常值。`
+          : `Median port-to-port 40HQ ocean freight market rates from China to Jeddah, Sokhna, Aqaba, Djibouti and Port Sudan, from quotes collected in the last ${INDEX_WINDOW_DAYS} days. Outliers are dropped and each median states its sample size.`,
         url: `${SITE}${path}`,
         inLanguage: zh ? "zh-CN" : "en",
         isAccessibleForFree: true,

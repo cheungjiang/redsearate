@@ -46,7 +46,7 @@ test("lane view follows the selected origin and equipment without borrowing anot
   );
 });
 
-test("public snapshot never exposes internal prices, sources or single market quotes", () => {
+test("public snapshot never exposes internal prices or sources", () => {
   const snapshot = summarize(
     [
       entry({ tier: "internal", price: 1500 }),
@@ -57,12 +57,10 @@ test("public snapshot never exposes internal prices, sources or single market qu
     ],
     today,
   );
-  assert.deepEqual(snapshot.lanes, {});
+  assert.deepEqual(snapshot.lanes[key].market, { median: 2250, count: 4 });
   const text = JSON.stringify(snapshot);
   for (const secret of [
     "1500",
-    "2100",
-    "2300",
     "Forwarder A",
     "secret note",
     "DoKwan",
@@ -70,7 +68,7 @@ test("public snapshot never exposes internal prices, sources or single market qu
     assert.ok(!text.includes(secret), secret);
 });
 
-test("market reference needs five current prices, drops outliers and expired or old prices", () => {
+test("market reference uses every current price, drops outliers and expired or old prices", () => {
   const snapshot = summarize(
     [
       entry({ price: 1900 }),
@@ -84,7 +82,6 @@ test("market reference needs five current prices, drops outliers and expired or 
     ],
     today,
   );
-  // Five kept prices, published as their median only (no single quote's low or high).
   assert.deepEqual(snapshot.lanes[key].market, { median: 2100, count: 5 });
 });
 
@@ -130,6 +127,7 @@ test("weekly trend groups market prices by Monday-start week in Shanghai time", 
     today,
   );
   assert.deepEqual(snapshot.trends[key], [
+    { week: "2026-10-12", median: 2280, count: 4 },
     { week: "2026-10-19", median: 2000, count: 5 },
   ]);
 });

@@ -4,6 +4,16 @@ export const origins = [
   { id: "Shenzhen", zh: "深圳", code: "CNSZX" },
   { id: "Qingdao", zh: "青岛", code: "CNTAO" },
 ];
+// Chinese names for origins that only appear in collected quotes.
+export const extraOriginNames: Record<string, string> = {
+  "Guangzhou (Nansha)": "广州南沙",
+  "Guangzhou (Huangpu)": "广州黄埔",
+  Dalian: "大连",
+  Lianyungang: "连云港",
+  Tianjin: "天津",
+  Xiamen: "厦门",
+  Foshan: "佛山",
+};
 export const destinations = [
   {
     id: "Jeddah",
@@ -79,8 +89,8 @@ export type Snapshot = {
 };
 
 export const MARKET_WINDOW_DAYS = 28;
-// Five samples, published only as a median, so no single quote can be read back.
-export const MIN_MARKET_SAMPLES = 5;
+// Every collected price counts; the sample size is shown next to each median.
+export const MIN_MARKET_SAMPLES = 1;
 const TREND_WEEKS = 12;
 
 export const laneKey = (
@@ -119,7 +129,7 @@ export function marketSummary(prices: number[]): Market | undefined {
 }
 
 // Builds the only price data that reaches public pages: internal entries are
-// never included, and market prices only appear as aggregates.
+// never included, and market prices appear as medians with their sample size.
 export function summarize(entries: PriceEntry[], today: string): Snapshot {
   const marketSince = addDays(today, -MARKET_WINDOW_DAYS);
   const trendSince = weekStart(addDays(today, -7 * (TREND_WEEKS - 1)));
