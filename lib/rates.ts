@@ -66,6 +66,7 @@ export type PriceEntry = {
   price: number;
   validUntil: string;
   carrier?: string;
+  addedAt?: string;
   transitMin: number | null;
   transitMax: number | null;
   source: string;

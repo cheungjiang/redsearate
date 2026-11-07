@@ -91,6 +91,7 @@ export function toPublicEntry(
     price: q.price ?? NaN,
     validUntil: q.validTo ?? q.validFrom ?? addDays(date, 7),
     carrier: q.carrier,
+    addedAt: q.createdTime,
     transitMin: null,
     transitMax: null,
     source: "",

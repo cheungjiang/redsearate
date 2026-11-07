@@ -28,7 +28,7 @@ import {
   type Shipment,
   type Snapshot,
 } from "../lib/rates";
-import { platformNavigation, type IndexEntry, type SimulationPreview } from "../lib/platform";
+import { platformNavigation, type IndexEntry, type LatestQuote, type SimulationPreview } from "../lib/platform";
 import { CommunityPreview, IndexSnapshot, LatestPosts, RatesPreview } from "./platform-sections";
 import { faqs, guides, type Localized } from "../lib/content";
 
@@ -38,12 +38,14 @@ export default function Home({
   lang,
   snapshot,
   index,
+  latest,
   contact,
   simulation,
 }: {
   lang: "en" | "zh";
   snapshot: Snapshot;
   index: IndexEntry[];
+  latest: LatestQuote[];
   contact: Contact;
   simulation: SimulationPreview | null;
 }) {
@@ -301,7 +303,7 @@ export default function Home({
         </section>
         <IndexSnapshot lang={lang} liveEntries={index} demoEntries={simulation?.index ?? null} asOf={snapshot.today} />
         <RatesPreview lang={lang} snapshot={snapshot} shipment={shipment} samples={simulation?.rates ?? []} onSelect={selectRoute} />
-        <LatestPosts lang={lang} />
+        <LatestPosts lang={lang} quotes={latest} />
         <section id="estimate" className="estimator wrap">
           <div className="estimate-top">
             <div>

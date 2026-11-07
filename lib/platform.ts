@@ -75,6 +75,36 @@ export function liveIndex(entries: PriceEntry[], today: string): IndexEntry[] {
   });
 }
 
+export type LatestQuote = {
+  id: number;
+  origin: string;
+  destination: string;
+  container: string;
+  price: number;
+  carrier: string;
+  date: string;
+};
+export const LATEST_LIMIT = 6;
+
+// The quotes most recently added to the price table, newest first.
+export function latestQuotes(entries: PriceEntry[], today: string): LatestQuote[] {
+  const since = addDays(today, -INDEX_WINDOW_DAYS);
+  return entries
+    .filter((e) => e.tier !== "internal" && shanghaiDate(new Date(e.createdAt)) >= since)
+    .sort((a, b) =>
+      (b.addedAt ?? b.createdAt).localeCompare(a.addedAt ?? a.createdAt) || b.id - a.id)
+    .slice(0, LATEST_LIMIT)
+    .map((e) => ({
+      id: e.id,
+      origin: e.origin,
+      destination: e.destination,
+      container: e.container === "40HC" ? "40HQ" : e.container,
+      price: e.price,
+      carrier: e.carrier ?? "",
+      date: shanghaiDate(new Date(e.createdAt)),
+    }));
+}
+
 export type Rating = "excellent" | "good";
 export const EXCELLENT_DISCOUNT = 0.1;
 

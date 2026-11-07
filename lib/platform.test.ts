@@ -134,6 +134,19 @@ test("rows are rated good, or excellent when at least 10% below the all-origin m
   assert.deepEqual(rows.map((r) => r.rating), ["excellent", "good", "good", null, null]);
 });
 
+test("latest quotes are the rows most recently added to the table, without internal prices", () => {
+  const entries = [
+    quote({ id: 1, price: 3000, addedAt: "2026-11-07T01:00:00Z" }),
+    quote({ id: 2, price: 3100, addedAt: "2026-11-07T09:00:00Z", carrier: "COSCO" }),
+    quote({ id: 3, price: 1000, tier: "internal", addedAt: "2026-11-07T10:00:00Z" }),
+    quote({ id: 4, price: 2900, addedAt: "2026-11-06T09:00:00Z" }),
+  ];
+  const latest = platform.latestQuotes(entries, "2026-11-07");
+  assert.deepEqual(latest.map((q) => q.id), [2, 1, 4]);
+  assert.equal(latest[0].carrier, "COSCO");
+  assert.equal(latest[0].container, "40HQ");
+});
+
 test("public rate projection drops expired offers even from a stale snapshot", () => {
   assert.equal(typeof platform.publicRateRows, "function");
   const key = laneKey("Shanghai", "Jeddah", "40HC");

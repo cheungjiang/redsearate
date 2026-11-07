@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
-import { type IndexEntry, type SampleRate } from "../lib/platform";
+import { type IndexEntry, type LatestQuote, type SampleRate } from "../lib/platform";
 import { sparklinePoints } from "../lib/sparkline";
 import { RatesTable } from "./rates-table";
-import { destinations, origins, type Shipment, type Snapshot } from "../lib/rates";
+import { destinations, extraOriginNames, origins, type Shipment, type Snapshot } from "../lib/rates";
 
 type Locale = { lang: "en" | "zh" };
 const translate = (lang: Locale["lang"]) =>
@@ -113,15 +113,32 @@ export function RatesPreview({
   );
 }
 
-export function LatestPosts({ lang }: Locale) {
+export function LatestPosts({ lang, quotes }: Locale & { quotes: LatestQuote[] }) {
   const t = translate(lang);
+  const port = (id: string) => lang === "zh"
+    ? [...origins, ...destinations].find((p) => p.id === id)?.zh ?? extraOriginNames[id] ?? id
+    : id;
   return (
     <section className="latest-posts platform-section wrap" aria-labelledby="latest-title">
-      <div className="platform-heading"><h2 id="latest-title">{t("Latest from the board", "最新供需")}</h2><span className="platform-status">{t("Publication pending", "待开放发布")}</span></div>
+      <div className="platform-heading"><h2 id="latest-title">{t("Latest from the board", "最新供需")}</h2><span className="platform-status">{quotes.length ? t(`Newest ${quotes.length} quotes`, `最新 ${quotes.length} 条报价`) : t("Publication pending", "待开放发布")}</span></div>
       <div className="posts-grid">
         <section id="space-board" aria-labelledby="spaces-title">
           <div className="post-heading"><h3 id="spaces-title">{t("Latest spaces", "最新舱位")}</h3><span>{t("Space Board", "舱位板")}</span></div>
-          <div className="post-empty"><p>{t("No spaces published yet.", "暂无已发布舱位，发布来源确认后展示。")}</p>{lang !== "zh" && <span>Space listings will appear here once a publication source is confirmed.</span>}</div>
+          {quotes.length ? (
+            <ol className="latest-quotes">
+              {quotes.map((q) => (
+                <li key={q.id}>
+                  <div>
+                    <strong>{port(q.origin)} → {port(q.destination)}</strong>
+                    <span>{[q.container, q.carrier, q.date].filter(Boolean).join(" · ")}</span>
+                  </div>
+                  <span className="latest-price">${q.price.toLocaleString("en-US")}</span>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <div className="post-empty"><p>{t("No spaces published yet.", "暂无已发布舱位，发布来源确认后展示。")}</p>{lang !== "zh" && <span>Space listings will appear here once a publication source is confirmed.</span>}</div>
+          )}
         </section>
         <section id="loads" aria-labelledby="loads-title">
           <div className="post-heading"><h3 id="loads-title">{t("Latest loads", "最新货盘")}</h3><span>{t("Loads", "货盘")}</span></div>
