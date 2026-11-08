@@ -40,6 +40,14 @@ test("Jebel Ali publish keeps a market quote and drops everything else", () => {
   assert.ok("skip" in fromJebelAliPage(page({ ...published, 报价类型: "你们可提供的报价" })));
   assert.ok("skip" in fromJebelAliPage(page({ ...published, 币种: "CNY" })));
   assert.equal(JSON.stringify(quote).includes("来源"), false);
+  const byTitle = fromJebelAliPage({
+    ...page({ ...published, 目的港: "Jeddah" }),
+    properties: {
+      ...page({ ...published, 目的港: "Jeddah" }).properties,
+      记录标识: { type: "title", title: [{ plain_text: "20261108-SHA-JEA-40HQ-206" }] },
+    },
+  });
+  assert.ok("quote" in byTitle);
 });
 
 test("the shown Jebel Ali price is the lower quote still in force", () => {

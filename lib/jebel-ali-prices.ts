@@ -3,8 +3,8 @@ import { addDays } from "./rates.ts";
 import type { NotionPage } from "./notion-prices.ts";
 import type { JebelAliContainer } from "./jebel-ali.ts";
 
-// RedSeaRate 杰贝阿里报价库. Kept off the Red Sea price file and the five-port index.
-export const JEBEL_ALI_DATA_SOURCE_ID = "dd3c8c7d-d564-4072-9118-16728506311a";
+// RedSeaRate 报价库 rows whose destination is Jebel Ali. They stay out of the Red Sea price file.
+export const JEBEL_ALI_DESTINATION = "Jebel Ali";
 const PUBLISHED = "允许发布";
 const MARKET = "AI收集的市场价";
 const VALID_DAYS = 7;
@@ -20,19 +20,30 @@ export type JebelAliMarketQuote = {
 const containers = new Set<JebelAliContainer>(["20GP", "40GP", "40HQ"]);
 const day = (value?: string | null) => (value ? value.slice(0, 10) : null);
 
+const JEBEL_DESTINATIONS = new Set(["Jebel Ali", "杰贝阿里", "AEJEA"]);
+
 function selectName(page: NotionPage, name: string) {
   return page.properties[name]?.select?.name ?? "";
+}
+
+function recordTitle(page: NotionPage) {
+  return (page.properties["记录标识"]?.title ?? []).map((part) => part.plain_text).join("");
+}
+
+// Destination Jebel Ali, or a record id that already says JEA, never joins the Red Sea index.
+export function isJebelAliPage(page: NotionPage) {
+  return JEBEL_DESTINATIONS.has(selectName(page, "目的港")) || /-JEA-/.test(recordTitle(page));
 }
 
 // Source links, notes and internal floors never become a public quote.
 export function fromJebelAliPage(
   page: NotionPage,
 ): { quote: JebelAliMarketQuote } | { skip: string } {
+  if (!isJebelAliPage(page)) return { skip: "目的港不是杰贝阿里" };
   if (selectName(page, "审核状态") !== PUBLISHED) return { skip: "未允许发布" };
   if (selectName(page, "报价类型") !== MARKET) return { skip: "不是市场价" };
   if (selectName(page, "币种") !== "USD") return { skip: "币种不是 USD" };
   if (selectName(page, "计费单位") !== "USD/柜") return { skip: "计费单位不是 USD/柜" };
-  if (selectName(page, "目的港") !== "Jebel Ali") return { skip: "目的港不是杰贝阿里" };
   const container = selectName(page, "柜型");
   if (!containers.has(container as JebelAliContainer)) return { skip: `柜型不支持：${container || "空"}` };
   const rawOrigin = selectName(page, "起运港");

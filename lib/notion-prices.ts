@@ -75,6 +75,9 @@ export function toPublicEntry(
   id: number,
 ): { entry: PriceEntry } | { skip: string } {
   if (q.status === REJECTED) return { skip: "已拒绝" };
+  if (q.destination === "Jebel Ali" || q.destination === "杰贝阿里" || q.destination === "AEJEA") {
+    return { skip: "杰贝阿里不进红海指数" };
+  }
   const tier = tierNames[q.type];
   if (!tier) return { skip: `报价类型不公开：${q.type || "空"}` };
   // Origins outside the estimator's four still count towards the port index.

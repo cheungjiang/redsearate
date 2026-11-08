@@ -1,11 +1,12 @@
-// Pulls the Red Sea quote database and the Jebel Ali quote database into
-// .data, which the build reads. The scheduled deploy runs this every 10 minutes.
+// Pulls RedSeaRate 报价库 into .data. Rows for Jebel Ali stay in their own
+// file and never enter the Red Sea index. The scheduled deploy runs this every
+// 10 minutes.
 // Usage: NOTION_TOKEN=... npm run fetch-prices
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import {
   fromJebelAliPage,
-  JEBEL_ALI_DATA_SOURCE_ID,
+  isJebelAliPage,
   type JebelAliMarketQuote,
 } from "../lib/jebel-ali-prices.ts";
 import {
@@ -21,7 +22,6 @@ const jebelOut = process.env.JEBEL_ALI_PRICES ?? ".data/jebel-ali-prices.json";
 const token = process.env.NOTION_TOKEN;
 const dataSource =
   process.env.NOTION_DATA_SOURCE_ID ?? "aff94f68-8c06-483d-a5ee-313ba888c19e";
-const jebelSource = process.env.JEBEL_ALI_DATA_SOURCE_ID ?? JEBEL_ALI_DATA_SOURCE_ID;
 
 function save(file: string, entries: unknown[]) {
   mkdirSync(dirname(file), { recursive: true });
@@ -74,27 +74,25 @@ const pages = await queryAll(dataSource, {
 });
 
 const entries: PriceEntry[] = [];
+const jebelQuotes: JebelAliMarketQuote[] = [];
 const skipped = new Map<string, number>();
+const jebelSkipped = new Map<string, number>();
+let jebelRows = 0;
 pages.forEach((page, index) => {
+  if (isJebelAliPage(page)) {
+    jebelRows += 1;
+    const result = fromJebelAliPage(page);
+    if ("quote" in result) jebelQuotes.push(result.quote);
+    else jebelSkipped.set(result.skip, (jebelSkipped.get(result.skip) ?? 0) + 1);
+    return;
+  }
   const result = toPublicEntry(fromNotionPage(page), index + 1);
   if ("entry" in result) entries.push(result.entry);
   else skipped.set(result.skip, (skipped.get(result.skip) ?? 0) + 1);
 });
 save(out, entries);
-console.log(`Notion: ${pages.length} not rejected, ${entries.length} published.`);
-for (const [reason, count] of skipped) console.log(`  skipped ${count}: ${reason}`);
-
-const jebelPages = await queryAll(jebelSource, {
-  property: "审核状态",
-  select: { equals: "允许发布" },
-});
-const jebelQuotes: JebelAliMarketQuote[] = [];
-const jebelSkipped = new Map<string, number>();
-for (const page of jebelPages) {
-  const result = fromJebelAliPage(page);
-  if ("quote" in result) jebelQuotes.push(result.quote);
-  else jebelSkipped.set(result.skip, (jebelSkipped.get(result.skip) ?? 0) + 1);
-}
 save(jebelOut, jebelQuotes);
-console.log(`Jebel Ali: ${jebelPages.length} allowed, ${jebelQuotes.length} market quotes.`);
+console.log(`Notion: ${pages.length - jebelRows} Red Sea rows, ${entries.length} published.`);
+for (const [reason, count] of skipped) console.log(`  skipped ${count}: ${reason}`);
+console.log(`Jebel Ali: ${jebelRows} rows, ${jebelQuotes.length} market quotes.`);
 for (const [reason, count] of jebelSkipped) console.log(`  skipped ${count}: ${reason}`);

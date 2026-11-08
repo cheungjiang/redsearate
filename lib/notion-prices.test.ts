@@ -56,6 +56,11 @@ test("validity falls back to the range end, then seven days after the quote date
   assert.equal(undated.entry.validUntil, "2026-11-14");
 });
 
+test("Jebel Ali stays out of the Red Sea index", () => {
+  const result = toPublicEntry(quote({ destination: "Jebel Ali" }), 1);
+  assert.deepEqual(result, { skip: "杰贝阿里不进红海指数" });
+});
+
 test("origins outside the estimator are kept for the port index", () => {
   const result = toPublicEntry(quote({ origin: "Dalian" }), 1);
   assert.ok("entry" in result);
