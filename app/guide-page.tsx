@@ -4,6 +4,18 @@ import { GUIDES_UPDATED, guideJsonLd } from "../lib/seo";
 import { JsonLd } from "./json-ld";
 import SubpageShell from "./subpage-shell";
 
+function sectionIds(guide: Guide) {
+  const used = new Set<string>();
+  return guide.sections.map((section) => {
+    const base = section.heading.en.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "section";
+    let id = base;
+    let n = 2;
+    while (used.has(id)) id = `${base}-${n++}`;
+    used.add(id);
+    return id;
+  });
+}
+
 function Blocks({ lang, blocks }: { lang: "en" | "zh"; blocks: GuideBlock[] }) {
   const pick = (text: { en: string; zh: string }) => (lang === "zh" ? text.zh : text.en);
   const href = (path: string) => `${lang === "zh" ? "/zh" : ""}${path}`;
@@ -32,6 +44,7 @@ export default function GuidePage({ lang, guide }: { lang: "en" | "zh"; guide: G
   const home = zh ? "/zh/" : "/";
   const href = (slug: string, inZh = zh) => `${inZh ? "/zh" : ""}/guides/${slug}/`;
   const pick = (text: { en: string; zh: string }) => zh ? text.zh : text.en;
+  const ids = sectionIds(guide);
   return (
     <SubpageShell lang={lang} className="guide-page" current="guides" languageHref={href(guide.slug, !zh)}>
       <JsonLd data={guideJsonLd(guide, lang)} />
@@ -45,8 +58,16 @@ export default function GuidePage({ lang, guide }: { lang: "en" | "zh"; guide: G
           RedSeaRate · {t("Updated", "更新于")} <time dateTime={GUIDES_UPDATED}>{GUIDES_UPDATED}</time>
         </p>
         <p className="guide-lead">{pick(guide.lead)}</p>
-        {guide.sections.map((section) => (
-          <section className="guide-section" key={section.heading.en}>
+        <nav className="guide-toc" aria-label={t("On this page", "本页目录")}>
+          <p>{t("On this page", "本页目录")}</p>
+          <ol>
+            {guide.sections.map((section, i) => (
+              <li key={ids[i]}><a href={`#${ids[i]}`}>{pick(section.heading)}</a></li>
+            ))}
+          </ol>
+        </nav>
+        {guide.sections.map((section, i) => (
+          <section className="guide-section" key={ids[i]} id={ids[i]}>
             <h2>{pick(section.heading)}</h2>
             <Blocks lang={lang} blocks={section.blocks} />
           </section>

@@ -157,6 +157,50 @@ export function indexSentences(index: IndexEntry[], today: string, lang: Lang) {
   });
 }
 
+const joinNames = (names: string[], lang: Lang) => {
+  if (names.length <= 1) return names[0] ?? "";
+  if (lang === "zh") return names.length === 2 ? `${names[0]}和${names[1]}` : `${names.slice(0, -1).join("、")}和${names.at(-1)}`;
+  return names.length === 2 ? `${names[0]} and ${names[1]}` : `${names.slice(0, -1).join(", ")}, and ${names.at(-1)}`;
+};
+
+// One paragraph for the homepage index: the lowest median, then every port's quote count.
+// Every figure comes from the index. Ports without a median are counted as zero quotes.
+export function marketBrief(index: IndexEntry[], today: string, lang: Lang) {
+  const zh = lang === "zh";
+  const name = (entry: IndexEntry) => portName(entry, lang);
+  const quotes = (n: number) => zh ? `${n} 条` : `${n} ${n === 1 ? "quote" : "quotes"}`;
+  const counts = zh
+    ? `各港报价数：${index.map((entry) => `${name(entry)} ${entry.sampleSize ?? 0} 条`).join("，")}。`
+    : `Quote counts: ${index.map((entry) => `${name(entry)} ${entry.sampleSize ?? 0}`).join(", ")}.`;
+  const priced = index.filter((entry) => entry.median !== null);
+  if (priced.length === 0) {
+    return zh
+      ? `截至 ${today}，${index.length} 个港口近 ${INDEX_WINDOW_DAYS} 天都没有 40HQ 市场报价。`
+      : `As of ${today}, none of the ${index.length} ports has a 40HQ market quote in the last ${INDEX_WINDOW_DAYS} days.`;
+  }
+  const low = Math.min(...priced.map((entry) => entry.median!));
+  const cheapest = priced.filter((entry) => entry.median === low);
+  const price = `US$${low.toLocaleString("en-US")}`;
+  if (priced.length === 1) {
+    const only = priced[0];
+    const lead = zh
+      ? `截至 ${today}，${index.length} 个港口里只有${name(only)}有 40HQ 中位数，为每柜 ${price}（${quotes(only.sampleSize ?? 0)}）。`
+      : `As of ${today}, ${name(only)} is the only one of the ${index.length} ports with a 40HQ median, at ${price} per container (${quotes(only.sampleSize ?? 0)}).`;
+    return `${lead}${zh ? "" : " "}${counts}`;
+  }
+  const scope = priced.length === index.length
+    ? (zh ? `${index.length} 个港口里` : `of the ${index.length} ports`)
+    : (zh ? "有读数的港口里" : "among the ports with a reading");
+  const lead = cheapest.length === 1
+    ? zh
+      ? `截至 ${today}，${scope} 40HQ 中位数最低的是${name(cheapest[0])}，每柜 ${price}（${quotes(cheapest[0].sampleSize ?? 0)}）。`
+      : `As of ${today}, ${name(cheapest[0])} has the lowest 40HQ median ${scope}, at ${price} per container (${quotes(cheapest[0].sampleSize ?? 0)}).`
+    : zh
+      ? `截至 ${today}，${scope}，${joinNames(cheapest.map(name), lang)}的 40HQ 中位数并列最低，均为每柜 ${price}。`
+      : `As of ${today}, ${joinNames(cheapest.map(name), lang)} share the lowest 40HQ median ${scope}, at ${price} per container.`;
+  return `${lead}${zh ? "" : " "}${counts}`;
+}
+
 export function ratesJsonLd(index: IndexEntry[], today: string, lang: Lang) {
   const zh = lang === "zh";
   const path = zh ? "/zh/rates/" : "/rates/";

@@ -9,7 +9,7 @@ type Locale = { lang: "en" | "zh" };
 const translate = (lang: Locale["lang"]) =>
   (en: string, zh: string) => lang === "zh" ? zh : en;
 
-export function IndexSnapshot({ lang, liveEntries, demoEntries, asOf }: Locale & { liveEntries: IndexEntry[]; demoEntries: IndexEntry[] | null; asOf: string }) {
+export function IndexSnapshot({ lang, liveEntries, demoEntries, asOf, brief }: Locale & { liveEntries: IndexEntry[]; demoEntries: IndexEntry[] | null; asOf: string; brief?: string }) {
   const t = translate(lang);
   const [showDemo, setShowDemo] = useState(demoEntries !== null);
   const displayingDemo = demoEntries !== null && showDemo;
@@ -71,6 +71,7 @@ export function IndexSnapshot({ lang, liveEntries, demoEntries, asOf }: Locale &
           </article>
         ))}
       </div>
+      {!displayingDemo && brief && <p className="market-brief">{brief}</p>}
     </section>
   );
 }
