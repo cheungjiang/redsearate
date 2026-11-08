@@ -1,0 +1,74 @@
+import { existsSync, readFileSync } from "node:fs";
+import { addDays } from "./rates.ts";
+import type { NotionPage } from "./notion-prices.ts";
+import type { JebelAliContainer } from "./jebel-ali.ts";
+
+// RedSeaRate 杰贝阿里报价库. Kept off the Red Sea price file and the five-port index.
+export const JEBEL_ALI_DATA_SOURCE_ID = "dd3c8c7d-d564-4072-9118-16728506311a";
+const PUBLISHED = "允许发布";
+const MARKET = "AI收集的市场价";
+const VALID_DAYS = 7;
+
+export type JebelAliMarketQuote = {
+  origin: string;
+  container: JebelAliContainer;
+  price: number;
+  quoteDate: string;
+  validUntil: string | null;
+};
+
+const containers = new Set<JebelAliContainer>(["20GP", "40GP", "40HQ"]);
+const day = (value?: string | null) => (value ? value.slice(0, 10) : null);
+
+function selectName(page: NotionPage, name: string) {
+  return page.properties[name]?.select?.name ?? "";
+}
+
+// Source links, notes and internal floors never become a public quote.
+export function fromJebelAliPage(
+  page: NotionPage,
+): { quote: JebelAliMarketQuote } | { skip: string } {
+  if (selectName(page, "审核状态") !== PUBLISHED) return { skip: "未允许发布" };
+  if (selectName(page, "报价类型") !== MARKET) return { skip: "不是市场价" };
+  if (selectName(page, "币种") !== "USD") return { skip: "币种不是 USD" };
+  if (selectName(page, "计费单位") !== "USD/柜") return { skip: "计费单位不是 USD/柜" };
+  if (selectName(page, "目的港") !== "Jebel Ali") return { skip: "目的港不是杰贝阿里" };
+  const container = selectName(page, "柜型");
+  if (!containers.has(container as JebelAliContainer)) return { skip: `柜型不支持：${container || "空"}` };
+  const rawOrigin = selectName(page, "起运港");
+  const origin = rawOrigin === "Shenzhen (Shekou)" ? "Shenzhen" : rawOrigin;
+  if (!origin) return { skip: "起运港为空" };
+  const price = page.properties["价格"]?.number ?? NaN;
+  if (!(price > 0 && price <= 50000)) return { skip: "价格需在 0–50000 美元之间" };
+  const quoteDate = day(page.properties["报价日期"]?.date?.start) ?? day(page.created_time)!;
+  const validUntil = day(page.properties["有效期"]?.date?.end) ?? day(page.properties["有效期"]?.date?.start);
+  return {
+    quote: { origin, container: container as JebelAliContainer, price, quoteDate, validUntil },
+  };
+}
+
+function inForce(quote: JebelAliMarketQuote, today: string) {
+  return (quote.validUntil ?? addDays(quote.quoteDate, VALID_DAYS)) >= today;
+}
+
+// The lower price still in force. A price under half of the next one is left
+// out, so a stray low figure does not become the number on the page.
+export function jebelAliGoodPrice(
+  quotes: readonly JebelAliMarketQuote[],
+  origin: string,
+  container: JebelAliContainer,
+  today: string,
+): number | null {
+  const prices = quotes
+    .filter((quote) => quote.origin === origin && quote.container === container && inForce(quote, today))
+    .map((quote) => quote.price)
+    .sort((a, b) => a - b);
+  while (prices.length > 1 && prices[0] < prices[1] * 0.5) prices.shift();
+  return prices[0] ?? null;
+}
+
+export function readJebelAliQuotes(): JebelAliMarketQuote[] {
+  const file = process.env.JEBEL_ALI_PRICES ?? ".data/jebel-ali-prices.json";
+  if (!existsSync(file)) return [];
+  return JSON.parse(readFileSync(file, "utf8")) as JebelAliMarketQuote[];
+}

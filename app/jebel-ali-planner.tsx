@@ -8,11 +8,12 @@ import { useAssignedWhatsapp } from "./use-assigned-whatsapp";
 
 type Origin = { id: string; name: string; etd: string };
 type Container = "20GP" | "40GP" | "40HQ";
+type Lane = { origin: string; container: Container; price: number | null };
 
 export function JebelAliPlanner({
   lang,
   origins,
-  price40,
+  lanes,
   transitDays,
   direct,
   carrier,
@@ -22,7 +23,7 @@ export function JebelAliPlanner({
 }: {
   lang: "en" | "zh";
   origins: Origin[];
-  price40: number;
+  lanes: Lane[];
   transitDays: number;
   direct: boolean;
   carrier: string;
@@ -42,8 +43,11 @@ export function JebelAliPlanner({
   const assigned = useAssignedWhatsapp(whatsapp);
   const whatsappNumber = (assigned || whatsapp[0] || "").replace(/\D/g, "");
   const selected = origins.find((row) => row.id === origin) ?? origins[0];
-  const price = container === "40HQ" && selected ? price40 : null;
+  const lanePrice = (id: string, box: Container) =>
+    lanes.find((lane) => lane.origin === id && lane.container === box)?.price ?? null;
+  const price = selected ? lanePrice(selected.id, container) : null;
   const money = price == null ? "" : "US$" + price.toLocaleString("en-US");
+  const moneyOf = (amount: number | null) => (amount == null ? t("On request", "请询价") : "US$" + amount.toLocaleString("en-US"));
   const facts = { transitDays, direct, carrier };
   const inquiryText = jebelAliInquiryText(
     lang,
@@ -142,11 +146,14 @@ export function JebelAliPlanner({
         </form>
 
         <div className="jebel-result" aria-live="polite">
-          <span>{t("Port-to-port reference", "港到港参考价")}</span>
+          <span>{t("Market reference", "市场参考价")}</span>
           <strong className="jebel-money">{price == null ? t("Ask for this container", "该柜型请询价") : money}</strong>
           {selected && <p>{selected.name} · {container} · ETD {selected.etd}</p>}
           <p className="jebel-fine">
-            {t("Excludes local charges, duty and inland transport.", "不含港杂、关税和内陆运输。")}
+            {t(
+              "The lower published market price. The price we confirm is the one that applies. Excludes local charges, duty and inland transport.",
+              "已发布市场价里较低的一条。询价后以我们确认的价格为准。不含港杂、关税和内陆运输。",
+            )}
           </p>
         </div>
 
@@ -158,7 +165,7 @@ export function JebelAliPlanner({
                 <li key={row.id}>
                   <button type="button" onClick={() => setOrigin(row.id)}>
                     <span>{row.name}</span>
-                    <span>40HQ · {"US$" + price40.toLocaleString("en-US")} · ETD {row.etd}</span>
+                    <span>40HQ · {moneyOf(lanePrice(row.id, "40HQ"))} · ETD {row.etd}</span>
                   </button>
                 </li>
               ))}
@@ -183,7 +190,7 @@ export function JebelAliPlanner({
                 <tr key={row.id}>
                   <th scope="row">{row.name}</th>
                   <td><time dateTime={row.etd}>{row.etd}</time></td>
-                  <td>{"US$" + price40.toLocaleString("en-US")}</td>
+                  <td>{moneyOf(lanePrice(row.id, "40HQ"))}</td>
                 </tr>
               ))}
             </tbody>

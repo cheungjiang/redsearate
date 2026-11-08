@@ -55,8 +55,9 @@ export function jebelAliInquiryText(
       : pick(lang, "Equipment: 40HQ", "柜型：40HQ"),
     selection ? `ETD: ${selection.etd}` : "",
     selection?.price == null
-      ? pick(lang, "Page offer: on request", "页面报价：请询价")
-      : pick(lang, `Page offer: ${money}`, `页面报价：${money}`),
+      ? pick(lang, "Page reference: on request", "页面参考价：请询价")
+      : pick(lang, `Page reference: ${money}`, `页面参考价：${money}`),
+    pick(lang, "Confirmed price: the one we reply with", "确认价格：以我们回复为准"),
     pick(lang, `Transit: ${facts.transitDays} days`, `航程：${facts.transitDays} 天`),
     pick(lang, `Transshipment: ${facts.direct ? "no" : "yes"}`, `中转：${facts.direct ? "否" : "是"}`),
     pick(lang, `Carrier: ${facts.carrier}`, `船公司：${facts.carrier}`),

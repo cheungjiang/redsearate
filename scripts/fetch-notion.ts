@@ -1,8 +1,13 @@
-// Pulls every quote not marked 拒绝 from the Notion price database into
-// .data/public-prices.json, which the build reads. Usage:
-//   NOTION_TOKEN=... npm run fetch-prices
+// Pulls the Red Sea quote database and the Jebel Ali quote database into
+// .data, which the build reads. The scheduled deploy runs this every 10 minutes.
+// Usage: NOTION_TOKEN=... npm run fetch-prices
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
+import {
+  fromJebelAliPage,
+  JEBEL_ALI_DATA_SOURCE_ID,
+  type JebelAliMarketQuote,
+} from "../lib/jebel-ali-prices.ts";
 import {
   fromNotionPage,
   REJECTED,
@@ -12,13 +17,46 @@ import {
 import type { PriceEntry } from "../lib/rates.ts";
 
 const out = process.env.PUBLIC_PRICES ?? ".data/public-prices.json";
+const jebelOut = process.env.JEBEL_ALI_PRICES ?? ".data/jebel-ali-prices.json";
 const token = process.env.NOTION_TOKEN;
 const dataSource =
   process.env.NOTION_DATA_SOURCE_ID ?? "aff94f68-8c06-483d-a5ee-313ba888c19e";
+const jebelSource = process.env.JEBEL_ALI_DATA_SOURCE_ID ?? JEBEL_ALI_DATA_SOURCE_ID;
 
-function save(entries: PriceEntry[]) {
-  mkdirSync(dirname(out), { recursive: true });
-  writeFileSync(out, JSON.stringify(entries, null, 2) + "\n");
+function save(file: string, entries: unknown[]) {
+  mkdirSync(dirname(file), { recursive: true });
+  writeFileSync(file, JSON.stringify(entries, null, 2) + "\n");
+}
+
+async function queryAll(source: string, filter: unknown) {
+  const pages: NotionPage[] = [];
+  let cursor: string | undefined;
+  do {
+    const response = await fetch(
+      `https://api.notion.com/v1/data_sources/${source}/query`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Notion-Version": "2025-09-03",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ filter, page_size: 100, start_cursor: cursor }),
+      },
+    );
+    if (!response.ok) {
+      console.error(`Notion query failed: ${response.status} ${await response.text()}`);
+      process.exit(1);
+    }
+    const body = (await response.json()) as {
+      results: NotionPage[];
+      has_more: boolean;
+      next_cursor: string | null;
+    };
+    pages.push(...body.results);
+    cursor = body.has_more ? (body.next_cursor ?? undefined) : undefined;
+  } while (cursor);
+  return pages;
 }
 
 if (!token) {
@@ -26,42 +64,14 @@ if (!token) {
     console.error("NOTION_TOKEN is not set; refusing to publish without prices.");
     process.exit(1);
   }
-  console.warn("NOTION_TOKEN is not set; writing an empty price list.");
-  save([]);
+  console.warn("NOTION_TOKEN is not set; leaving the existing price files in place.");
   process.exit(0);
 }
 
-const pages: NotionPage[] = [];
-let cursor: string | undefined;
-do {
-  const response = await fetch(
-    `https://api.notion.com/v1/data_sources/${dataSource}/query`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Notion-Version": "2025-09-03",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        filter: { property: "审核状态", select: { does_not_equal: REJECTED } },
-        page_size: 100,
-        start_cursor: cursor,
-      }),
-    },
-  );
-  if (!response.ok) {
-    console.error(`Notion query failed: ${response.status} ${await response.text()}`);
-    process.exit(1);
-  }
-  const body = (await response.json()) as {
-    results: NotionPage[];
-    has_more: boolean;
-    next_cursor: string | null;
-  };
-  pages.push(...body.results);
-  cursor = body.has_more ? (body.next_cursor ?? undefined) : undefined;
-} while (cursor);
+const pages = await queryAll(dataSource, {
+  property: "审核状态",
+  select: { does_not_equal: REJECTED },
+});
 
 const entries: PriceEntry[] = [];
 const skipped = new Map<string, number>();
@@ -70,6 +80,21 @@ pages.forEach((page, index) => {
   if ("entry" in result) entries.push(result.entry);
   else skipped.set(result.skip, (skipped.get(result.skip) ?? 0) + 1);
 });
-save(entries);
+save(out, entries);
 console.log(`Notion: ${pages.length} not rejected, ${entries.length} published.`);
 for (const [reason, count] of skipped) console.log(`  skipped ${count}: ${reason}`);
+
+const jebelPages = await queryAll(jebelSource, {
+  property: "审核状态",
+  select: { equals: "允许发布" },
+});
+const jebelQuotes: JebelAliMarketQuote[] = [];
+const jebelSkipped = new Map<string, number>();
+for (const page of jebelPages) {
+  const result = fromJebelAliPage(page);
+  if ("quote" in result) jebelQuotes.push(result.quote);
+  else jebelSkipped.set(result.skip, (jebelSkipped.get(result.skip) ?? 0) + 1);
+}
+save(jebelOut, jebelQuotes);
+console.log(`Jebel Ali: ${jebelPages.length} allowed, ${jebelQuotes.length} market quotes.`);
+for (const [reason, count] of jebelSkipped) console.log(`  skipped ${count}: ${reason}`);

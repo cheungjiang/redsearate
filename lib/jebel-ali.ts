@@ -2,8 +2,6 @@ import { extraOriginNames, origins } from "./rates.ts";
 
 export const JEBEL_ALI_SLUG = "jebel-ali";
 export const JEBEL_ALI_CODE = "AEJEA";
-// 40HQ port-to-port reference for every origin below. 20GP and 40GP have no figure.
-export const JEBEL_ALI_PRICE = 7800;
 export const JEBEL_ALI_TRANSIT_DAYS = 26;
 export const JEBEL_ALI_DIRECT = true;
 export const JEBEL_ALI_CARRIER = "HPL";
@@ -38,12 +36,7 @@ export function jebelAliMoney(amount: number) {
 export function jebelAliQuote(origin: string, container: JebelAliContainer) {
   const sailing = jebelAliSailings.find((row) => row.origin === origin);
   if (!sailing) return null;
-  return {
-    origin: sailing.origin,
-    etd: sailing.etd,
-    container,
-    price: container === "40HQ" ? JEBEL_ALI_PRICE : null,
-  };
+  return { origin: sailing.origin, etd: sailing.etd, container };
 }
 
 function joinNames(names: string[], lang: "en" | "zh") {
@@ -71,13 +64,12 @@ export function jebelAliDescription(_today: string, lang: "en" | "zh") {
       : "The listed China to Jebel Ali sailings have passed. Jebel Ali is in Dubai, not Saudi Arabia. Ask for a new quote.";
   }
   return lang === "zh"
-    ? "青岛、上海、宁波、深圳、广州南沙可出运到杰贝阿里。40HQ 港到港参考价按 ETD 列出。此页不属于红海指数。"
-    : "Qingdao, Shanghai, Ningbo, Shenzhen and Nansha can load for Jebel Ali. 40HQ port-to-port reference rate, by ETD. Separate from the Red Sea index.";
+    ? "青岛、上海、宁波、深圳、广州南沙可出运到杰贝阿里。页面上是市场参考价。此页不属于红海指数。"
+    : "Qingdao, Shanghai, Ningbo, Shenzhen and Nansha load for Jebel Ali. Shown price is a market reference. Separate from the Red Sea index.";
 }
 
 export function jebelAliFaqs(_today: string, lang: "en" | "zh") {
   const zh = lang === "zh";
-  const money = jebelAliMoney(JEBEL_ALI_PRICE);
   const etd = zh
     ? `${etdLines(jebelAliSailings, lang).join("。")}。`
     : `${etdLines(jebelAliSailings, lang).join(". ")}.`;
@@ -85,8 +77,8 @@ export function jebelAliFaqs(_today: string, lang: "en" | "zh") {
     {
       q: zh ? "页面上有价格吗？" : "Does this page show a price?",
       a: zh
-        ? `40HQ 港到港参考价是 ${money}，按 ETD 列出。20GP 和 40GP 请询价。`
-        : `The 40HQ port-to-port reference rate is ${money}, listed by ETD. 20GP and 40GP are on request.`,
+        ? "页面上的数字是已允许发布的市场价里较低的一条。询价后以我们确认的价格为准。表里没有的柜型请询价。"
+        : "The figure is the lower market price cleared for the page. The price we confirm is the one that applies. A container with no row is on request.",
     },
     { q: zh ? "这几条船的 ETD 是哪天？" : "What are the ETDs?", a: etd },
     {
@@ -108,8 +100,8 @@ export function jebelAliFaqs(_today: string, lang: "en" | "zh") {
     {
       q: zh ? "这份服务含什么？" : "What does this service include?",
       a: zh
-        ? `港到港海运费。40HQ 参考价是 ${money}。`
-        : `Port-to-port ocean freight. The 40HQ reference rate is ${money}.`,
+        ? "港到港海运费。页面上的数字是市场参考，不是确认价。"
+        : "Port-to-port ocean freight. The figure on the page is a market reference, not the confirmed price.",
     },
     {
       q: zh ? "这份服务不含什么？" : "What does this service leave out?",

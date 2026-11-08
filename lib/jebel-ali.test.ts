@@ -4,13 +4,11 @@ import { jebelAliInquiryText } from "./inquiry.ts";
 import {
   JEBEL_ALI_CARRIER,
   JEBEL_ALI_DIRECT,
-  JEBEL_ALI_PRICE,
   JEBEL_ALI_SLUG,
   JEBEL_ALI_TRANSIT_DAYS,
   jebelAliDescription,
   jebelAliEarliestEtd,
   jebelAliFaqs,
-  jebelAliMoney,
   jebelAliQuote,
   jebelAliSailings,
 } from "./jebel-ali.ts";
@@ -22,15 +20,11 @@ test("Jebel Ali keeps five sailings and a 40HQ price until the data file changes
   assert.deepEqual(jebelAliSailings.map((sailing) => sailing.origin), [
     "Qingdao", "Shanghai", "Ningbo", "Shenzhen", "Guangzhou (Nansha)",
   ]);
-  assert.equal(JEBEL_ALI_PRICE, 7800);
   assert.equal(JEBEL_ALI_TRANSIT_DAYS, 26);
   assert.equal(JEBEL_ALI_DIRECT, true);
   assert.equal(JEBEL_ALI_CARRIER, "HPL");
   assert.equal(jebelAliEarliestEtd(), "2026-11-15");
-  assert.equal(jebelAliQuote("Shanghai", "40HQ")?.price, 7800);
   assert.equal(jebelAliQuote("Shenzhen", "40HQ")?.etd, "2026-11-18");
-  assert.equal(jebelAliQuote("Ningbo", "20GP")?.price, null);
-  assert.equal(jebelAliQuote("Ningbo", "40GP")?.price, null);
   assert.equal(jebelAliQuote("Jeddah", "40HQ"), null);
   assert.equal(JEBEL_ALI_SLUG, "jebel-ali");
 });
@@ -50,17 +44,19 @@ test("Jebel Ali answers eight questions from the supplied facts", () => {
   const joined = faqs.map((faq) => faq.a).join("\n");
   assert.equal(faqs.length, 8);
   assert.match(joined, /2026-11-18/);
+  assert.match(joined, /确认/);
   assert.match(transit?.a ?? "", /26 天/);
   assert.match(transit?.a ?? "", /不中转/);
   assert.match(transit?.a ?? "", /HPL/);
-  assert.match(joined, new RegExp(jebelAliMoney(JEBEL_ALI_PRICE).replace("$", "\\$")));
-  assert.doesNotMatch(joined, /3,250|18–23|18-23|实时|保证舱位/);
+  assert.doesNotMatch(joined, /3,250|18–23|18-23|实时|保证舱位|7,800/);
   assert.match(jebelAliInquiryText("zh", "", facts), /请询价/);
+  assert.match(jebelAliInquiryText("zh", "", facts), /以我们回复为准/);
   assert.doesNotMatch(jebelAliInquiryText("zh", "", facts), /7,800/);
   const quoted = jebelAliInquiryText("zh", "瓷砖", facts, {
-    origin: "上海", container: "40HQ", quantity: 2, etd: "2026-11-15", price: JEBEL_ALI_PRICE,
+    origin: "上海", container: "40HQ", quantity: 2, etd: "2026-11-15", price: 6850,
   });
-  assert.match(quoted, /US\$7,800/);
+  assert.match(quoted, /页面参考价：US\$6,850/);
+  assert.match(quoted, /以我们回复为准/);
   assert.match(quoted, /2 × 40HQ/);
   assert.match(quoted, /HPL/);
   assert.doesNotMatch(quoted, /请询价|3,250/);

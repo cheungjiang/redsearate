@@ -4,7 +4,6 @@ import {
   JEBEL_ALI_CARRIER,
   JEBEL_ALI_CODE,
   JEBEL_ALI_DIRECT,
-  JEBEL_ALI_PRICE,
   JEBEL_ALI_SLUG,
   JEBEL_ALI_TRANSIT_DAYS,
   jebelAliEarliestEtd,
@@ -12,7 +11,9 @@ import {
   jebelAliMoney,
   jebelAliOriginName,
   jebelAliSailings,
+  type JebelAliContainer,
 } from "../lib/jebel-ali";
+import { jebelAliGoodPrice, readJebelAliQuotes } from "../lib/jebel-ali-prices";
 import { SITE } from "../lib/seo";
 import { contact } from "../lib/site-data";
 import { JebelAliCta } from "./jebel-ali-cta";
@@ -27,12 +28,25 @@ export default function JebelAliPage({ lang, today }: { lang: "en" | "zh"; today
   const pick = (text: { en: string; zh: string }) => (zh ? text.zh : text.en);
   const href = (inZh = zh) => `${inZh ? "/zh" : ""}/${JEBEL_ALI_SLUG}/`;
   const faqs = jebelAliFaqs(today, lang);
+  const quotes = readJebelAliQuotes();
+  const containers: JebelAliContainer[] = ["20GP", "40GP", "40HQ"];
   const origins = jebelAliSailings.map((sailing) => ({
     id: sailing.origin,
     name: jebelAliOriginName(sailing.origin, lang),
     etd: sailing.etd,
   }));
   const names = origins.map((row) => row.name).join(zh ? "、" : ", ");
+  const lanes = origins.flatMap((row) =>
+    containers.map((container) => ({
+      origin: row.id,
+      container,
+      price: jebelAliGoodPrice(quotes, row.id, container, today),
+    })),
+  );
+  const headline = lanes
+    .filter((lane) => lane.container === "40HQ" && lane.price != null)
+    .sort((a, b) => a.price! - b.price!)[0];
+  const headlineName = headline ? jebelAliOriginName(headline.origin, lang) : "";
   const steps = [
     {
       icon: ClipboardList,
@@ -56,7 +70,7 @@ export default function JebelAliPage({ lang, today }: { lang: "en" | "zh"; today
     },
   ];
   const points = [
-    t("Port-to-port reference rates, listed by ETD.", "港到港参考价，按 ETD 列出。"),
+    t("A market reference, the lower published price.", "市场参考价，取已发布记录里较低的一条。"),
     t("Excludes local charges, duty and inland transport.", "不含港杂、关税和内陆运输。"),
   ];
   const jsonLd = {
@@ -91,8 +105,8 @@ export default function JebelAliPage({ lang, today }: { lang: "en" | "zh"; today
             <h1>{t("Shipping from China to Jebel Ali", "中国到杰贝阿里海运")}</h1>
             <p>
               {t(
-                "Qingdao, Shanghai, Ningbo, Shenzhen and Nansha can load. Port-to-port reference rates, listed by ETD. This page is separate from the Red Sea index.",
-                "青岛、上海、宁波、深圳、广州南沙都可以出运。港到港参考价，按 ETD 列出。这一页不属于红海指数。",
+                "Qingdao, Shanghai, Ningbo, Shenzhen and Nansha can load. The price is a market reference. The quote we confirm is the one that applies. This page is separate from the Red Sea index.",
+                "青岛、上海、宁波、深圳、广州南沙都可以出运。页面价格是市场参考。询价后以我们确认的价格为准。这一页不属于红海指数。",
               )}
             </p>
             <p>
@@ -114,15 +128,16 @@ export default function JebelAliPage({ lang, today }: { lang: "en" | "zh"; today
               <dd><time dateTime={jebelAliEarliestEtd()}>{jebelAliEarliestEtd()}</time></dd>
             </div>
             <div>
-              <dt>{t("40HQ port to port", "40HQ 港到港参考价")}</dt>
-              <dd className="jebel-money">{jebelAliMoney(JEBEL_ALI_PRICE)}</dd>
+              <dt>{t("40HQ market reference", "40HQ 市场参考")}</dt>
+              <dd className="jebel-money">{headline ? jebelAliMoney(headline.price!) : t("On request", "请询价")}</dd>
+              {headline && <span>{t(`Lower price, ${headlineName}`, `较低一条，${headlineName}`)}</span>}
             </div>
           </dl>
         </div>
         <JebelAliPlanner
           lang={lang}
           origins={origins}
-          price40={JEBEL_ALI_PRICE}
+          lanes={lanes}
           transitDays={JEBEL_ALI_TRANSIT_DAYS}
           direct={JEBEL_ALI_DIRECT}
           carrier={JEBEL_ALI_CARRIER}
@@ -158,7 +173,7 @@ export default function JebelAliPage({ lang, today }: { lang: "en" | "zh"; today
           <div>
             <h3>{t("Included", "包含")}</h3>
             <ul>
-              <li>{t(`Port-to-port ocean freight. The 40HQ reference is ${jebelAliMoney(JEBEL_ALI_PRICE)}.`, `港到港海运费。40HQ 参考价 ${jebelAliMoney(JEBEL_ALI_PRICE)}。`)}</li>
+              <li>{t("Port-to-port ocean freight. The figure above is a market reference, and the price we confirm is the one that applies.", "港到港海运费。上面的数字是市场参考，询价后以我们确认的价格为准。")}</li>
             </ul>
           </div>
           <div>
