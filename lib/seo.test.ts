@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { faqs, guides } from "./content.ts";
 import { destinations } from "./rates.ts";
-import { guideDescription, homeJsonLd, indexSentences } from "./seo.ts";
+import { GUIDES_PUBLISHED, GUIDES_UPDATED, guideDescription, guideJsonLd, homeJsonLd, indexSentences } from "./seo.ts";
 
 const [jeddah, sokhna] = destinations;
 const index = [
@@ -23,10 +23,30 @@ test("home JSON-LD carries every FAQ in the page language", () => {
   assert.deepEqual(faq.mainEntity.map((q) => q.name), faqs.map((f) => f.q.zh));
 });
 
+function guidePlain(guide: (typeof guides)[number], lang: "en" | "zh") {
+  const bits = [guide.lead[lang]];
+  for (const section of guide.sections) {
+    bits.push(section.heading[lang]);
+    for (const block of section.blocks) {
+      if (block.kind === "p") bits.push(block.text[lang]);
+      if (block.kind === "ul") bits.push(...block.items.map((item) => item[lang]));
+      if (block.kind === "links") bits.push(...block.items.map((item) => item.text[lang]));
+    }
+  }
+  return bits.join("\n");
+}
+
 test("guide slugs are unique and descriptions fit search snippets", () => {
   assert.equal(new Set(guides.map((g) => g.slug)).size, guides.length);
   for (const guide of guides) {
-    assert.ok(guideDescription(guide, "en").length <= 155);
-    assert.ok(guideDescription(guide, "zh").length <= 80);
+    assert.ok(guideDescription(guide, "en").length <= 155, guide.slug);
+    assert.ok(guideDescription(guide, "zh").length <= 80, guide.slug);
+    const words = guidePlain(guide, "en").split(/\s+/).filter(Boolean).length;
+    const chars = guidePlain(guide, "zh").replace(/\s/g, "").length;
+    assert.ok(words >= 1000, `${guide.slug} en ${words}`);
+    assert.ok(chars >= 1500, `${guide.slug} zh ${chars}`);
+    const article = guideJsonLd(guide, "en")["@graph"].find((node) => node["@type"] === "Article") as { datePublished: string; dateModified: string };
+    assert.equal(article.datePublished, GUIDES_PUBLISHED);
+    assert.equal(article.dateModified, GUIDES_UPDATED);
   }
 });

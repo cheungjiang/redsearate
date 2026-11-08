@@ -715,7 +715,7 @@ export default function Home({
                 href={`${zh ? "/zh" : ""}/guides/${g.slug}/`}
               >
                 <span className="article-tag">
-                  {pick(g.tag)} <span>{t("QUICK READ", "出运速读")}</span>
+                  {pick(g.tag)} <span>{t("FULL GUIDE", "全文")}</span>
                 </span>
                 <h3>{pick(g.title)}</h3>
                 <span className="guide-read">

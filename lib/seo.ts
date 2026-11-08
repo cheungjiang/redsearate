@@ -6,6 +6,7 @@ import { INDEX_WINDOW_DAYS, type IndexEntry } from "./platform.ts";
 
 export const SITE = "https://redsearate.com";
 export const GUIDES_PUBLISHED = "2026-10-24";
+export const GUIDES_UPDATED = "2026-11-08";
 type Lang = "en" | "zh";
 const home = (lang: Lang) => (lang === "zh" ? "/zh/" : "/");
 
@@ -113,7 +114,7 @@ export function guideJsonLd(guide: Guide, lang: Lang) {
         description: guideDescription(guide, lang),
         inLanguage: zh ? "zh-CN" : "en",
         datePublished: GUIDES_PUBLISHED,
-        dateModified: GUIDES_PUBLISHED,
+        dateModified: GUIDES_UPDATED,
         image: `${SITE}/og.jpg`,
         mainEntityOfPage: `${SITE}${path}`,
         author: { "@id": organization["@id"] },
@@ -129,9 +130,9 @@ export function guideJsonLd(guide: Guide, lang: Lang) {
 }
 
 export function guideDescription(guide: Guide, lang: Lang) {
-  const first = (lang === "zh" ? guide.body.zh : guide.body.en).split("\n\n")[0];
+  const lead = lang === "zh" ? guide.lead.zh : guide.lead.en;
   const limit = lang === "zh" ? 80 : 155;
-  return first.length > limit ? `${first.slice(0, limit - 1).trimEnd()}…` : first;
+  return lead.length > limit ? `${lead.slice(0, limit - 1).trimEnd()}…` : lead;
 }
 
 const portName = (entry: IndexEntry, lang: Lang) => (lang === "zh" ? entry.port.zh : entry.port.id);

@@ -529,6 +529,41 @@
   line-height: 1.8;
   margin-top: 18px;
 }
+.editorial-site .guide-lead {
+  font-size: 18px;
+  line-height: 1.75;
+}
+.editorial-site .guide-section {
+  margin-top: 36px;
+}
+.editorial-site .guide-section h2 {
+  font-family: var(--serif);
+  font-size: 26px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+.editorial-site .guide-section p,
+.editorial-site .guide-section li {
+  font-size: 17px;
+  line-height: 1.8;
+}
+.editorial-site .guide-section p,
+.editorial-site .guide-section ul {
+  margin-top: 14px;
+}
+.editorial-site .guide-section ul {
+  padding-left: 20px;
+}
+.editorial-site .guide-section li + li {
+  margin-top: 8px;
+}
+.editorial-site .guide-links {
+  list-style: none;
+  padding-left: 0;
+}
+.editorial-site .guide-links a {
+  color: inherit;
+}
 .editorial-site .guide-cta {
   display: flex;
   flex-wrap: wrap;
