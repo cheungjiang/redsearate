@@ -3,6 +3,7 @@ import {
   destinations,
   laneView,
   marketSummary,
+  pricedLane,
   MIN_MARKET_SAMPLES,
   shanghaiDate,
 } from "./rates.ts";
@@ -120,7 +121,6 @@ function rate(price: number | undefined, benchmark: number | undefined): Rating 
 export function publicRateRows(snapshot: Snapshot, shipment: Shipment) {
   const live = (lane: Lane | undefined) =>
     lane?.offer && lane.offer.validUntil >= snapshot.today ? lane.offer : undefined;
-  const priced = (lane: Lane | undefined) => Boolean(live(lane) || lane?.market);
   const price = (lane: Lane | undefined) => live(lane)?.low ?? lane?.market?.median;
   const benchmark = (destination: string, equipment: string) => {
     const prices = Object.entries(snapshot.lanes)
@@ -132,19 +132,12 @@ export function publicRateRows(snapshot: Snapshot, shipment: Shipment) {
     return prices.length % 2 ? prices[middle] : (prices[middle - 1] + prices[middle]) / 2;
   };
   return destinations.map((destination) => {
-    const view = laneView(snapshot, { ...shipment, destination: destination.id });
-    const { equipment } = view;
-    const fallback = priced(view.lane) ? undefined : Object.entries(snapshot.lanes)
-      .map(([key, lane]) => ({ key: key.split("|"), lane }))
-      .filter(({ key, lane }) => key[1] === destination.id && key[2] === equipment && priced(lane))
-      .sort((a, b) =>
-        Number(Boolean(b.lane.offer)) - Number(Boolean(a.lane.offer)) ||
-        (b.lane.market?.count ?? 0) - (a.lane.market?.count ?? 0))[0];
-    const lane = fallback?.lane ?? view.lane;
+    const { equipment } = laneView(snapshot, { ...shipment, destination: destination.id });
+    const { origin, lane } = pricedLane(snapshot, { ...shipment, destination: destination.id });
     const offer = lane?.offer;
     const market = lane?.market;
     return {
-      origin: fallback?.key[0] ?? shipment.origin,
+      origin,
       destination: destination.id,
       equipment,
       offer: offer && offer.validUntil >= snapshot.today

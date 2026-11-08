@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 // @ts-ignore Node runs TypeScript directly.
-import { estimate, summarize, laneKey, defaultShipment } from "./rates.ts";
+import { estimate, summarize, laneKey, defaultShipment, pricedLane } from "./rates.ts";
 // @ts-ignore Node runs TypeScript directly.
 import type { PriceEntry } from "./rates.ts";
 import * as rates from "./rates.ts";
@@ -68,7 +68,7 @@ test("public snapshot never exposes internal prices or sources", () => {
     assert.ok(!text.includes(secret), secret);
 });
 
-test("market reference uses every current price, drops outliers and expired or old prices", () => {
+test("market reference keeps a recent quote past its validity date, and drops outliers and quotes older than 28 days", () => {
   const snapshot = summarize(
     [
       entry({ price: 1900 }),
@@ -76,13 +76,30 @@ test("market reference uses every current price, drops outliers and expired or o
       entry({ price: 2400 }),
       entry({ price: 2000 }),
       entry({ price: 2230 }),
+      entry({ price: 2050, validUntil: "2026-10-22" }), // validity date has passed; still inside 28 days
       entry({ price: 9000 }), // typo or different charge scope
-      entry({ price: 1000, validUntil: "2026-10-22" }), // expired
+      entry({ price: 1000, validUntil: "2026-10-22" }), // past validity and an outlier
       entry({ price: 1100, createdAt: "2026-09-01T03:00:00Z" }), // older than 28 days
     ],
     today,
   );
-  assert.deepEqual(snapshot.lanes[key].market, { median: 2100, count: 5 });
+  assert.deepEqual(snapshot.lanes[key].market, { median: 2080, count: 6 });
+});
+
+test("estimate uses another origin only when the selected one has no current price", () => {
+  const snapshot = {
+    today,
+    lanes: {
+      [laneKey("Ningbo", "Jeddah", "40HC")]: { market: { median: 8200, count: 3 } },
+      [laneKey("Shenzhen", "Jeddah", "40HC")]: { market: { median: 8300, count: 1 } },
+    },
+    trends: {},
+  };
+  const picked = pricedLane(snapshot, defaultShipment);
+  assert.equal(picked.origin, "Ningbo");
+  assert.equal(estimate(picked.lane, defaultShipment).market?.median, 8200);
+  const own = pricedLane(snapshot, { ...defaultShipment, origin: "Shenzhen" });
+  assert.equal(own.origin, "Shenzhen");
 });
 
 test("lane details list the carriers behind the price, without outliers or internal quotes", () => {

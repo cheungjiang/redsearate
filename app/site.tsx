@@ -21,9 +21,11 @@ import {
 import {
   defaultShipment,
   destinations,
+  extraOriginNames,
   origins,
   estimate,
   laneView,
+  pricedLane,
   MARKET_WINDOW_DAYS,
   type Shipment,
   type Snapshot,
@@ -54,11 +56,11 @@ export default function Home({
   const t = (en: string, cn: string) => (zh ? cn : en);
   const pick = (text: Localized) => (zh ? text.zh : text.en);
   const [shipment, setShipment] = useState<Shipment>(defaultShipment);
-  const [result, setResult] = useState<ReturnType<typeof estimate> | null>(
-    null,
-  );
+  const [result, setResult] = useState<
+    (ReturnType<typeof estimate> & { pricedOrigin: string }) | null
+  >(null);
   const [menu, setMenu] = useState(false);
-  const { lane, trend, equipment } = laneView(snapshot, shipment);
+  const { trend, equipment } = laneView(snapshot, shipment);
   const trendValues = trend.map((p) => p.median);
   const trendTop = Math.ceil((Math.max(...trendValues) * 1.05) / 100) * 100;
   const trendBottom = Math.floor((Math.min(...trendValues) * 0.95) / 100) * 100;
@@ -110,7 +112,11 @@ export default function Home({
   const money = (n: number) => "$" + n.toLocaleString("en-US");
   const port = (id: string) => {
     const p = [...origins, ...destinations].find((p) => p.id === id);
-    return zh ? p?.zh : id;
+    return zh ? (p?.zh ?? extraOriginNames[id] ?? id) : id;
+  };
+  const priceOf = (s: Shipment) => {
+    const picked = pricedLane(snapshot, s);
+    return { ...estimate(picked.lane, s), pricedOrigin: picked.origin };
   };
   function openInquiry(value: "quote" | "booking") {
     setIntent(value);
@@ -119,7 +125,7 @@ export default function Home({
   }
   const quoted = (() => {
     try {
-      return estimate(lane, shipment);
+      return priceOf(shipment);
     } catch {
       return null;
     }
@@ -132,6 +138,9 @@ export default function Home({
         )
       : t("RedSeaRate booking request (redsearate.com)", "RedSeaRate 订舱需求（redsearate.com）"),
     `${t("Route", "航线")}: ${port(shipment.origin)} → ${port(shipment.destination)}`,
+    quoted && quoted.pricedOrigin !== shipment.origin
+      ? `${t("Shown reference", "页面参考来自")}: ${port(quoted.pricedOrigin)}`
+      : "",
     shipment.mode === "FCL"
       ? `${t("Equipment", "柜型")}: ${shipment.quantity} × ${shipment.container}`
       : `${t("LCL", "拼箱")}: ${shipment.volume} CBM / ${shipment.weight} kg`,
@@ -142,7 +151,7 @@ export default function Home({
         ? `${t("Market reference", "市场参考价")}: ≈ ${money(quoted.market.median)} (${t(`median of ${quoted.market.count} prices`, `${quoted.market.count} 条中位数`)})`
         : `${t("Page offer", "页面报价")}: ${t("on request", "请询价")}`,
     `${t("Cargo", "货物")}: ${cargo || "-"}`,
-  ].join("\n");
+  ].filter(Boolean).join("\n");
   // Each visitor keeps the same randomly assigned colleague across visits.
   const [whatsapp, setWhatsapp] = useState("");
   useEffect(() => {
@@ -274,7 +283,7 @@ export default function Home({
               </span>
               <span>
                 <Anchor size={16} />
-                <span><strong>{t("Dated references", "参考价有有效期")}</strong><small>{t("No expired quotes", "不展示过期报价")}</small></span>
+                <span><strong>{t("28-day market window", "市场价看近 28 天")}</strong><small>{t("Bookable offers expire", "可订报价过期不展示")}</small></span>
               </span>
               <span>
                 <Globe2 size={16} />
@@ -346,7 +355,7 @@ export default function Home({
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              setResult(estimate(lane, shipment));
+              setResult(priceOf(shipment));
             }}
           >
             <div className="estimate-fields">
@@ -500,7 +509,7 @@ export default function Home({
                   )}
                 </h3>
                 <p>
-                  {port(shipment.origin)} → {port(shipment.destination)} ·{" "}
+                  {port(result.pricedOrigin)} → {port(shipment.destination)} ·{" "}
                   {shipment.mode === "FCL"
                     ? `${shipment.quantity} × ${shipment.container}`
                     : `${shipment.volume} CBM / ${shipment.weight} kg · ${result.units.toFixed(1)} W/M`}
@@ -510,20 +519,26 @@ export default function Home({
                     ` · ${t("valid until", "有效至")} ${result.offer.validUntil}`}
                 </p>
                 <p className="market-line">
-                  {result.market && !result.offer
+                  {(result.pricedOrigin !== shipment.origin
                     ? t(
-                        `Median of ${result.market.count} current prices collected by our team in the last ${MARKET_WINDOW_DAYS} days. Not a bookable offer: space and the final price are confirmed on WeChat or WhatsApp.`,
-                        `近 ${MARKET_WINDOW_DAYS} 天团队收集的 ${result.market.count} 条有效报价的中位数，不是可直接订舱的报价；舱位和最终价格以微信或 WhatsApp 确认为准。`,
+                        `${port(shipment.origin)} to ${port(shipment.destination)} has no price in the last ${MARKET_WINDOW_DAYS} days. The figure is from ${port(result.pricedOrigin)}. `,
+                        `${port(shipment.origin)}到${port(shipment.destination)}近 ${MARKET_WINDOW_DAYS} 天没有报价，下面的数字来自${port(result.pricedOrigin)}。`,
                       )
-                    : result.market
+                    : "") +
+                    (result.market && !result.offer
                       ? t(
-                          `Market reference: median ${money(result.market.median)} from ${result.market.count} team-collected prices in the last ${MARKET_WINDOW_DAYS} days.`,
-                          `市场参考：近 ${MARKET_WINDOW_DAYS} 天团队收集的 ${result.market.count} 条报价，中位数 ${money(result.market.median)}。`,
+                          `Median of ${result.market.count} market prices collected in the last ${MARKET_WINDOW_DAYS} days. Not a bookable offer: space and the final price are confirmed on WeChat or WhatsApp.`,
+                          `近 ${MARKET_WINDOW_DAYS} 天收集的 ${result.market.count} 条市场报价的中位数，不是可直接订舱的报价；舱位和最终价格以微信或 WhatsApp 确认为准。`,
                         )
-                      : t(
-                          "No current market price for this lane yet. Ask us for a quote.",
-                          "该航线暂无有效市场报价，欢迎直接询价。",
-                        )}
+                      : result.market
+                        ? t(
+                            `Market reference: median ${money(result.market.median)} from ${result.market.count} team-collected prices in the last ${MARKET_WINDOW_DAYS} days.`,
+                            `市场参考：近 ${MARKET_WINDOW_DAYS} 天团队收集的 ${result.market.count} 条报价，中位数 ${money(result.market.median)}。`,
+                          )
+                        : t(
+                            "No current market price for this lane yet. Ask us for a quote.",
+                            "该航线暂无市场报价，欢迎直接询价。",
+                          ))}
                 </p>
               </div>
               <div className="result-actions">

@@ -181,10 +181,11 @@ export function summarize(entries: PriceEntry[], today: string): Snapshot {
       };
     }
     const market = list.filter((e) => e.tier === "market");
+    // A market quote counts for 28 days from the day it was collected. The
+    // Notion validity date often records when the quote was issued, which can
+    // already be past, so it does not hide the quote. Bookable offers still expire.
     const current = market.filter(
-      (e) =>
-        e.validUntil >= today &&
-        shanghaiDate(new Date(e.createdAt)) >= marketSince,
+      (e) => shanghaiDate(new Date(e.createdAt)) >= marketSince,
     );
     lane.market = marketSummary(current.map((e) => e.price));
     if (lane.offer || lane.market) {
@@ -240,6 +241,23 @@ export function laneView(snapshot: Snapshot, shipment: Shipment) {
     lane: snapshot.lanes[key],
     trend: snapshot.trends[key] ?? [],
   };
+}
+
+// The selected origin when it has a current price, otherwise the origin with a
+// live offer or the most market samples for the same destination and equipment.
+export function pricedLane(snapshot: Snapshot, shipment: Shipment): { origin: string; lane?: Lane } {
+  const view = laneView(snapshot, shipment);
+  const live = (lane?: Lane) =>
+    lane?.offer && lane.offer.validUntil >= snapshot.today ? lane.offer : undefined;
+  const priced = (lane?: Lane) => Boolean(live(lane) || lane?.market);
+  if (priced(view.lane)) return { origin: shipment.origin, lane: view.lane };
+  const fallback = Object.entries(snapshot.lanes)
+    .map(([key, lane]) => ({ key: key.split("|"), lane }))
+    .filter(({ key, lane }) => key[1] === shipment.destination && key[2] === view.equipment && priced(lane))
+    .sort((a, b) =>
+      Number(Boolean(b.lane.offer)) - Number(Boolean(a.lane.offer)) ||
+      (b.lane.market?.count ?? 0) - (a.lane.market?.count ?? 0))[0];
+  return fallback ? { origin: fallback.key[0], lane: fallback.lane } : { origin: shipment.origin };
 }
 
 // Scales the per-container or per-W/M lane prices to the whole shipment.
