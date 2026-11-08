@@ -1,4 +1,3 @@
-import { ArrowRight } from "lucide-react";
 import { JsonLd } from "./json-ld";
 import SubpageShell from "./subpage-shell";
 import {
@@ -89,11 +88,12 @@ export default function JebelAliPage({ lang, today }: { lang: "en" | "zh"; today
           )}{" "}
           <a href={saudi}>{t("Shipping from China to Jeddah", "中国到吉达海运")}</a>
         </p>
-        <div className="guide-cta">
-          <a className="button coral" href={`${home}#estimate`}>
-            {t("Ask about this sailing", "询这一水船期")}<ArrowRight size={16} />
-          </a>
-        </div>
+        <p className="platform-note">
+          {t(
+            "This page is separate from the Red Sea index. The homepage estimator covers Jeddah, Sokhna, Aqaba, Djibouti and Port Sudan.",
+            "这一页不属于红海指数。首页估价只覆盖吉达、苏赫纳、亚喀巴、吉布提和苏丹港。",
+          )}
+        </p>
       </article>
     </SubpageShell>
   );

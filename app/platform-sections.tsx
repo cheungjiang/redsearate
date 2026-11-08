@@ -3,7 +3,6 @@ import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { type IndexEntry, type LatestQuote, type SampleRate } from "../lib/platform";
 import { sparklinePoints } from "../lib/sparkline";
 import { RatesTable } from "./rates-table";
-import { JEBEL_ALI_SLUG, openJebelAliSailings } from "../lib/jebel-ali";
 import { countrySlug, destinations, extraOriginNames, origins, type Shipment, type Snapshot } from "../lib/rates";
 
 type Locale = { lang: "en" | "zh" };
@@ -111,14 +110,6 @@ export function RatesPreview({
         "Per-origin public references; the index above pools all origins. Local charges, customs and inland transport are excluded. Carriers are those named on the quotes behind each price.",
         "按起运港分列的公开参考价；上方指数合并所有起运港。费用不含港杂、清关和内陆运输。船公司为该价格所依据报价上的船公司。",
       )}</p>
-      {openJebelAliSailings(snapshot.today).length > 0 && (
-        <p className="platform-note">
-          <a href={`${home}${JEBEL_ALI_SLUG}/`}>{t(
-            "Jebel Ali, Dubai: 40HQ US$7,800 on the listed ETDs. This is not a Saudi port.",
-            "杰贝阿里（迪拜）：所列 ETD 的 40HQ 为每柜 US$7,800。这不是沙特港。",
-          )}</a>
-        </p>
-      )}
     </section>
   );
 }
