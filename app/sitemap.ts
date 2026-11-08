@@ -1,5 +1,6 @@
 import { guides } from "../lib/content";
 import { countries } from "../lib/countries";
+import { JEBEL_ALI_SLUG } from "../lib/jebel-ali";
 import { shanghaiDate } from "../lib/rates";
 import { GUIDES_UPDATED, SITE } from "../lib/seo";
 
@@ -9,6 +10,7 @@ const pages = [
   { en: "/", zh: "/zh/", modified: shanghaiDate() },
   { en: "/rates/", zh: "/zh/rates/", modified: shanghaiDate() },
   ...countries.map(({ slug }) => ({ en: `/${slug}/`, zh: `/zh/${slug}/`, modified: shanghaiDate() })),
+  { en: `/${JEBEL_ALI_SLUG}/`, zh: `/zh/${JEBEL_ALI_SLUG}/`, modified: shanghaiDate() },
   ...guides.map(({ slug }) => ({ en: `/guides/${slug}/`, zh: `/zh/guides/${slug}/`, modified: GUIDES_UPDATED })),
 ];
 
