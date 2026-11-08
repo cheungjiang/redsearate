@@ -15,7 +15,6 @@ import {
   MoveRight,
   ChevronDown,
   Box,
-  Copy,
   MessageCircle,
 } from "lucide-react";
 import {
@@ -34,6 +33,9 @@ import { platformNavigation, type IndexEntry, type LatestQuote, type SimulationP
 import { marketBrief } from "../lib/seo";
 import { CommunityPreview, IndexSnapshot, LatestPosts, RatesPreview } from "./platform-sections";
 import { faqs, guides, type Localized } from "../lib/content";
+import { homeInquiryText } from "../lib/inquiry";
+import { InquiryDialog } from "./inquiry-dialog";
+import { useAssignedWhatsapp } from "./use-assigned-whatsapp";
 
 export type Contact = { wechat: string; whatsapp: string[] };
 
@@ -130,40 +132,26 @@ export default function Home({
       return null;
     }
   })();
-  const inquiryText = [
-    intent === "quote"
-      ? t(
-          "RedSeaRate ocean freight quote request (redsearate.com)",
-          "RedSeaRate 海运询价（redsearate.com）",
-        )
-      : t("RedSeaRate booking request (redsearate.com)", "RedSeaRate 订舱需求（redsearate.com）"),
-    `${t("Route", "航线")}: ${port(shipment.origin)} → ${port(shipment.destination)}`,
-    quoted && quoted.pricedOrigin !== shipment.origin
-      ? `${t("Shown reference", "页面参考来自")}: ${port(quoted.pricedOrigin)}`
-      : "",
-    shipment.mode === "FCL"
-      ? `${t("Equipment", "柜型")}: ${shipment.quantity} × ${shipment.container}`
-      : `${t("LCL", "拼箱")}: ${shipment.volume} CBM / ${shipment.weight} kg`,
-    `${t("Cargo ready", "备货日期")}: ${shipment.date || "-"}`,
-    quoted?.offer
-      ? `${t("Page offer", "页面报价")}: ${money(quoted.offer.low)}${quoted.offer.high !== quoted.offer.low ? `–${money(quoted.offer.high)}` : ""} (${t("valid until", "有效至")} ${quoted.offer.validUntil})`
-      : quoted?.market
-        ? `${t("Market reference", "市场参考价")}: ≈ ${money(quoted.market.median)} (${t(`median of ${quoted.market.count} prices`, `${quoted.market.count} 条中位数`)})`
-        : `${t("Page offer", "页面报价")}: ${t("on request", "请询价")}`,
-    `${t("Cargo", "货物")}: ${cargo || "-"}`,
-  ].filter(Boolean).join("\n");
-  // Each visitor keeps the same randomly assigned colleague across visits.
-  const [whatsapp, setWhatsapp] = useState("");
-  useEffect(() => {
-    const saved = localStorage.getItem("whatsapp-agent");
-    const number =
-      saved && contact.whatsapp.includes(saved)
-        ? saved
-        : contact.whatsapp[Math.floor(Math.random() * contact.whatsapp.length)];
-    if (!number) return;
-    localStorage.setItem("whatsapp-agent", number);
-    setWhatsapp(number);
-  }, [contact.whatsapp]);
+  const inquiryText = homeInquiryText({
+    lang,
+    intent,
+    origin: port(shipment.origin),
+    destination: port(shipment.destination),
+    referenceFrom:
+      quoted && quoted.pricedOrigin !== shipment.origin ? port(quoted.pricedOrigin) : null,
+    mode: shipment.mode,
+    quantity: shipment.quantity,
+    container: shipment.container,
+    volume: shipment.volume,
+    weight: shipment.weight,
+    date: shipment.date,
+    offer: quoted?.offer
+      ? { low: quoted.offer.low, high: quoted.offer.high, validUntil: quoted.offer.validUntil }
+      : null,
+    market: quoted?.market ? { median: quoted.market.median, count: quoted.market.count } : null,
+    cargo,
+  });
+  const whatsapp = useAssignedWhatsapp(contact.whatsapp);
   const whatsappNumber = whatsapp.replace(/\D/g, "");
   async function copyInquiry(then?: () => void) {
     try {
@@ -846,82 +834,19 @@ export default function Home({
           </a>
         )}
       </div>
-      <dialog
-        ref={dialog}
-        className="inquiry-dialog"
-        aria-labelledby="inquiry-title"
-        onClick={(e) => {
-          if (e.target === e.currentTarget) dialog.current?.close();
-        }}
-      >
-        <button
-          className="dialog-close"
-          aria-label={t("Close dialog", "关闭窗口")}
-          onClick={() => dialog.current?.close()}
-        >
-          <X size={21} />
-        </button>
-        <div className="eyebrow">
-          {t("LET’S TALK FREIGHT", "聊聊您的出运计划")}
-        </div>
-        <h2 id="inquiry-title">
-          {intent === "quote"
-            ? t("Send us your inquiry.", "把询价发给我们。")
-            : t("Send us your booking request.", "把订舱需求发给我们。")}
-        </h2>
-        <p className="dialog-intro">
-          {t(
-            "Share your shipment details on WeChat or WhatsApp for a tailored quote.",
-            "通过微信或 WhatsApp 发送出运信息，与团队确认专属报价。",
-          )}
-        </p>
-        <label>
-          {t("Cargo (optional)", "品名（选填）")}
-          <input
-            value={cargo}
-            maxLength={120}
-            onChange={(e) => setCargo(e.target.value)}
-            placeholder={t("e.g. furniture, 18 t", "例如：办公家具，18 吨")}
-          />
-        </label>
-        <pre className="inquiry-text">{inquiryText}</pre>
-        <div className="contact-actions">
-          <div className="contact-option">
-            <span>
-              {t("WeChat", "微信")} <b>{contact.wechat}</b>
-            </span>
-            <button className="button dark" onClick={() => copyInquiry()}>
-              <Copy size={16} />
-              {t("Copy for WeChat", "复制发微信")}
-            </button>
-          </div>
-          {whatsappNumber && (
-            <div className="contact-option">
-              <span>
-                WhatsApp <b>{whatsapp}</b>
-              </span>
-              <a
-                className="button whatsapp"
-                href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(inquiryText)}`}
-                target="_blank"
-                rel="noopener"
-              >
-                <MessageCircle size={16} />
-                {t("Open WhatsApp", "打开 WhatsApp")}
-              </a>
-            </div>
-          )}
-        </div>
-        <p className="copy-status" role="status">
-          {copied}
-        </p>
-        <p className="fine-print">
-          {t(
-            "Nothing is sent or stored by this website. Space is reserved only after we confirm with you.",
-            "本网站不发送也不保存任何信息。我们与您确认后，舱位才算预留。",
-          )}
-        </p>
-      </dialog>
+      <InquiryDialog
+        lang={lang}
+        intent={intent}
+        inquiryText={inquiryText}
+        cargo={cargo}
+        onCargo={setCargo}
+        copied={copied}
+        onCopy={() => copyInquiry()}
+        wechat={contact.wechat}
+        whatsappLabel={whatsapp}
+        whatsappNumber={whatsappNumber}
+        dialogRef={dialog}
+      />
       <dialog
         ref={articleDialog}
         className="article-dialog"

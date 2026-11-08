@@ -7,15 +7,15 @@ import { shanghaiDate } from "../../../lib/rates";
 export function generateMetadata(): Metadata {
   const today = shanghaiDate();
   return pageMetadata({
-    lang: "en",
-    path: `/${JEBEL_ALI_SLUG}/`,
+    lang: "zh",
+    path: `/zh/${JEBEL_ALI_SLUG}/`,
     alternates: { en: `/${JEBEL_ALI_SLUG}/`, zh: `/zh/${JEBEL_ALI_SLUG}/` },
-    title: "Shipping from China to Jebel Ali: 40HQ Rates by ETD | RedSeaRate",
-    description: jebelAliDescription(today, "en"),
+    title: "中国到杰贝阿里海运 | RedSeaRate",
+    description: jebelAliDescription(today, "zh"),
     type: "article",
   });
 }
 
 export default function Page() {
-  return <JebelAliPage lang="en" today={shanghaiDate()} />;
+  return <JebelAliPage lang="zh" today={shanghaiDate()} />;
 }
