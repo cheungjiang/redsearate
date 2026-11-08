@@ -53,6 +53,9 @@ export const destinations = [
 ];
 // Prices are USD per container; LCL is USD per chargeable tonne (W/M).
 export const containers = ["20GP", "40GP", "40HC", "LCL"] as const;
+
+export const countrySlug = (destination: string) =>
+  `shipping-from-china-to-${destinations.find((d) => d.id === destination)!.country.toLowerCase().replace(/ /g, "-")}`;
 export type Container = (typeof containers)[number];
 export const tiers = ["offer", "market", "internal"] as const;
 export type Tier = (typeof tiers)[number];
@@ -66,6 +69,8 @@ export type PriceEntry = {
   price: number;
   validUntil: string;
   carrier?: string;
+  freeDays?: number | null;
+  routing?: string;
   addedAt?: string;
   transitMin: number | null;
   transitMax: number | null;

@@ -3,7 +3,7 @@ import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { type IndexEntry, type LatestQuote, type SampleRate } from "../lib/platform";
 import { sparklinePoints } from "../lib/sparkline";
 import { RatesTable } from "./rates-table";
-import { destinations, extraOriginNames, origins, type Shipment, type Snapshot } from "../lib/rates";
+import { countrySlug, destinations, extraOriginNames, origins, type Shipment, type Snapshot } from "../lib/rates";
 
 type Locale = { lang: "en" | "zh" };
 const translate = (lang: Locale["lang"]) =>
@@ -44,7 +44,7 @@ export function IndexSnapshot({ lang, liveEntries, demoEntries, asOf }: Locale &
         {entries.map(({ port, median, weekChange, sampleSize, weeklyMedians }) => (
           <article className="index-port" key={port.id}>
             <span className="index-code">{port.code}</span>
-            <h3>{lang === "zh" ? port.zh : port.id}</h3>
+            <h3><a href={`${lang === "zh" ? "/zh" : ""}/${countrySlug(port.id)}/`}>{lang === "zh" ? port.zh : port.id}</a></h3>
             <dl>
               <div className="index-price-row"><dt>{t("40HQ median", "40HQ 中位数")}</dt><dd className="index-median">{median === null ? t("Unavailable", "暂不可用") : `$${median.toLocaleString("en-US")}`}</dd></div>
               <div><dt>{t("Week on week", "周环比")}</dt><dd className="index-change" data-direction={weekChange === null ? "unavailable" : weekChange > 0 ? "up" : weekChange < 0 ? "down" : "flat"}>{changeText(weekChange)}</dd></div>

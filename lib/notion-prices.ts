@@ -13,6 +13,8 @@ export type NotionQuote = {
   unit: string;
   price: number | null;
   carrier: string;
+  freeDays: number | null;
+  routing: string;
   quoteDate: string | null;
   validFrom: string | null;
   validTo: string | null;
@@ -57,6 +59,8 @@ export function fromNotionPage(page: NotionPage): NotionQuote {
     unit: select(p["计费单位"]),
     price: p["价格"]?.number ?? null,
     carrier: text(p["船公司"]),
+    freeDays: p["免用箱期天数"]?.number ?? null,
+    routing: text(p["直达/中转"]),
     quoteDate: day(p["报价日期"]?.date?.start),
     validFrom: day(p["有效期"]?.date?.start),
     validTo: day(p["有效期"]?.date?.end),
@@ -91,6 +95,8 @@ export function toPublicEntry(
     price: q.price ?? NaN,
     validUntil: q.validTo ?? q.validFrom ?? addDays(date, 7),
     carrier: q.carrier,
+    freeDays: q.freeDays,
+    routing: q.routing,
     addedAt: q.createdTime,
     transitMin: null,
     transitMax: null,

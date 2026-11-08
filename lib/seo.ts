@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { faqs, type Guide } from "./content.ts";
-import { addDays } from "./rates.ts";
+import { addDays, destinations, extraOriginNames, origins } from "./rates.ts";
+import type { Country, CountryStats } from "./countries.ts";
 import { INDEX_WINDOW_DAYS, type IndexEntry } from "./platform.ts";
 
 export const SITE = "https://redsearate.com";
@@ -180,6 +181,104 @@ export function ratesJsonLd(index: IndexEntry[], today: string, lang: Lang) {
       breadcrumbs([
         { name: "RedSeaRate", path: home(lang) },
         { name: zh ? "航线运价" : "Rates", path },
+      ]),
+    ],
+  };
+}
+
+const money = (n: number) => `US$${n.toLocaleString("en-US")}`;
+
+// Answer-first questions for a country page, written from the live statistics.
+export function countryFaqs(country: Country, stats: CountryStats, today: string, lang: Lang) {
+  const zh = lang === "zh";
+  const port = destinations.find((d) => d.id === country.destination)!;
+  const portName = zh ? port.zh : port.id;
+  const name = zh ? country.name.zh : country.name.en;
+  const originName = (id: string) =>
+    zh ? origins.find((o) => o.id === id)?.zh ?? extraOriginNames[id] ?? id : id;
+  const hq = stats.containers["40HC"];
+  const gp = stats.containers["20GP"];
+  const quotes = (n: number) => (zh ? `${n} 条报价` : `${n} ${n === 1 ? "quote" : "quotes"}`);
+  const faqs: { q: string; a: string }[] = [];
+  faqs.push({
+    q: zh ? `中国到${name}一个集装箱海运费多少钱？` : `How much does it cost to ship a container from China to ${name}?`,
+    a: hq
+      ? zh
+        ? `截至 ${today}，中国到${portName}的 40HQ 海运市场中位数为每柜 ${money(hq.median)}，基于近 ${INDEX_WINDOW_DAYS} 天的 ${quotes(hq.count)}（区间 ${money(hq.low)}–${money(hq.high)}）。${gp ? `20GP 中位数为 ${money(gp.median)}（${quotes(gp.count)}）。` : ""}以上为港到港海运费，不含港杂、关税和内陆运输。`
+        : `As of ${today}, the median 40HQ ocean freight market rate from China to ${portName} is ${money(hq.median)} per container, based on ${quotes(hq.count)} in the last ${INDEX_WINDOW_DAYS} days (range ${money(hq.low)}–${money(hq.high)}).${gp ? ` The 20GP median is ${money(gp.median)} (${quotes(gp.count)}).` : ""} These are port-to-port ocean freight figures, excluding local charges, duty and inland transport.`
+      : zh
+        ? `近 ${INDEX_WINDOW_DAYS} 天暂未收集到中国到${portName}的 40HQ 市场报价，请直接询价。`
+        : `We have no 40HQ market quotes from China to ${portName} in the last ${INDEX_WINDOW_DAYS} days. Ask us for a quote.`,
+  });
+  const priced = stats.origins.filter((o) => o.containers["40HC"]);
+  if (priced.length > 1) {
+    const [cheapest] = priced;
+    const s = cheapest.containers["40HC"]!;
+    faqs.push({
+      q: zh ? `从中国哪个港口出运到${portName}最便宜？` : `Which Chinese port is cheapest for shipping to ${portName}?`,
+      a: zh
+        ? `近 ${INDEX_WINDOW_DAYS} 天的报价中，${originName(cheapest.origin)}出运的 40HQ 中位数最低，为 ${money(s.median)}（${quotes(s.count)}），共比较了 ${priced.length} 个起运港。离工厂最近的港口加上拖车费，往往才是总成本最低的选择。`
+        : `In the last ${INDEX_WINDOW_DAYS} days, ${originName(cheapest.origin)} had the lowest 40HQ median to ${portName}, at ${money(s.median)} (${quotes(s.count)}), out of ${priced.length} origin ports compared. Add trucking from your factory: the nearest port is often the cheapest in total.`,
+    });
+  }
+  faqs.push({
+    q: zh ? `中国到${name}海运要多久？` : `How long does shipping from China to ${name} take?`,
+    a: country.transit
+      ? zh ? `${country.transit.range.zh}。${country.transit.note.zh}` : `${country.transit.range.en}. ${country.transit.note.en}`
+      : zh
+        ? `中国到${portName}直航有限，很多货物需中转，时效取决于衔接情况，请在询价时确认航线。`
+        : `Direct sailings from China to ${portName} are limited and much cargo is transhipped, so transit depends on the connection. Confirm the routing when you ask for a quote.`,
+  });
+  faqs.push({
+    q: zh ? `出运到${name}需要哪些文件？` : `What documents do I need to ship to ${name}?`,
+    a: country.documents.slice(0, 2).map((d) => (zh ? d.zh : d.en)).join(zh ? "" : " "),
+  });
+  return faqs;
+}
+
+export function countryDescription(country: Country, stats: CountryStats, lang: Lang) {
+  const zh = lang === "zh";
+  const port = destinations.find((d) => d.id === country.destination)!;
+  const hq = stats.containers["40HC"];
+  const transit = country.transit ? (zh ? country.transit.range.zh : country.transit.range.en) : null;
+  if (zh)
+    return `${hq ? `中国到${port.zh} 40HQ 市场中位数 ${money(hq.median)}（${hq.count} 条报价）。` : ""}各起运港运价、船公司${transit ? `、航程 ${transit}` : ""}和清关文件。`;
+  return `${hq ? `China to ${port.id} 40HQ market median: ${money(hq.median)} from ${hq.count} recent quotes. ` : ""}Rates by origin port, carriers${transit ? `, ${transit} transit` : ""} and the import documents you need.`;
+}
+
+export function countryJsonLd(country: Country, stats: CountryStats, today: string, lang: Lang) {
+  const zh = lang === "zh";
+  const path = `${zh ? "/zh" : ""}/${country.slug}/`;
+  const title = zh ? country.title.zh : country.title.en;
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Article",
+        headline: title,
+        description: countryDescription(country, stats, lang),
+        inLanguage: zh ? "zh-CN" : "en",
+        dateModified: today,
+        image: `${SITE}/og.jpg`,
+        mainEntityOfPage: `${SITE}${path}`,
+        author: { "@id": organization["@id"] },
+        publisher: organization,
+        citation: country.sources.map((s) => s.url),
+      },
+      {
+        "@type": "FAQPage",
+        url: `${SITE}${path}`,
+        inLanguage: zh ? "zh-CN" : "en",
+        mainEntity: countryFaqs(country, stats, today, lang).map((f) => ({
+          "@type": "Question",
+          name: f.q,
+          acceptedAnswer: { "@type": "Answer", text: f.a },
+        })),
+      },
+      breadcrumbs([
+        { name: "RedSeaRate", path: home(lang) },
+        { name: zh ? "航线运价" : "Rates", path: zh ? "/zh/rates/" : "/rates/" },
+        { name: title, path },
       ]),
     ],
   };

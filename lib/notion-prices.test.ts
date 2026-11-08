@@ -15,6 +15,8 @@ const quote = (over: Partial<NotionQuote> = {}): NotionQuote => ({
   unit: "USD/柜",
   price: 3200,
   carrier: "",
+  freeDays: null,
+  routing: "",
   quoteDate: "2026-11-05",
   validFrom: "2026-11-20",
   validTo: null,
