@@ -78,6 +78,30 @@ export function jebelAliGoodPrice(
   return prices[0] ?? null;
 }
 
+const referenceOrigins = ["Shanghai", "Ningbo", "Shenzhen", "Qingdao"] as const;
+
+export type JebelAliReference = {
+  origin: (typeof referenceOrigins)[number];
+  container: JebelAliContainer;
+  price: number | null;
+};
+
+// One price per homepage origin and container. The rates table shows the row
+// that matches the selected origin. These numbers stay out of the Red Sea index.
+export function jebelAliReferences(
+  quotes: readonly JebelAliMarketQuote[],
+  today: string,
+): JebelAliReference[] {
+  const boxes: JebelAliContainer[] = ["20GP", "40GP", "40HQ"];
+  return referenceOrigins.flatMap((origin) =>
+    boxes.map((container) => ({
+      origin,
+      container,
+      price: jebelAliGoodPrice(quotes, origin, container, today),
+    })),
+  );
+}
+
 export function readJebelAliQuotes(): JebelAliMarketQuote[] {
   const file = process.env.JEBEL_ALI_PRICES ?? ".data/jebel-ali-prices.json";
   if (!existsSync(file)) return [];

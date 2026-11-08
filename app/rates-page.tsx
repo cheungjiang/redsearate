@@ -2,18 +2,20 @@
 
 import { ArrowLeft } from "lucide-react";
 import { type IndexEntry, type SimulationPreview } from "../lib/platform";
+import type { JebelAliReference } from "../lib/jebel-ali-prices";
 import { defaultShipment, type Snapshot } from "../lib/rates";
 import { IndexSnapshot, RatesPreview } from "./platform-sections";
 import SubpageShell from "./subpage-shell";
 
 export default function RatesPage({
-  lang, snapshot, index, summary, simulation,
+  lang, snapshot, index, summary, simulation, jebelAli,
 }: {
   lang: "en" | "zh";
   snapshot: Snapshot;
   index: IndexEntry[];
   summary: string[];
   simulation: SimulationPreview | null;
+  jebelAli: JebelAliReference[];
 }) {
   const zh = lang === "zh";
   const t = (en: string, cn: string) => zh ? cn : en;
@@ -27,7 +29,7 @@ export default function RatesPage({
         </ul>
       </div>
       <IndexSnapshot lang={lang} liveEntries={index} demoEntries={simulation?.index ?? null} asOf={snapshot.today} />
-      <RatesPreview lang={lang} snapshot={snapshot} shipment={defaultShipment} samples={simulation?.rates ?? []} fullPage />
+      <RatesPreview lang={lang} snapshot={snapshot} shipment={defaultShipment} samples={simulation?.rates ?? []} jebelAli={jebelAli} fullPage />
     </SubpageShell>
   );
 }

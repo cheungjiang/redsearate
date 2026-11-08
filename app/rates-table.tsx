@@ -1,14 +1,16 @@
 import { ArrowRight } from "lucide-react";
 import { publicRateRows, type Rating, type SampleRate } from "../lib/platform";
+import type { JebelAliReference } from "../lib/jebel-ali-prices";
 import { addDays, destinations, extraOriginNames, origins, type Shipment, type Snapshot } from "../lib/rates";
 
 export function RatesTable({
-  lang, snapshot, shipment, samples = [], onSelect,
+  lang, snapshot, shipment, samples = [], jebelAli = [], onSelect,
 }: {
   lang: "en" | "zh";
   snapshot: Snapshot;
   shipment: Shipment;
   samples?: SampleRate[];
+  jebelAli?: JebelAliReference[];
   onSelect?: (destination: string) => void;
 }) {
   const t = (en: string, zh: string) => lang === "zh" ? zh : en;
@@ -32,6 +34,12 @@ export function RatesTable({
   const unavailable = t("Unavailable", "暂不可用");
   const today = snapshot.today;
   const validUntil = addDays(today, 7);
+  const jebelBox = shipment.mode === "LCL" ? null : shipment.container === "40HC" ? "40HQ" : shipment.container;
+  const jebelPrice = jebelBox
+    ? jebelAli.find((row) => row.origin === shipment.origin && row.container === jebelBox)?.price ?? null
+    : null;
+  const jebelHref = lang === "zh" ? "/zh/jebel-ali/" : "/jebel-ali/";
+  const jebelLabel = t("Jebel Ali", "杰贝阿里");
   return (
     <>
       <dl className="grade-key grade-legend" aria-label={t("Grade legend", "等级说明")}>
@@ -95,6 +103,24 @@ export function RatesTable({
                 {onSelect && <td data-label={labels[9]}><button className="text-button" onClick={() => onSelect(row.destination)} aria-label={t(`Estimate ${port(row.origin)} to ${port(row.destination)}`, `估算${port(row.origin)}至${port(row.destination)}运费`)}>{t("Estimate", "估价")}<ArrowRight size={14} /></button></td>}
               </tr>
             ))}
+          </tbody>
+          <tbody data-kind="reference">
+            <tr className="rate-group"><th scope="rowgroup" colSpan={labels.length}>{t("Jebel Ali price reference", "杰贝阿里价格参考")}</th></tr>
+            <tr data-kind="reference">
+              <th scope="row" data-label={labels[0]}>{port(shipment.origin)}</th>
+              <td data-label={labels[1]}><a href={jebelHref}>{jebelLabel}</a><small>{t("Dubai", "迪拜")}</small></td>
+              <td data-label={labels[2]}>{jebelBox ?? "LCL"}</td>
+              <td data-label={labels[3]}>
+                <strong className="rate-value">{jebelPrice == null ? t("On request", "请询价") : `≈ ${money(jebelPrice)}`}</strong>
+                <small>{t("Market reference. The reply price applies.", "市场参考。确认价以回复为准。")}</small>
+              </td>
+              <td data-label={labels[4]}>{unavailable}</td>
+              <td data-label={labels[5]}>{t("Reference", "参考")}</td>
+              <td data-label={labels[6]}><time dateTime={today}>{today}</time></td>
+              <td data-label={labels[7]}><a href={jebelHref}>{t("Jebel Ali page", "杰贝阿里页")}</a></td>
+              <td data-label={labels[8]}><time dateTime={today}>{today}</time></td>
+              {onSelect && <td data-label={labels[9]}><a className="text-button" href={jebelHref}>{t("View", "查看")}<ArrowRight size={14} /></a></td>}
+            </tr>
           </tbody>
         </table>
       </div>

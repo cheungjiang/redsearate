@@ -30,6 +30,7 @@ import {
   type Snapshot,
 } from "../lib/rates";
 import { platformNavigation, type IndexEntry, type LatestQuote, type SimulationPreview } from "../lib/platform";
+import type { JebelAliReference } from "../lib/jebel-ali-prices";
 import { marketBrief } from "../lib/seo";
 import { CommunityPreview, IndexSnapshot, LatestPosts, RatesPreview } from "./platform-sections";
 import { faqs, guides, type Localized } from "../lib/content";
@@ -46,6 +47,7 @@ export default function Home({
   latest,
   contact,
   simulation,
+  jebelAli,
 }: {
   lang: "en" | "zh";
   snapshot: Snapshot;
@@ -53,6 +55,7 @@ export default function Home({
   latest: LatestQuote[];
   contact: Contact;
   simulation: SimulationPreview | null;
+  jebelAli: JebelAliReference[];
 }) {
   const zh = lang === "zh";
   const t = (en: string, cn: string) => (zh ? cn : en);
@@ -300,7 +303,7 @@ export default function Home({
           </div>
         </section>
         <IndexSnapshot lang={lang} liveEntries={index} demoEntries={simulation?.index ?? null} asOf={snapshot.today} brief={marketBrief(index, snapshot.today, lang)} />
-        <RatesPreview lang={lang} snapshot={snapshot} shipment={shipment} samples={simulation?.rates ?? []} onSelect={selectRoute} />
+        <RatesPreview lang={lang} snapshot={snapshot} shipment={shipment} samples={simulation?.rates ?? []} jebelAli={jebelAli} onSelect={selectRoute} />
         <LatestPosts lang={lang} quotes={latest} />
         <section id="estimate" className="estimator wrap">
           <div className="estimate-top">

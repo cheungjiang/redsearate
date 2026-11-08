@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { fromJebelAliPage, jebelAliGoodPrice, type JebelAliMarketQuote } from "./jebel-ali-prices.ts";
+import { fromJebelAliPage, jebelAliGoodPrice, jebelAliReferences, type JebelAliMarketQuote } from "./jebel-ali-prices.ts";
 import type { NotionPage } from "./notion-prices.ts";
 
 function page(fields: Record<string, string | number | null>, created = "2026-11-08T00:00:00.000Z"): NotionPage {
@@ -62,4 +62,10 @@ test("the shown Jebel Ali price is the lower quote still in force", () => {
   assert.equal(jebelAliGoodPrice(quotes, "Shanghai", "20GP", "2026-11-08"), null);
   assert.equal(jebelAliGoodPrice(quotes, "Ningbo", "20GP", "2026-11-08"), 7100);
   assert.equal(jebelAliGoodPrice(quotes, "Shanghai", "40HQ", "2026-11-13"), 6850);
+  const references = jebelAliReferences(quotes, "2026-11-08");
+  assert.deepEqual(references.map((row) => row.origin).filter((origin, index, all) => all.indexOf(origin) === index), [
+    "Shanghai", "Ningbo", "Shenzhen", "Qingdao",
+  ]);
+  assert.equal(references.find((row) => row.origin === "Shanghai" && row.container === "40HQ")?.price, 6850);
+  assert.equal(references.find((row) => row.origin === "Qingdao" && row.container === "40GP")?.price, null);
 });

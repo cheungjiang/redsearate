@@ -3,6 +3,7 @@ import { shanghaiDate, summarize, type PriceEntry } from "./rates";
 import { latestQuotes, liveIndex } from "./platform";
 import { simulationPreview } from "./simulation.server";
 import { countries, countryStats } from "./countries";
+import { jebelAliReferences, readJebelAliQuotes } from "./jebel-ali-prices";
 
 export const contact = {
   wechat: process.env.SITE_WECHAT ?? "uarmside",
@@ -39,5 +40,6 @@ export async function homeData() {
     latest: latestQuotes(entries, today),
     contact,
     simulation: simulationPreview(),
+    jebelAli: jebelAliReferences(readJebelAliQuotes(), today),
   };
 }

@@ -3,6 +3,7 @@ import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { type IndexEntry, type LatestQuote, type SampleRate } from "../lib/platform";
 import { sparklinePoints } from "../lib/sparkline";
 import { RatesTable } from "./rates-table";
+import type { JebelAliReference } from "../lib/jebel-ali-prices";
 import { countrySlug, destinations, extraOriginNames, origins, type Shipment, type Snapshot } from "../lib/rates";
 
 type Locale = { lang: "en" | "zh" };
@@ -77,11 +78,12 @@ export function IndexSnapshot({ lang, liveEntries, demoEntries, asOf, brief }: L
 }
 
 export function RatesPreview({
-  lang, snapshot, shipment, samples = [], onSelect, fullPage = false,
+  lang, snapshot, shipment, samples = [], jebelAli = [], onSelect, fullPage = false,
 }: Locale & {
   snapshot: Snapshot;
   shipment: Shipment;
   samples?: SampleRate[];
+  jebelAli?: JebelAliReference[];
   onSelect?: (id: string) => void;
   fullPage?: boolean;
 }) {
@@ -105,7 +107,7 @@ export function RatesPreview({
           <a className="text-button" href={fullPage ? `${home}#estimate` : "#estimate"}>{t("Estimate your shipment", "按货量估价")}<ArrowUpRight size={16} /></a>
         </div>
       </div>
-      <RatesTable lang={lang} snapshot={snapshot} shipment={shipment} samples={samples} onSelect={onSelect} />
+      <RatesTable lang={lang} snapshot={snapshot} shipment={shipment} samples={samples} jebelAli={jebelAli} onSelect={onSelect} />
       <p className="platform-note">{t(
         "Per-origin public references; the index above pools all origins. Local charges, customs and inland transport are excluded. Carriers are those named on the quotes behind each price.",
         "按起运港分列的公开参考价；上方指数合并所有起运港。费用不含港杂、清关和内陆运输。船公司为该价格所依据报价上的船公司。",
