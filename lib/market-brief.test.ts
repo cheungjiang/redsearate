@@ -12,9 +12,9 @@ import {
   briefSampleNote,
   briefTitle,
   buildMarketBrief,
-  readMarketBriefs,
   type MarketBrief,
 } from "./market-brief.ts";
+import { readMarketBriefs } from "./market-brief.server.ts";
 import { liveIndex } from "./platform.ts";
 import { marketBriefJsonLd } from "./seo.ts";
 import type { PriceEntry } from "./rates.ts";
@@ -121,6 +121,22 @@ test("brief descriptions stay inside the snippet limits and name the frozen medi
   assert.deepEqual(graph.map((node) => node["@type"]), ["Article", "BreadcrumbList"]);
   const article = graph.find((node) => node["@type"] === "Article");
   assert.equal(article && "datePublished" in article ? article.datePublished : null, "2026-11-09");
+});
+
+test("the published 2026-11-09 snapshot stays at the frozen readings", () => {
+  const [brief] = readMarketBriefs(join(process.cwd(), "data/market-brief"));
+  assert.equal(brief.date, "2026-11-09");
+  assert.equal(brief.comparedWith, null);
+  assert.deepEqual(
+    brief.ports.map((port) => [port.destination, port.median, port.count, port.weekChange]),
+    [
+      ["Jeddah", 8450, 16, null],
+      ["Sokhna", 6800, 8, null],
+      ["Aqaba", 7600, 35, null],
+      ["Djibouti", 7900, 4, null],
+      ["Port Sudan", 8020, 8, null],
+    ],
+  );
 });
 
 test("saved briefs are read back unchanged and newest first", () => {

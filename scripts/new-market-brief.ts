@@ -8,9 +8,9 @@ import {
   briefMonday,
   buildMarketBrief,
   MARKET_BRIEF_DIR,
-  readMarketBriefs,
   type MarketBrief,
 } from "../lib/market-brief.ts";
+import { readMarketBriefs } from "../lib/market-brief.server.ts";
 import { shanghaiDate, type PriceEntry } from "../lib/rates.ts";
 
 const requested = process.argv[2] ?? shanghaiDate();

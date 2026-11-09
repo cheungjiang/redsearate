@@ -1,7 +1,7 @@
 import { guides } from "../lib/content";
 import { countries } from "../lib/countries";
 import { JEBEL_ALI_SLUG } from "../lib/jebel-ali";
-import { marketBriefSitemap } from "../lib/market-brief";
+import { marketBriefSitemap } from "../lib/market-brief.server";
 import { lanePath } from "../lib/lanes";
 import { getLanePlan } from "../lib/lanes.server";
 import { shanghaiDate } from "../lib/rates";

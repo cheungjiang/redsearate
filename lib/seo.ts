@@ -390,7 +390,10 @@ export function marketBriefJsonLd(brief: MarketBrief, lang: Lang) {
         image: `${SITE}/og.jpg`,
         mainEntityOfPage: `${SITE}${path}`,
         author: { "@id": organization["@id"] },
-        publisher: organization,
+        publisher: {
+          ...organization,
+          logo: { "@type": "ImageObject", url: organization.logo },
+        },
       },
       breadcrumbs([
         { name: zh ? "首页" : "Home", path: home(lang) },

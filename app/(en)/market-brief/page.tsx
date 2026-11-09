@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import MarketBriefIndex from "../../market-brief-index";
-import { briefIndexDescription, briefIndexTitle, readMarketBriefs } from "../../../lib/market-brief";
+import { briefIndexDescription, briefIndexTitle } from "../../../lib/market-brief";
+import { readMarketBriefs } from "../../../lib/market-brief.server";
 import { pageMetadata } from "../../../lib/seo";
 
 export function generateMetadata(): Metadata {

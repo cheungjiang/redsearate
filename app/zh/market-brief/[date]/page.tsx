@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import MarketBriefPage from "../../../market-brief-page";
-import { briefDescription, briefTitle, readMarketBriefs } from "../../../../lib/market-brief";
+import { briefDescription, briefTitle } from "../../../../lib/market-brief";
+import { readMarketBriefs } from "../../../../lib/market-brief.server";
 import { pageMetadata } from "../../../../lib/seo";
 
 type Props = { params: Promise<{ date: string }> };
