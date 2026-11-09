@@ -48,6 +48,7 @@ export default function SubpageShell({
         <div className="footer-bottom">
           <span>© {new Date().getFullYear()} RedSeaRate</span>
           <span>{t("Operator details pending confirmation", "运营信息待确认")}</span>
+          <a className="text-button" href={zh ? "/zh/market-brief/" : "/market-brief/"}>{t("Market brief archive", "市场简报归档")}</a>
           <a className="text-button" href={home}>{t("Back to homepage", "返回首页")}<ArrowUpRight size={14} /></a>
         </div>
       </footer>

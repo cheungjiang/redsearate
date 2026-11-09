@@ -24,6 +24,7 @@ export default function RatesPage({
       <div className="rates-page-intro wrap">
         <a className="text-button" href={zh ? "/zh/" : "/"}><ArrowLeft size={16} />{t("Back to homepage", "返回首页")}</a>
         <h1>{t("China to Red Sea freight rates", "中国至红海海运运价")}</h1>
+        <p><a className="text-button" href={zh ? "/zh/market-brief/" : "/market-brief/"}>{t("Market brief archive", "市场简报归档")}</a></p>
         <ul className="market-summary">
           {summary.map((line) => <li key={line}>{line}</li>)}
         </ul>

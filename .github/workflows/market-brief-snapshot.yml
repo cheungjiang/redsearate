@@ -1,0 +1,23 @@
+name: Freeze market brief
+
+on:
+  workflow_dispatch:
+
+jobs:
+  brief:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run fetch-prices
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+      - run: npm run market-brief -- 2026-11-09
+      - uses: actions/upload-artifact@v4
+        with:
+          name: market-brief
+          path: data/market-brief

@@ -3,6 +3,7 @@ import { faqs, type Guide } from "./content.ts";
 import { addDays, destinations, extraOriginNames, origins } from "./rates.ts";
 import type { Country, CountryStats } from "./countries.ts";
 import { JEBEL_ALI_SLUG, JEBEL_ALI_TITLE, jebelAliDescription, jebelAliFaqs } from "./jebel-ali.ts";
+import { briefDescription, briefHeading, briefPath, type MarketBrief } from "./market-brief.ts";
 import { INDEX_WINDOW_DAYS, type IndexEntry } from "./platform.ts";
 
 export const SITE = "https://redsearate.com";
@@ -367,6 +368,34 @@ export function jebelAliJsonLd(stats: CountryStats, today: string, lang: Lang) {
         { name: "RedSeaRate", path: home(lang) },
         { name: zh ? "航线运价" : "Rates", path: zh ? "/zh/rates/" : "/rates/" },
         { name: title, path },
+      ]),
+    ],
+  };
+}
+
+export function marketBriefJsonLd(brief: MarketBrief, lang: Lang) {
+  const zh = lang === "zh";
+  const path = briefPath(brief.date, lang);
+  const headline = briefHeading(brief.date, lang);
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Article",
+        headline,
+        description: briefDescription(brief, lang),
+        inLanguage: zh ? "zh-CN" : "en",
+        datePublished: brief.date,
+        dateModified: brief.date,
+        image: `${SITE}/og.jpg`,
+        mainEntityOfPage: `${SITE}${path}`,
+        author: { "@id": organization["@id"] },
+        publisher: organization,
+      },
+      breadcrumbs([
+        { name: zh ? "首页" : "Home", path: home(lang) },
+        { name: zh ? "市场简报" : "Market brief", path: briefPath(null, lang) },
+        { name: headline, path },
       ]),
     ],
   };
