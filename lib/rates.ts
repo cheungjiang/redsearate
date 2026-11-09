@@ -14,43 +14,42 @@ export const extraOriginNames: Record<string, string> = {
   Xiamen: "厦门",
   Foshan: "佛山",
 };
-export const destinations = [
-  {
-    id: "Jeddah",
-    zh: "吉达",
-    country: "Saudi Arabia",
-    countryZh: "沙特阿拉伯",
-    code: "SAJED",
-  },
-  {
-    id: "Sokhna",
-    zh: "苏赫纳",
-    country: "Egypt",
-    countryZh: "埃及",
-    code: "EGSOK",
-  },
-  {
-    id: "Aqaba",
-    zh: "亚喀巴",
-    country: "Jordan",
-    countryZh: "约旦",
-    code: "JOAQJ",
-  },
-  {
-    id: "Djibouti",
-    zh: "吉布提",
-    country: "Djibouti",
-    countryZh: "吉布提",
-    code: "DJJIB",
-  },
-  {
-    id: "Port Sudan",
-    zh: "苏丹港",
-    country: "Sudan",
-    countryZh: "苏丹",
-    code: "SDPZU",
-  },
-];
+// One record per port. Index cards, country pages and both languages read locode
+// from this object by port id. Do not keep a second code list and zip it by index.
+export const PORTS = {
+  Jeddah: { zh: "吉达", country: "Saudi Arabia", countryZh: "沙特阿拉伯", locode: "SAJED" },
+  Sokhna: { zh: "苏赫纳", country: "Egypt", countryZh: "埃及", locode: "EGSOK" },
+  Aqaba: { zh: "亚喀巴", country: "Jordan", countryZh: "约旦", locode: "JOAQJ" },
+  Djibouti: { zh: "吉布提", country: "Djibouti", countryZh: "吉布提", locode: "DJJIB" },
+  "Port Sudan": { zh: "苏丹港", country: "Sudan", countryZh: "苏丹", locode: "SDPZU" },
+} as const;
+export type PortId = keyof typeof PORTS;
+
+export const destinations = (Object.keys(PORTS) as PortId[]).map((id) => {
+  const port = PORTS[id];
+  return { id, zh: port.zh, country: port.country, countryZh: port.countryZh, code: port.locode };
+});
+
+// The code drawn on an index card must be this port's locode and nothing else.
+export function assertCardLocode(portId: string, shown: string): string {
+  const expected = (PORTS as Record<string, { locode: string } | undefined>)[portId]?.locode;
+  if (shown !== expected || !/^[A-Z]{5}$/.test(shown)) {
+    throw new Error(`Index card locode mismatch: ${portId} shows "${shown}", config locode is "${expected ?? "missing"}".`);
+  }
+  return shown;
+}
+
+// Card title and code come from the same port record. A shifted code, or a
+// grade label in the code slot, fails the build and names the card.
+export function assertIndexCard(port: { id: string; zh: string; code: string }): string {
+  const config = (PORTS as Record<string, { zh: string; locode: string } | undefined>)[port.id];
+  if (!config || port.zh !== config.zh) {
+    throw new Error(`Index card locode mismatch: ${port.id} shows "${port.code}", config locode is "${config?.locode ?? "missing"}".`);
+  }
+  return assertCardLocode(port.id, port.code);
+}
+
+for (const port of destinations) assertIndexCard(port);
 // Prices are USD per container; LCL is USD per chargeable tonne (W/M).
 export const containers = ["20GP", "40GP", "40HC", "LCL"] as const;
 

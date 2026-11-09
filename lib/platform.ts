@@ -1,5 +1,6 @@
 import {
   addDays,
+  assertIndexCard,
   destinations,
   laneView,
   marketSummary,
@@ -62,6 +63,7 @@ export function liveIndex(entries: PriceEntry[], today: string): IndexEntry[] {
     );
   };
   return destinations.map((port) => {
+    assertIndexCard(port);
     const current = windowMedian(port.id, today);
     const previous = windowMedian(port.id, addDays(today, -7));
     return {

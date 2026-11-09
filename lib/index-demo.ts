@@ -1,4 +1,4 @@
-import { destinations } from "./rates.ts";
+import { assertIndexCard, destinations } from "./rates.ts";
 
 // Illustrative values only, never input to pricing, aggregation or inquiries.
 const metrics: Record<string, { weeklyMedians: number[]; sampleSize: number }> = {
@@ -15,6 +15,7 @@ export const demoIndex = {
   currency: "USD",
   equipment: "40HQ",
   entries: destinations.map((port) => {
+    assertIndexCard(port);
     const value = port ? metrics[port.id] : undefined;
     const median = value?.weeklyMedians.at(-1) ?? null;
     const previous = value?.weeklyMedians.at(-2);

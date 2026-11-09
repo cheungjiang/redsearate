@@ -57,8 +57,21 @@ test("country FAQ answers lead with the live median and the cheapest origin", ()
   const saudi = countries[0];
   const [cost, cheapest] = countryFaqs(saudi, countryStats(entries, "2026-11-08", "Jeddah"), "2026-11-08", "en");
   assert.match(cost.a, /^As of 2026-11-08, the median 40HQ .* Jeddah is US\$2,900 per container, based on 2 quotes/);
-  assert.match(cheapest.a, /Shenzhen had the lowest 40HQ median to Jeddah, at US\$2,800 \(1 quote\)/);
+  assert.equal(cheapest.a, "Origin-level samples are still thin for this port — compare the table below together with the sample counts.");
+  assert.doesNotMatch(cheapest.a, /Shenzhen|Shanghai|2,800/);
+  const qualified = [
+    ...[8200, 8200, 8100, 8300, 8200].map((price) => quote({ origin: "Ningbo", price })),
+    quote({ origin: "Guangzhou (Nansha)", price: 4890 }),
+    ...[7000, 7100, 6900].map((price) => quote({ origin: "Shanghai", price })),
+  ];
+  const named = countryFaqs(saudi, countryStats(qualified, "2026-11-08", "Jeddah"), "2026-11-08", "en")[1].a;
+  assert.match(named, /Shanghai had the lowest 40HQ median to Jeddah, at US\$7,000 \(3 quotes\), out of 2 origin ports compared, among origin ports with at least 3 quotes/);
+  assert.doesNotMatch(named, /4,890|Nansha|Ningbo/);
+  const zh = countryFaqs(saudi, countryStats(qualified, "2026-11-08", "Jeddah"), "2026-11-08", "zh")[1].a;
+  assert.match(zh, /在至少有 3 条报价的起运港里，上海出运的 40HQ 中位数最低，为 US\$7,000（3 条报价），共比较了 2 个起运港/);
+  assert.doesNotMatch(zh, /4,890|南沙|宁波/);
   const empty = countryFaqs(saudi, countryStats([], "2026-11-08", "Jeddah"), "2026-11-08", "en");
   assert.match(empty[0].a, /no 40HQ market quotes/);
-  assert.equal(empty.length, 3);
+  assert.equal(empty[1].a, cheapest.a);
+  assert.equal(empty.length, 4);
 });

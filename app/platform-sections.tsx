@@ -4,7 +4,7 @@ import { type IndexEntry, type LatestQuote, type SampleRate } from "../lib/platf
 import { sparklinePoints } from "../lib/sparkline";
 import { RatesTable } from "./rates-table";
 import type { JebelAliReference } from "../lib/jebel-ali-prices";
-import { countrySlug, destinations, extraOriginNames, origins, type Shipment, type Snapshot } from "../lib/rates";
+import { assertIndexCard, countrySlug, destinations, extraOriginNames, origins, type Shipment, type Snapshot } from "../lib/rates";
 
 type Locale = { lang: "en" | "zh" };
 const translate = (lang: Locale["lang"]) =>
@@ -44,7 +44,7 @@ export function IndexSnapshot({ lang, liveEntries, demoEntries, asOf, brief }: L
       <div id="index-values" className="index-grid" aria-live="polite">
         {entries.map(({ port, median, weekChange, sampleSize, weeklyMedians }) => (
           <article className="index-port" key={port.id}>
-            <span className="index-code">{port.code}</span>
+            <span className="index-code">{assertIndexCard(port)}</span>
             <h3><a href={`${lang === "zh" ? "/zh" : ""}/${countrySlug(port.id)}/`}>{lang === "zh" ? port.zh : port.id}</a></h3>
             <dl>
               <div className="index-price-row"><dt>{t("40HQ median", "40HQ 中位数")}</dt><dd className="index-median">{median === null ? t("Unavailable", "暂不可用") : `$${median.toLocaleString("en-US")}`}</dd></div>

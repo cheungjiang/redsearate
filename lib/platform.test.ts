@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import * as platform from "./platform.ts";
-import { defaultShipment, laneKey } from "./rates.ts";
+import { assertCardLocode, defaultShipment, laneKey, PORTS } from "./rates.ts";
 import type { PriceEntry, Snapshot } from "./rates.ts";
 
 test("platform navigation has the six requested destinations in order", () => {
@@ -37,6 +37,15 @@ test("index has the approved five ports and stays unavailable without data", () 
     "Jeddah", "Sokhna", "Aqaba", "Djibouti", "Port Sudan",
   ]);
   assert.equal(index[3].port.code, "DJJIB");
+  assert.deepEqual(index.map((row) => [row.port.id, row.port.code]), [
+    ["Jeddah", "SAJED"],
+    ["Sokhna", "EGSOK"],
+    ["Aqaba", "JOAQJ"],
+    ["Djibouti", "DJJIB"],
+    ["Port Sudan", "SDPZU"],
+  ]);
+  for (const row of index) assert.equal(assertCardLocode(row.port.id, row.port.code), PORTS[row.port.id].locode);
+  assert.throws(() => assertCardLocode("Jeddah", "EGSOK"), /Jeddah shows "EGSOK"/);
   for (const item of index) {
     assert.equal(item.median, null);
     assert.equal(item.weekChange, null);

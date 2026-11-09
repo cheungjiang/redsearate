@@ -255,17 +255,22 @@ export function countryFaqs(country: Country, stats: CountryStats, today: string
         ? `近 ${INDEX_WINDOW_DAYS} 天暂未收集到中国到${portName}的 40HQ 市场报价，请直接询价。`
         : `We have no 40HQ market quotes from China to ${portName} in the last ${INDEX_WINDOW_DAYS} days. Ask us for a quote.`,
   });
-  const priced = stats.origins.filter((o) => o.containers["40HC"]);
-  if (priced.length > 1) {
-    const [cheapest] = priced;
-    const s = cheapest.containers["40HC"]!;
-    faqs.push({
-      q: zh ? `从中国哪个港口出运到${portName}最便宜？` : `Which Chinese port is cheapest for shipping to ${portName}?`,
-      a: zh
-        ? `近 ${INDEX_WINDOW_DAYS} 天的报价中，${originName(cheapest.origin)}出运的 40HQ 中位数最低，为 ${money(s.median)}（${quotes(s.count)}），共比较了 ${priced.length} 个起运港。离工厂最近的港口加上拖车费，往往才是总成本最低的选择。`
-        : `In the last ${INDEX_WINDOW_DAYS} days, ${originName(cheapest.origin)} had the lowest 40HQ median to ${portName}, at ${money(s.median)} (${quotes(s.count)}), out of ${priced.length} origin ports compared. Add trucking from your factory: the nearest port is often the cheapest in total.`,
-    });
-  }
+  // Same rule for the answer box and this FAQ: only origins with at least 3
+  // recent 40HQ quotes can be named. Fewer than that is not a conclusion.
+  const MIN_ORIGIN_QUOTES = 3;
+  const candidates = stats.origins.filter((o) => (o.containers["40HC"]?.count ?? 0) >= MIN_ORIGIN_QUOTES);
+  const cheapest = candidates[0];
+  const s = cheapest?.containers["40HC"];
+  faqs.push({
+    q: zh ? `从中国哪个港口出运到${portName}最便宜？` : `Which Chinese port is cheapest for shipping to ${portName}?`,
+    a: !cheapest || !s
+      ? zh
+        ? "该港口按起运港拆开的样本仍然偏少，请对照下方表格和样本量一起看。"
+        : "Origin-level samples are still thin for this port — compare the table below together with the sample counts."
+      : zh
+        ? `近 ${INDEX_WINDOW_DAYS} 天的报价中，在至少有 ${MIN_ORIGIN_QUOTES} 条报价的起运港里，${originName(cheapest.origin)}出运的 40HQ 中位数最低，为 ${money(s.median)}（${quotes(s.count)}），共比较了 ${candidates.length} 个起运港。离工厂最近的港口加上拖车费，往往才是总成本最低的选择。`
+        : `In the last ${INDEX_WINDOW_DAYS} days, ${originName(cheapest.origin)} had the lowest 40HQ median to ${portName}, at ${money(s.median)} (${quotes(s.count)}), out of ${candidates.length} origin ${candidates.length === 1 ? "port" : "ports"} compared, among origin ports with at least ${MIN_ORIGIN_QUOTES} quotes. Add trucking from your factory: the nearest port is often the cheapest in total.`,
+  });
   faqs.push({
     q: zh ? `中国到${name}海运要多久？` : `How long does shipping from China to ${name} take?`,
     a: country.transit
