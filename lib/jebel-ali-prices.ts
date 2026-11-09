@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
-import { addDays } from "./rates.ts";
+import { countryStats, type CountryStats } from "./countries.ts";
+import { addDays, type PriceEntry } from "./rates.ts";
 import type { NotionPage } from "./notion-prices.ts";
 import type { JebelAliContainer } from "./jebel-ali.ts";
 
@@ -15,6 +16,7 @@ export type JebelAliMarketQuote = {
   price: number;
   quoteDate: string;
   validUntil: string | null;
+  carrier?: string;
 };
 
 const containers = new Set<JebelAliContainer>(["20GP", "40GP", "40HQ"]);
@@ -53,9 +55,41 @@ export function fromJebelAliPage(
   if (!(price > 0 && price <= 50000)) return { skip: "价格需在 0–50000 美元之间" };
   const quoteDate = day(page.properties["报价日期"]?.date?.start) ?? day(page.created_time)!;
   const validUntil = day(page.properties["有效期"]?.date?.end) ?? day(page.properties["有效期"]?.date?.start);
+  const carrier = (page.properties["船公司"]?.rich_text ?? []).map((part) => part.plain_text).join("").trim();
   return {
-    quote: { origin, container: container as JebelAliContainer, price, quoteDate, validUntil },
+    quote: {
+      origin,
+      container: container as JebelAliContainer,
+      price,
+      quoteDate,
+      validUntil,
+      ...(carrier ? { carrier } : {}),
+    },
   };
+}
+
+// Same window, outlier drop and rounded median as a country page. 40HQ is stored
+// under that name here and summarised as 40HC, which is how the country table reads it.
+export function jebelAliMarketStats(quotes: readonly JebelAliMarketQuote[], today: string): CountryStats {
+  const entries: PriceEntry[] = quotes.map((quote, index) => ({
+    id: index + 1,
+    tier: "market",
+    origin: quote.origin,
+    destination: JEBEL_ALI_DESTINATION,
+    container: quote.container === "40HQ" ? "40HC" : quote.container,
+    price: quote.price,
+    validUntil: quote.validUntil ?? quote.quoteDate,
+    carrier: quote.carrier ?? "",
+    freeDays: null,
+    routing: "",
+    transitMin: null,
+    transitMax: null,
+    source: "",
+    note: "",
+    submittedBy: "",
+    createdAt: new Date(`${quote.quoteDate}T12:00:00+08:00`).toISOString(),
+  }));
+  return countryStats(entries, today, JEBEL_ALI_DESTINATION);
 }
 
 function inForce(quote: JebelAliMarketQuote, today: string) {

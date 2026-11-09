@@ -146,13 +146,13 @@ export function JebelAliPlanner({
         </form>
 
         <div className="jebel-result" aria-live="polite">
-          <span>{t("Market reference", "市场参考价")}</span>
+          <span>{t("This sailing", "这一班船")}</span>
           <strong className="jebel-money">{price == null ? t("Ask for this container", "该柜型请询价") : money}</strong>
           {selected && <p>{selected.name} · {container} · ETD {selected.etd}</p>}
           <p className="jebel-fine">
             {t(
-              "The lower published market price. The price we confirm is the one that applies. Excludes local charges, duty and inland transport.",
-              "已发布市场价里较低的一条。询价后以我们确认的价格为准。不含港杂、关税和内陆运输。",
+              "Figure for this ETD, not the market median below.",
+              "这一水的页面价格，不是下方的市场中位数。",
             )}
           </p>
         </div>

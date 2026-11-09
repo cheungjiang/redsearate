@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { faqs, type Guide } from "./content.ts";
 import { addDays, destinations, extraOriginNames, origins } from "./rates.ts";
 import type { Country, CountryStats } from "./countries.ts";
+import { JEBEL_ALI_SLUG, JEBEL_ALI_TITLE, jebelAliDescription, jebelAliFaqs } from "./jebel-ali.ts";
 import { INDEX_WINDOW_DAYS, type IndexEntry } from "./platform.ts";
 
 export const SITE = "https://redsearate.com";
@@ -323,6 +324,43 @@ export function countryJsonLd(country: Country, stats: CountryStats, today: stri
           "@type": "Question",
           name: f.q,
           acceptedAnswer: { "@type": "Answer", text: f.a },
+        })),
+      },
+      breadcrumbs([
+        { name: "RedSeaRate", path: home(lang) },
+        { name: zh ? "航线运价" : "Rates", path: zh ? "/zh/rates/" : "/rates/" },
+        { name: title, path },
+      ]),
+    ],
+  };
+}
+
+export function jebelAliJsonLd(stats: CountryStats, today: string, lang: Lang) {
+  const zh = lang === "zh";
+  const path = `${zh ? "/zh" : ""}/${JEBEL_ALI_SLUG}/`;
+  const title = JEBEL_ALI_TITLE[lang];
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Article",
+        headline: title,
+        description: jebelAliDescription(today, lang),
+        inLanguage: zh ? "zh-CN" : "en",
+        dateModified: today,
+        image: `${SITE}/og.jpg`,
+        mainEntityOfPage: `${SITE}${path}`,
+        author: { "@id": organization["@id"] },
+        publisher: organization,
+      },
+      {
+        "@type": "FAQPage",
+        url: `${SITE}${path}`,
+        inLanguage: zh ? "zh-CN" : "en",
+        mainEntity: jebelAliFaqs(today, lang, stats).map((faq) => ({
+          "@type": "Question",
+          name: faq.q,
+          acceptedAnswer: { "@type": "Answer", text: faq.a },
         })),
       },
       breadcrumbs([

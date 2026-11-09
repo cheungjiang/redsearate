@@ -6,15 +6,18 @@ import {
   JEBEL_ALI_DIRECT,
   JEBEL_ALI_SLUG,
   JEBEL_ALI_TRANSIT_DAYS,
+  jebelAliCheapest,
   jebelAliEarliestEtd,
   jebelAliFaqs,
+  jebelAliMarketNote,
   jebelAliMoney,
   jebelAliOriginName,
+  jebelAliOverview,
   jebelAliSailings,
   type JebelAliContainer,
 } from "../lib/jebel-ali";
-import { jebelAliGoodPrice, readJebelAliQuotes } from "../lib/jebel-ali-prices";
-import { SITE } from "../lib/seo";
+import { jebelAliGoodPrice, jebelAliMarketStats, readJebelAliQuotes } from "../lib/jebel-ali-prices";
+import { jebelAliJsonLd } from "../lib/seo";
 import { contact } from "../lib/site-data";
 import { JebelAliCta } from "./jebel-ali-cta";
 import { JebelAliMap } from "./jebel-ali-map";
@@ -27,8 +30,9 @@ export default function JebelAliPage({ lang, today }: { lang: "en" | "zh"; today
   const t = (en: string, cn: string) => (zh ? cn : en);
   const pick = (text: { en: string; zh: string }) => (zh ? text.zh : text.en);
   const href = (inZh = zh) => `${inZh ? "/zh" : ""}/${JEBEL_ALI_SLUG}/`;
-  const faqs = jebelAliFaqs(today, lang);
   const quotes = readJebelAliQuotes();
+  const market = jebelAliMarketStats(quotes, today);
+  const faqs = jebelAliFaqs(today, lang, market);
   const containers: JebelAliContainer[] = ["20GP", "40GP", "40HQ"];
   const origins = jebelAliSailings.map((sailing) => ({
     id: sailing.origin,
@@ -69,28 +73,11 @@ export default function JebelAliPage({ lang, today }: { lang: "en" | "zh"; today
       body: t("After arrival at Jebel Ali, the cargo is picked up at the port.", "货到杰贝阿里后在港提取。"),
     },
   ];
-  const points = [
-    t("A market reference, the lower published price.", "市场参考价，取已发布记录里较低的一条。"),
-    t("Excludes local charges, duty and inland transport.", "不含港杂、关税和内陆运输。"),
-  ];
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "FAQPage",
-        inLanguage: zh ? "zh-CN" : "en",
-        url: `${SITE}${href()}`,
-        mainEntity: faqs.map((faq) => ({
-          "@type": "Question",
-          name: faq.q,
-          acceptedAnswer: { "@type": "Answer", text: faq.a },
-        })),
-      },
-    ],
-  };
+  const cell = (sample?: { median: number; count: number }) =>
+    sample ? `${jebelAliMoney(sample.median)} (${sample.count})` : "—";
   return (
     <SubpageShell lang={lang} className="guide-page country-page jebel-ali-page" languageHref={href(!zh)}>
-      <JsonLd data={jsonLd} />
+      <JsonLd data={jebelAliJsonLd(market, today, lang)} />
       <p className="jebel-crumb wrap">
         <a href={zh ? "/zh/rates/" : "/rates/"}>{t("Rates", "航线运价")}</a>
         {" / "}
@@ -105,8 +92,8 @@ export default function JebelAliPage({ lang, today }: { lang: "en" | "zh"; today
             <h1>{t("Shipping from China to Jebel Ali", "中国到杰贝阿里海运")}</h1>
             <p>
               {t(
-                "Qingdao, Shanghai, Ningbo, Shenzhen and Nansha can load. The price is a market reference. The quote we confirm is the one that applies. This page is separate from the Red Sea index.",
-                "青岛、上海、宁波、深圳、广州南沙都可以出运。页面价格是市场参考。询价后以我们确认的价格为准。这一页不属于红海指数。",
+                "Qingdao, Shanghai, Ningbo, Shenzhen and Nansha can load on this sailing.",
+                "青岛、上海、宁波、深圳、广州南沙都可以出运这一班。",
               )}
             </p>
             <p>
@@ -128,7 +115,7 @@ export default function JebelAliPage({ lang, today }: { lang: "en" | "zh"; today
               <dd><time dateTime={jebelAliEarliestEtd()}>{jebelAliEarliestEtd()}</time></dd>
             </div>
             <div>
-              <dt>{t("40HQ market reference", "40HQ 市场参考")}</dt>
+              <dt>{t("40HQ on this sailing", "这一班 40HQ")}</dt>
               <dd className="jebel-money">{headline ? jebelAliMoney(headline.price!) : t("On request", "请询价")}</dd>
               {headline && <span>{t(`Lower price, ${headlineName}`, `较低一条，${headlineName}`)}</span>}
             </div>
@@ -160,20 +147,56 @@ export default function JebelAliPage({ lang, today }: { lang: "en" | "zh"; today
             <h2 id="jebel-gateway">{t("A main gate to the Middle East", "通往中东的关键门户")}</h2>
             <p>{t("Jebel Ali is in Dubai. This page is separate from the Red Sea index.", "杰贝阿里在迪拜。这一页不属于红海指数。")}</p>
           </div>
-          <ul>
-            {points.map((point) => <li key={point}>{point}</li>)}
-          </ul>
         </div>
       </section>
       </div>
 
       <article className="guide-article country-article wrap">
+        <h2>{t("Market median", "市场中位数")}</h2>
+        <p>
+          {t(
+            "This section is the market median of published quotes. The ETD and the figure in the sailing block above belong to that sailing.",
+            "这一节是已发布报价的市场中位数。上面船期里的 ETD 和价格属于那一班船。",
+          )}
+        </p>
+        <p>{jebelAliOverview(market, today, lang)}</p>
+        <p>{jebelAliCheapest(market, lang)}</p>
+
+        <h2>{t("Current Jebel Ali rates by China origin port", "中国各起运港到杰贝阿里的当前运价")}</h2>
+        {market.origins.length ? (
+          <div className="rates-scroll" tabIndex={0} role="region" aria-label={t("Rates by origin port", "各起运港运价")}>
+            <table className="country-table">
+              <thead>
+                <tr>
+                  <th scope="col">{t("Origin port", "起运港")}</th>
+                  <th scope="col">{t("20GP median (quotes)", "20GP 中位数（报价数）")}</th>
+                  <th scope="col">{t("40HQ median (quotes)", "40HQ 中位数（报价数）")}</th>
+                  <th scope="col">{t("Carriers", "船公司")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {market.origins.map((origin) => (
+                  <tr key={origin.origin}>
+                    <th scope="row">{jebelAliOriginName(origin.origin, lang)}</th>
+                    <td>{cell(origin.containers["20GP"])}</td>
+                    <td>{cell(origin.containers["40HC"])}</td>
+                    <td>{origin.carriers.join(", ") || t("Unavailable", "未注明")}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p>{t("No market quotes collected for this port in the last 28 days.", "近 28 天暂未收集到该港口的市场报价。")}</p>
+        )}
+        <p className="platform-note">{jebelAliMarketNote(market, lang)}</p>
+
         <h2>{t("What a quote covers", "费用包含与不包含")}</h2>
         <div className="cost-split">
           <div>
             <h3>{t("Included", "包含")}</h3>
             <ul>
-              <li>{t("Port-to-port ocean freight. The figure above is a market reference, and the price we confirm is the one that applies.", "港到港海运费。上面的数字是市场参考，询价后以我们确认的价格为准。")}</li>
+              <li>{t("Port-to-port ocean freight.", "港到港海运费。")}</li>
             </ul>
           </div>
           <div>

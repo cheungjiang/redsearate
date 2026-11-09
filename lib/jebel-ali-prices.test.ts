@@ -40,6 +40,11 @@ test("Jebel Ali publish keeps a market quote and drops everything else", () => {
   assert.ok("skip" in fromJebelAliPage(page({ ...published, 报价类型: "你们可提供的报价" })));
   assert.ok("skip" in fromJebelAliPage(page({ ...published, 币种: "CNY" })));
   assert.equal(JSON.stringify(quote).includes("来源"), false);
+  const named = page(published);
+  named.properties["船公司"] = { type: "rich_text", rich_text: [{ plain_text: "HPL" }] };
+  const withCarrier = fromJebelAliPage(named);
+  assert.equal("quote" in withCarrier && withCarrier.quote.carrier, "HPL");
+  assert.equal(quote.quote.carrier, undefined);
   const byTitle = fromJebelAliPage({
     ...page({ ...published, 目的港: "Jeddah" }),
     properties: {

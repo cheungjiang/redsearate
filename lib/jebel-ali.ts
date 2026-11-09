@@ -1,6 +1,16 @@
+import type { CountryStats } from "./countries.ts";
+import { INDEX_WINDOW_DAYS } from "./platform.ts";
 import { extraOriginNames, origins } from "./rates.ts";
 
 export const JEBEL_ALI_SLUG = "jebel-ali";
+export const JEBEL_ALI_TITLE = {
+  en: "Shipping from China to Jebel Ali: Freight Rates & Transit Times",
+  zh: "中国到杰贝阿里海运：运价与航程",
+} as const;
+
+export function jebelAliTitle(lang: "en" | "zh") {
+  return `${JEBEL_ALI_TITLE[lang]} | RedSeaRate`;
+}
 export const JEBEL_ALI_CODE = "AEJEA";
 export const JEBEL_ALI_TRANSIT_DAYS = 26;
 export const JEBEL_ALI_DIRECT = true;
@@ -64,21 +74,70 @@ export function jebelAliDescription(_today: string, lang: "en" | "zh") {
       : "The listed China to Jebel Ali sailings have passed. Jebel Ali is in Dubai, not Saudi Arabia. Ask for a new quote.";
   }
   return lang === "zh"
-    ? "青岛、上海、宁波、深圳、广州南沙可出运到杰贝阿里。页面上是市场参考价。此页不属于红海指数。"
-    : "Qingdao, Shanghai, Ningbo, Shenzhen and Nansha load for Jebel Ali. Shown price is a market reference. Separate from the Red Sea index.";
+    ? "各起运港到杰贝阿里的运价，以及已列的一班船期。杰贝阿里在迪拜。此页不属于红海指数。"
+    : "Rates from China origin ports to Jebel Ali, plus one listed sailing. Jebel Ali is in Dubai, separate from the Red Sea index.";
 }
 
-export function jebelAliFaqs(_today: string, lang: "en" | "zh") {
+const quotesLabel = (n: number, lang: "en" | "zh") =>
+  lang === "zh" ? `${n} 条报价` : `${n} ${n === 1 ? "quote" : "quotes"}`;
+
+export function jebelAliOverview(stats: CountryStats, today: string, lang: "en" | "zh") {
+  const zh = lang === "zh";
+  const port = zh ? "杰贝阿里" : "Jebel Ali";
+  const hq = stats.containers["40HC"];
+  const gp = stats.containers["20GP"];
+  if (!hq) {
+    return zh
+      ? `近 ${INDEX_WINDOW_DAYS} 天暂未收集到中国到${port}的 40HQ 市场报价。`
+      : `No 40HQ market quotes from China to ${port} in the last ${INDEX_WINDOW_DAYS} days.`;
+  }
+  const range = `${jebelAliMoney(hq.low)}–${jebelAliMoney(hq.high)}`;
+  const gpSentence = gp
+    ? zh
+      ? `20GP 中位数为 ${jebelAliMoney(gp.median)}（${quotesLabel(gp.count, lang)}）。`
+      : ` The 20GP median is ${jebelAliMoney(gp.median)} (${quotesLabel(gp.count, lang)}).`
+    : "";
+  return zh
+    ? `截至 ${today}，中国到${port}的 40HQ 海运市场中位数为每柜 ${jebelAliMoney(hq.median)}，基于近 ${INDEX_WINDOW_DAYS} 天的 ${quotesLabel(hq.count, lang)}（区间 ${range}）。${gpSentence}`
+    : `As of ${today}, the median 40HQ ocean freight market rate from China to ${port} is ${jebelAliMoney(hq.median)} per container, based on ${quotesLabel(hq.count, lang)} in the last ${INDEX_WINDOW_DAYS} days (range ${range}).${gpSentence}`;
+}
+
+export function jebelAliCheapest(stats: CountryStats, lang: "en" | "zh") {
+  const zh = lang === "zh";
+  const port = zh ? "杰贝阿里" : "Jebel Ali";
+  const minQuotes = 3;
+  const candidates = stats.origins.filter((origin) => (origin.containers["40HC"]?.count ?? 0) >= minQuotes);
+  const cheapest = candidates[0];
+  const sample = cheapest?.containers["40HC"];
+  if (!cheapest || !sample) {
+    return zh
+      ? "该港口按起运港拆开的样本仍然偏少，请对照下方表格和样本量一起看。"
+      : "Origin-level samples are still thin for this port — compare the table below together with the sample counts.";
+  }
+  const name = jebelAliOriginName(cheapest.origin, lang);
+  return zh
+    ? `近 ${INDEX_WINDOW_DAYS} 天的报价中，在至少有 ${minQuotes} 条报价的起运港里，${name}出运的 40HQ 中位数最低，为 ${jebelAliMoney(sample.median)}（${quotesLabel(sample.count, lang)}），共比较了 ${candidates.length} 个起运港。离工厂最近的港口加上拖车费，往往才是总成本最低的选择。`
+    : `In the last ${INDEX_WINDOW_DAYS} days, ${name} had the lowest 40HQ median to ${port}, at ${jebelAliMoney(sample.median)} (${quotesLabel(sample.count, lang)}), out of ${candidates.length} origin ${candidates.length === 1 ? "port" : "ports"} compared, among origin ports with at least ${minQuotes} quotes. Add trucking from your factory: the nearest port is often the cheapest in total.`;
+}
+
+export function jebelAliMarketNote(stats: CountryStats, lang: "en" | "zh") {
+  return lang === "zh"
+    ? `市场参考，不是可订舱报价。港到港海运费，美元/柜，近 ${INDEX_WINDOW_DAYS} 天收集的报价中位数（共 ${stats.quotes} 条）。不含本地费用、关税和内陆运输。`
+    : `A market reference, not a bookable offer. Port-to-port ocean freight in USD per container, the median of quotes collected in the last ${INDEX_WINDOW_DAYS} days (${stats.quotes} in total). Local charges, duty and inland transport are not included.`;
+}
+
+export function jebelAliFaqs(today: string, lang: "en" | "zh", stats: CountryStats) {
   const zh = lang === "zh";
   const etd = zh
     ? `${etdLines(jebelAliSailings, lang).join("。")}。`
     : `${etdLines(jebelAliSailings, lang).join(". ")}.`;
+  const reading = zh
+    ? "这个中位数是市场参考，不是可订舱报价，不含本地费用。"
+    : "This median is a market reference, not a bookable rate, and it excludes local charges.";
   return [
     {
-      q: zh ? "页面上有价格吗？" : "Does this page show a price?",
-      a: zh
-        ? "页面上的数字是已允许发布的市场价里较低的一条。询价后以我们确认的价格为准。表里没有的柜型请询价。"
-        : "The figure is the lower market price cleared for the page. The price we confirm is the one that applies. A container with no row is on request.",
+      q: zh ? "中国到杰贝阿里一个集装箱海运费多少钱？" : "How much does it cost to ship a container from China to Jebel Ali?",
+      a: `${jebelAliOverview(stats, today, lang)} ${reading}`,
     },
     { q: zh ? "这几条船的 ETD 是哪天？" : "What are the ETDs?", a: etd },
     {
@@ -99,9 +158,7 @@ export function jebelAliFaqs(_today: string, lang: "en" | "zh") {
     },
     {
       q: zh ? "这份服务含什么？" : "What does this service include?",
-      a: zh
-        ? "港到港海运费。页面上的数字是市场参考，不是确认价。"
-        : "Port-to-port ocean freight. The figure on the page is a market reference, not the confirmed price.",
+      a: zh ? "港到港海运费。" : "Port-to-port ocean freight.",
     },
     {
       q: zh ? "这份服务不含什么？" : "What does this service leave out?",

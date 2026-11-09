@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import JebelAliPage from "../../jebel-ali-page";
-import { JEBEL_ALI_SLUG, jebelAliDescription } from "../../../lib/jebel-ali";
+import { JEBEL_ALI_SLUG, jebelAliDescription, jebelAliTitle } from "../../../lib/jebel-ali";
 import { pageMetadata } from "../../../lib/seo";
 import { shanghaiDate } from "../../../lib/rates";
 
@@ -10,7 +10,7 @@ export function generateMetadata(): Metadata {
     lang: "zh",
     path: `/zh/${JEBEL_ALI_SLUG}/`,
     alternates: { en: `/${JEBEL_ALI_SLUG}/`, zh: `/zh/${JEBEL_ALI_SLUG}/` },
-    title: "中国到杰贝阿里海运 | RedSeaRate",
+    title: jebelAliTitle("zh"),
     description: jebelAliDescription(today, "zh"),
     type: "article",
   });

@@ -13,6 +13,7 @@ export const extraOriginNames: Record<string, string> = {
   Tianjin: "天津",
   Xiamen: "厦门",
   Foshan: "佛山",
+  Qinzhou: "钦州",
 };
 // One record per port. Index cards, country pages and both languages read locode
 // from this object by port id. Do not keep a second code list and zip it by index.
