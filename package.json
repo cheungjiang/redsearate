@@ -7,6 +7,7 @@
     "dev": "next dev --hostname 0.0.0.0",
     "build": "next build",
     "fetch-prices": "node --experimental-strip-types scripts/fetch-notion.ts",
+    "market-brief": "node --experimental-strip-types scripts/new-market-brief.ts",
     "test": "node --experimental-strip-types --test lib/*.test.ts",
     "typecheck": "tsc --noEmit"
   },

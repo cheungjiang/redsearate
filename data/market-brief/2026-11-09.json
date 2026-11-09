@@ -1,0 +1,53 @@
+{
+  "date": "2026-11-09",
+  "windowDays": 28,
+  "container": "40HQ",
+  "outliersDropped": true,
+  "comparedWith": null,
+  "method": {
+    "en": "Each 40HQ median uses market quotes collected in the last 28 days, with outliers removed. It is a market reading, not a bookable offer. A change in the quotes that make up the sample also moves the week-on-week figure, so that figure is not a forecast.",
+    "zh": "每个 40HQ 中位数取近 28 天收集到的市场报价，已剔除离群值。这是市场读数，不是可订舱报价。样本构成变化也会影响周环比，所以周环比不是涨跌预测。"
+  },
+  "ports": [
+    {
+      "destination": "Jeddah",
+      "median": 8450,
+      "count": 16,
+      "low": 7700,
+      "high": 9200,
+      "weekChange": null
+    },
+    {
+      "destination": "Sokhna",
+      "median": 6800,
+      "count": 8,
+      "low": 6500,
+      "high": 7100,
+      "weekChange": null
+    },
+    {
+      "destination": "Aqaba",
+      "median": 7600,
+      "count": 35,
+      "low": 6450,
+      "high": 8400,
+      "weekChange": null
+    },
+    {
+      "destination": "Djibouti",
+      "median": 7900,
+      "count": 4,
+      "low": 7900,
+      "high": 9714,
+      "weekChange": null
+    },
+    {
+      "destination": "Port Sudan",
+      "median": 8020,
+      "count": 8,
+      "low": 4890,
+      "high": 8100,
+      "weekChange": null
+    }
+  ]
+}
