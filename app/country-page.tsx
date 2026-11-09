@@ -6,12 +6,13 @@ import { JsonLd } from "./json-ld";
 import SubpageShell from "./subpage-shell";
 
 export default function CountryPage({
-  lang, country, stats, today,
+  lang, country, stats, today, laneSlugs = {},
 }: {
   lang: "en" | "zh";
   country: Country;
   stats: CountryStats;
   today: string;
+  laneSlugs?: Record<string, string>;
 }) {
   const zh = lang === "zh";
   const t = (en: string, cn: string) => zh ? cn : en;
@@ -60,7 +61,7 @@ export default function CountryPage({
               <tbody>
                 {stats.origins.map((o) => (
                   <tr key={o.origin}>
-                    <th scope="row">{originName(o.origin)}</th>
+                    <th scope="row">{laneSlugs[o.origin] ? <a href={`${zh ? "/zh" : ""}/${laneSlugs[o.origin]}/`}>{originName(o.origin)}</a> : originName(o.origin)}</th>
                     <td>{cell(o.containers["20GP"])}</td>
                     <td>{cell(o.containers["40HC"])}</td>
                     <td>{o.carriers.join(", ") || "—"}</td>

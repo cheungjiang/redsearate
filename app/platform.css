@@ -720,6 +720,10 @@
 .editorial-site .country-table td {
   font-variant-numeric: tabular-nums;
 }
+.editorial-site .country-table a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
 .editorial-site .country-article .platform-note {
   margin-top: 12px;
 }
