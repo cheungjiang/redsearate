@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { shanghaiDate, summarize, type PriceEntry } from "./rates";
-import { latestQuotes, liveIndex } from "./platform";
+import { dailyIndex, latestQuotes, liveIndex } from "./platform";
 import { simulationPreview } from "./simulation.server";
 import { countries, countryStats } from "./countries";
 import { jebelAliReferences, readJebelAliQuotes } from "./jebel-ali-prices";
@@ -37,6 +37,7 @@ export async function homeData() {
   return {
     snapshot: summarize(entries, today),
     index: liveIndex(entries, today),
+    daily: dailyIndex(entries, today),
     latest: latestQuotes(entries, today),
     contact,
     simulation: simulationPreview(),

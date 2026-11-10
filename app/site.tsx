@@ -23,15 +23,15 @@ import {
   extraOriginNames,
   origins,
   estimate,
-  laneView,
   pricedLane,
   MARKET_WINDOW_DAYS,
   type Shipment,
   type Snapshot,
 } from "../lib/rates";
-import { platformNavigation, type IndexEntry, type LatestQuote, type SimulationPreview } from "../lib/platform";
+import { platformNavigation, type DailyIndexSeries, type IndexEntry, type LatestQuote, type SimulationPreview } from "../lib/platform";
 import type { JebelAliReference } from "../lib/jebel-ali-prices";
 import { marketBrief } from "../lib/seo";
+import DailyIndexChart from "./daily-index-chart";
 import { CommunityPreview, IndexSnapshot, LatestPosts, RatesPreview } from "./platform-sections";
 import { faqs, guides, type Localized } from "../lib/content";
 import { homeInquiryText } from "../lib/inquiry";
@@ -44,6 +44,7 @@ export default function Home({
   lang,
   snapshot,
   index,
+  daily,
   latest,
   contact,
   simulation,
@@ -52,6 +53,7 @@ export default function Home({
   lang: "en" | "zh";
   snapshot: Snapshot;
   index: IndexEntry[];
+  daily: DailyIndexSeries[];
   latest: LatestQuote[];
   contact: Contact;
   simulation: SimulationPreview | null;
@@ -65,24 +67,6 @@ export default function Home({
     (ReturnType<typeof estimate> & { pricedOrigin: string }) | null
   >(null);
   const [menu, setMenu] = useState(false);
-  const { trend, equipment } = laneView(snapshot, shipment);
-  const trendValues = trend.map((p) => p.median);
-  const trendTop = Math.ceil((Math.max(...trendValues) * 1.05) / 100) * 100;
-  const trendBottom = Math.floor((Math.min(...trendValues) * 0.95) / 100) * 100;
-  const trendY = (value: number) =>
-    170 - ((value - trendBottom) / (trendTop - trendBottom || 1)) * 140;
-  const trendPoints = trend
-    .map(
-      (p, index) =>
-        `${48 + (index * 537) / Math.max(trend.length - 1, 1)},${trendY(p.median)}`,
-    )
-    .join(" ");
-  const trendChange =
-    trend.length > 1
-      ? ((trendValues[trendValues.length - 1] / trendValues[0] - 1) * 100)
-          .toFixed(1)
-          .replace("-", "−")
-      : "0.0";
   const [intent, setIntent] = useState<"quote" | "booking">("quote");
   const [cargo, setCargo] = useState("");
   const [copied, setCopied] = useState("");
@@ -558,126 +542,9 @@ export default function Home({
           )}
         </section>
         <div className="brief-overview wrap">
-        <section id="brief" className="trend-section" aria-label={t("Brief: market reference", "市场简报：运价参考")}>
-            <div className="chart-card">
-              <div className="chart-top">
-                <div>
-                  <h2>{t("Rate trend", "运价走势")} <span>{port(shipment.origin)} → {port(shipment.destination)}</span></h2>
-                  <p>
-                    {t(
-                      `Weekly market median · USD / ${equipment === "LCL" ? "W/M" : equipment}`,
-                      `市场报价周中位数 · 美元 / ${equipment === "LCL" ? "W/M" : equipment}`,
-                    )}
-                  </p>
-                </div>
-              </div>
-              {trend.length ? (
-                <>
-                  <div className="chart-summary">
-                    <strong>
-                      {money(trendValues[trendValues.length - 1])}
-                    </strong>
-                    {trend.length > 1 && (
-                      <span>
-                        {trendChange.startsWith("−") ? (
-                          <ArrowDownRight size={14} />
-                        ) : (
-                          <ArrowUpRight size={14} />
-                        )}
-                        {trendChange}%{" "}
-                        <small>
-                          {t(
-                            `since week of ${trend[0].week}`,
-                            `较 ${trend[0].week} 当周`,
-                          )}
-                        </small>
-                      </span>
-                    )}
-                  </div>
-                  <svg
-                    className="chart"
-                    viewBox="0 0 600 190"
-                    role="img"
-                    aria-label={t(
-                      `Weekly market median from ${trend[0].week}: ${trendValues.join(", ")} USD`,
-                      `自 ${trend[0].week} 起的市场周中位数：${trendValues.join("、")} 美元`,
-                    )}
-                  >
-                    {[trendTop, (trendTop + trendBottom) / 2, trendBottom].map(
-                      (value) => (
-                        <g key={value}>
-                          <line
-                            x1="45"
-                            y1={trendY(value)}
-                            x2="595"
-                            y2={trendY(value)}
-                            stroke="#e8e9e8"
-                            strokeDasharray="3 4"
-                          />
-                          <text
-                            x="0"
-                            y={trendY(value) + 4}
-                            fill="#86908f"
-                            fontSize="11"
-                          >
-                            {Math.round(value)}
-                          </text>
-                        </g>
-                      ),
-                    )}
-                    <polyline
-                      points={trendPoints}
-                      stroke="#e96650"
-                      strokeWidth="2.5"
-                      fill="none"
-                      strokeLinejoin="round"
-                    />
-                    {trend.map((p, index) => (
-                      <circle
-                        key={p.week}
-                        cx={48 + (index * 537) / Math.max(trend.length - 1, 1)}
-                        cy={trendY(p.median)}
-                        r={index === trend.length - 1 ? 4 : 2.5}
-                        fill="#e96650"
-                        stroke="white"
-                        strokeWidth="1.5"
-                      >
-                        <title>{`${p.week}: ${money(p.median)} (${p.count})`}</title>
-                      </circle>
-                    ))}
-                  </svg>
-                  <div className="chart-months">
-                    <span>{trend[0].week.slice(5)}</span>
-                    {trend.length > 1 && (
-                      <span>{trend[trend.length - 1].week.slice(5)}</span>
-                    )}
-                  </div>
-                </>
-              ) : (
-                <div className="chart-empty">
-                  <strong>{t("Collecting prices", "价格收集中")}</strong>
-                  <p>
-                    {t(
-                      "No market prices collected for this lane yet. We do not fill gaps with estimates.",
-                      "该航线暂未收集到市场报价，不用估算数据补空。",
-                    )}
-                  </p>
-                </div>
-              )}
-              <div className="chart-footer">
-                <span>
-                  <i />
-                  {t("Market reference, not our offer", "市场参考，非本站报价")}
-                </span>
-                <span>
-                  {t(
-                    "Outliers excluded · Not a forecast",
-                    "已剔除异常值 · 非价格预测",
-                  )}
-                </span>
-              </div>
-            </div>
-        </section>
+          <section id="brief" className="trend-section" aria-label={t("40HQ median trend, daily", "40HQ 中位数走势（每日）")}>
+            <DailyIndexChart lang={lang} series={daily} />
+          </section>
         </div>
         <CommunityPreview lang={lang} onContact={() => openInquiry("quote")} />
         <section className="approach wrap">

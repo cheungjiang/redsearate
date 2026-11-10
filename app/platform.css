@@ -115,8 +115,60 @@
 .editorial-site .index-change[data-direction="down"] {
   color: var(--ink);
 }
-.editorial-site .index-change[data-direction="flat"] {
+.editorial-site .index-change[data-direction="flat"],
+.editorial-site .index-change[data-direction="building"] {
   color: var(--muted);
+}
+.editorial-site .daily-index {
+  margin: 4px 0 28px;
+}
+.editorial-site .daily-index h2 {
+  font-size: 26px;
+  line-height: 1.4;
+  letter-spacing: -0.5px;
+}
+.editorial-site .daily-index-scroll {
+  overflow-x: auto;
+  margin-top: 12px;
+}
+.editorial-site .daily-index-chart {
+  display: block;
+  width: 100%;
+  min-width: 640px;
+  height: auto;
+  background: #fff;
+}
+.editorial-site .daily-grid {
+  stroke: #e8e9e8;
+  stroke-dasharray: 3 4;
+}
+.editorial-site .daily-axis {
+  fill: #86908f;
+  font-size: 11px;
+}
+.editorial-site .daily-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  font-size: 13px;
+}
+.editorial-site .daily-legend i {
+  display: inline-block;
+  width: 18px;
+  height: 3px;
+  margin-right: 6px;
+  vertical-align: middle;
+  border-radius: 2px;
+}
+.editorial-site .daily-footnote {
+  max-width: 85ch;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
 }
 .editorial-site .index-trend {
   margin: 14px 0 10px;

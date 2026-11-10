@@ -17,7 +17,7 @@ export function IndexSnapshot({ lang, liveEntries, demoEntries, asOf, brief }: L
   const entries = displayingDemo ? demoEntries : liveEntries;
   const live = liveEntries.some((entry) => entry.median !== null);
   const changeText = (change: number | null) => change === null
-    ? t("Unavailable", "暂不可用")
+    ? t("Building history", "数据积累中")
     : change > 0 ? `↑ +${change.toFixed(1)}%`
     : change < 0 ? `↓ ${change.toFixed(1)}%`
     : t("0.0% · Flat", "0.0% · 持平");
@@ -48,7 +48,7 @@ export function IndexSnapshot({ lang, liveEntries, demoEntries, asOf, brief }: L
             <h3><a href={`${lang === "zh" ? "/zh" : ""}/${countrySlug(port.id)}/`}>{lang === "zh" ? port.zh : port.id}</a></h3>
             <dl>
               <div className="index-price-row"><dt>{t("40HQ median", "40HQ 中位数")}</dt><dd className="index-median">{median === null ? t("Unavailable", "暂不可用") : `$${median.toLocaleString("en-US")}`}</dd></div>
-              <div><dt>{t("Week on week", "周环比")}</dt><dd className="index-change" data-direction={weekChange === null ? "unavailable" : weekChange > 0 ? "up" : weekChange < 0 ? "down" : "flat"}>{changeText(weekChange)}</dd></div>
+              <div><dt>{t("Week on week", "周环比")}</dt><dd className="index-change" data-direction={weekChange === null ? "building" : weekChange > 0 ? "up" : weekChange < 0 ? "down" : "flat"}>{changeText(weekChange)}</dd></div>
               <div><dt>{t("Samples", "样本量")}</dt><dd>{sampleSize === null ? t("Unavailable", "暂不可用") : sampleSize}</dd></div>
             </dl>
             {displayingDemo && weeklyMedians.length > 1 && (

@@ -81,6 +81,67 @@ test("index uses every quote after outliers and leaves week on week blank withou
   assert.equal(withOutlier.weekChange, null);
 });
 
+test("daily series uses the index window and leaves a gap where a day has no median", () => {
+  const entries = [
+    quote({ price: 8000, createdAt: on("2026-10-13") }),
+    quote({ price: 8400, createdAt: on("2026-10-14") }),
+    quote({ price: 8600, createdAt: on("2026-11-10") }),
+    quote({ price: 5000, destination: "Djibouti", createdAt: on("2026-11-09") }),
+  ];
+  const today = "2026-11-10";
+  const index = platform.liveIndex(entries, today);
+  const series = platform.dailyIndex(entries, today);
+  assert.equal(series.length, 5);
+  assert.equal(series[0].points.length, 14);
+  assert.equal(series[0].points.at(-1)?.date, today);
+  assert.equal(series[0].points[0].date, "2026-10-28");
+  for (const row of series) {
+    const live = index.find((item) => item.port.id === row.port.id);
+    const latest = row.points.at(-1)!;
+    assert.equal(latest.median, live?.median ?? null);
+    assert.equal(latest.count, live?.sampleSize ?? null);
+  }
+  const jeddah = series[0];
+  assert.equal(jeddah.points.at(-1)?.median, 8500);
+  assert.equal(jeddah.points.at(-1)?.count, 2);
+  // 13 Oct is outside (10 Nov − 28 days, 10 Nov]. 14 Oct is the first included day.
+  assert.equal(platform.indexWindowMedian(entries, "Jeddah", "2026-11-10")?.count, 2);
+  assert.equal(platform.indexWindowMedian(entries, "Jeddah", "2026-11-10")?.median, 8500);
+  // The window ending 9 Nov still includes 13 Oct, so both remaining quotes count.
+  assert.equal(platform.indexWindowMedian(entries, "Jeddah", "2026-11-09")?.count, 2);
+  assert.equal(platform.indexWindowMedian(entries, "Jeddah", "2026-11-09")?.median, 8200);
+  const gap = platform.dailyIndex([
+    quote({ price: 7000, createdAt: on("2026-10-20") }),
+    quote({ price: 9000, createdAt: on("2026-11-10") }),
+  ], today)[0];
+  const missing = gap.points.find((point) => point.date === "2026-11-16");
+  assert.equal(missing, undefined);
+  const early = gap.points.find((point) => point.date === "2026-10-28")!;
+  assert.equal(early.median, 7000);
+  const late = gap.points.at(-1)!;
+  assert.equal(late.median, 8000);
+  const segments = platform.dailyLineSegments(gap.points);
+  assert.ok(segments.every((segment) => segment.to === segment.from + 1));
+  assert.equal(segments.some((segment) => {
+    const left = gap.points[segment.from];
+    const right = gap.points[segment.to];
+    return left.median == null || right.median == null;
+  }), false);
+  const thin = platform.dailyLineSegments([
+    { date: "2026-11-08", median: 8800, count: 4 },
+    { date: "2026-11-09", median: 7900, count: 4 },
+    { date: "2026-11-10", median: 7900, count: 5 },
+  ]);
+  assert.deepEqual(thin.map((segment) => segment.dashed), [true, true]);
+  assert.equal(platform.dailySampleIsThin(4), true);
+  assert.equal(platform.dailySampleIsThin(5), false);
+  const weekAgo = jeddah.points.find((point) => point.date === "2026-11-03");
+  const live = index[0];
+  if (weekAgo?.median && live.median) {
+    assert.equal(live.weekChange, Math.round(((live.median - weekAgo.median) / weekAgo.median) * 1000) / 10);
+  }
+});
+
 test("rate preview follows selected equipment and exposes no invented grades or update times", () => {
   assert.equal(typeof platform.publicRateRows, "function");
   const key = laneKey("Qingdao", "Jeddah", "20GP");
