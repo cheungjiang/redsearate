@@ -93,6 +93,12 @@ export default function CountryPage({
 
         <h2>{t("Documents and customs", "单证与清关")}</h2>
         <ul>{country.documents.map((d) => <li key={d.en}>{pick(d)}</li>)}</ul>
+        {country.slug === "shipping-from-china-to-saudi-arabia" && (
+          <p><a href={`${zh ? "/zh" : ""}/guides/shipping-to-jeddah-saber/`}>{t("Jeddah: SABER in 5 steps", "吉达：SABER 分五步")}</a></p>
+        )}
+        {country.slug === "shipping-from-china-to-egypt" && (
+          <p><a href={`${zh ? "/zh" : ""}/guides/shipping-to-sokhna-acid/`}>{t("Sokhna: the ACID number in 3 steps", "苏赫纳：ACID 编号分三步")}</a></p>
+        )}
         {country.taxes && <p>{pick(country.taxes)}</p>}
 
         <h2>{t("Current situation", "当前航线状况")}</h2>

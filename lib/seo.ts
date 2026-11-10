@@ -107,28 +107,38 @@ export function guideJsonLd(guide: Guide, lang: Lang) {
   const zh = lang === "zh";
   const path = `${zh ? "/zh" : ""}/guides/${guide.slug}/`;
   const title = zh ? guide.title.zh : guide.title.en;
-  return {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "Article",
-        headline: title,
-        description: guideDescription(guide, lang),
-        inLanguage: zh ? "zh-CN" : "en",
-        datePublished: GUIDES_PUBLISHED,
-        dateModified: GUIDES_UPDATED,
-        image: `${SITE}/og.jpg`,
-        mainEntityOfPage: `${SITE}${path}`,
-        author: { "@id": organization["@id"] },
-        publisher: organization,
-      },
-      breadcrumbs([
-        { name: "RedSeaRate", path: home(lang) },
-        { name: zh ? "指南" : "Guides", path: `${home(lang)}#guides` },
-        { name: title, path },
-      ]),
-    ],
-  };
+  const graph: object[] = [
+    {
+      "@type": "Article",
+      headline: title,
+      description: guideDescription(guide, lang),
+      inLanguage: zh ? "zh-CN" : "en",
+      datePublished: guide.published ?? GUIDES_PUBLISHED,
+      dateModified: guide.updated ?? GUIDES_UPDATED,
+      image: `${SITE}/og.jpg`,
+      mainEntityOfPage: `${SITE}${path}`,
+      author: { "@id": organization["@id"] },
+      publisher: organization,
+    },
+  ];
+  if (guide.faqs?.length) {
+    graph.push({
+      "@type": "FAQPage",
+      url: `${SITE}${path}`,
+      inLanguage: zh ? "zh-CN" : "en",
+      mainEntity: guide.faqs.map((faq) => ({
+        "@type": "Question",
+        name: zh ? faq.q.zh : faq.q.en,
+        acceptedAnswer: { "@type": "Answer", text: zh ? faq.a.zh : faq.a.en },
+      })),
+    });
+  }
+  graph.push(breadcrumbs([
+    { name: "RedSeaRate", path: home(lang) },
+    { name: zh ? "指南" : "Guides", path: `${home(lang)}#guides` },
+    { name: title, path },
+  ]));
+  return { "@context": "https://schema.org", "@graph": graph };
 }
 
 export function guideDescription(guide: Guide, lang: Lang) {

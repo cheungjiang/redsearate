@@ -18,7 +18,11 @@ export default async function sitemap() {
     ...countries.map(({ slug }) => ({ en: `/${slug}/`, zh: `/zh/${slug}/`, modified: today })),
     ...lanes.active.map(({ slug }) => ({ en: lanePath(slug, "en"), zh: lanePath(slug, "zh"), modified: today })),
     { en: `/${JEBEL_ALI_SLUG}/`, zh: `/zh/${JEBEL_ALI_SLUG}/`, modified: today },
-    ...guides.map(({ slug }) => ({ en: `/guides/${slug}/`, zh: `/zh/guides/${slug}/`, modified: GUIDES_UPDATED })),
+    ...guides.map((guide) => ({
+      en: `/guides/${guide.slug}/`,
+      zh: `/zh/guides/${guide.slug}/`,
+      modified: guide.updated ?? GUIDES_UPDATED,
+    })),
     ...marketBriefSitemap(),
   ];
   return pages.flatMap(({ en, zh, modified }) =>

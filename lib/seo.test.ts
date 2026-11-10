@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { faqs, guides } from "./content.ts";
+import { guideLaneLinks } from "./document-guides.ts";
 import { destinations } from "./rates.ts";
 import { GUIDES_PUBLISHED, GUIDES_UPDATED, guideDescription, guideJsonLd, homeJsonLd, indexSentences, marketBrief } from "./seo.ts";
 
@@ -66,8 +67,59 @@ test("guide slugs are unique and descriptions fit search snippets", () => {
     const chars = guidePlain(guide, "zh").replace(/\s/g, "").length;
     assert.ok(words >= 1000, `${guide.slug} en ${words}`);
     assert.ok(chars >= 1500, `${guide.slug} zh ${chars}`);
-    const article = guideJsonLd(guide, "en")["@graph"].find((node) => node["@type"] === "Article") as { datePublished: string; dateModified: string };
-    assert.equal(article.datePublished, GUIDES_PUBLISHED);
-    assert.equal(article.dateModified, GUIDES_UPDATED);
+    const graph = guideJsonLd(guide, "en")["@graph"] as { "@type": string; datePublished?: string; dateModified?: string; mainEntity?: unknown[] }[];
+    const article = graph.find((node) => node["@type"] === "Article");
+    assert.equal(article?.datePublished, guide.published ?? GUIDES_PUBLISHED);
+    assert.equal(article?.dateModified, guide.updated ?? GUIDES_UPDATED);
+    const faq = graph.find((node) => node["@type"] === "FAQPage");
+    if (guide.faqs?.length) {
+      assert.ok(faq, guide.slug);
+      assert.ok(guide.faqs.length >= 2 && guide.faqs.length <= 4, guide.slug);
+      assert.equal(faq?.mainEntity?.length, guide.faqs.length);
+    } else {
+      assert.equal(faq, undefined);
+    }
+    assert.equal(graph.at(-1)?.["@type"], "BreadcrumbList");
   }
+});
+
+test("SABER and ACID guides stay inside the draft and the country pages", () => {
+  const saber = guides.find((guide) => guide.slug === "shipping-to-jeddah-saber");
+  const acid = guides.find((guide) => guide.slug === "shipping-to-sokhna-acid");
+  assert.ok(saber && acid);
+  for (const guide of [saber, acid]) {
+    const en = guidePlain(guide, "en");
+    const zh = guidePlain(guide, "zh");
+    assert.equal(en.includes("Hormuz") || zh.includes("霍尔木兹"), false, guide.slug);
+    assert.equal(en.includes("US$") || zh.includes("中位数"), false, guide.slug);
+    const hrefs = guide.sections.flatMap((section) => section.blocks.flatMap((block) => block.kind === "links" ? block.items.map((item) => item.href) : []));
+    assert.equal(hrefs.some((href) => href.startsWith("/rates")), false);
+  }
+  const saberHrefs = saber.sections.flatMap((section) => section.blocks.flatMap((block) => block.kind === "links" ? block.items.map((item) => item.href) : []));
+  assert.deepEqual(saberHrefs, ["/shipping-from-china-to-saudi-arabia/"]);
+  const acidHrefs = acid.sections.flatMap((section) => section.blocks.flatMap((block) => block.kind === "links" ? block.items.map((item) => item.href) : []));
+  assert.deepEqual(acidHrefs, ["/shipping-from-china-to-egypt/"]);
+  assert.match(guidePlain(saber, "en"), /up to 1 year/);
+  assert.match(guidePlain(saber, "zh"), /最长 1 年/);
+  assert.match(guidePlain(saber, "en"), /2–4 weeks/);
+  assert.match(guidePlain(acid, "en"), /at least 48 hours before the vessel sails/);
+  assert.match(guidePlain(acid, "zh"), /至少于开船前 48 小时|至少在开船前 48 小时|至少提前到开船前 48 小时/);
+  assert.match(guidePlain(acid, "en"), /19-digit/);
+});
+
+test("document guides link only the lanes this build publishes", () => {
+  const active = [
+    { slug: "shipping-from-ningbo-to-jeddah", destination: "Jeddah", originEn: "Ningbo", originZh: "宁波", destEn: "Jeddah", destZh: "吉达" },
+    { slug: "shipping-from-qingdao-to-jeddah", destination: "Jeddah", originEn: "Qingdao", originZh: "青岛", destEn: "Jeddah", destZh: "吉达" },
+    { slug: "shipping-from-shenzhen-to-sokhna", destination: "Sokhna", originEn: "Shenzhen", originZh: "深圳", destEn: "Sokhna", destZh: "苏赫纳" },
+    { slug: "shipping-from-shanghai-to-jeddah", destination: "Jeddah", originEn: "Shanghai", originZh: "上海", destEn: "Jeddah", destZh: "吉达" },
+  ];
+  assert.deepEqual(guideLaneLinks("shipping-to-jeddah-saber", active).map((lane) => lane.href), [
+    "/shipping-from-ningbo-to-jeddah/",
+    "/shipping-from-qingdao-to-jeddah/",
+    "/shipping-from-shanghai-to-jeddah/",
+  ]);
+  assert.deepEqual(guideLaneLinks("shipping-to-sokhna-acid", active).map((lane) => lane.zh), ["深圳到苏赫纳"]);
+  assert.deepEqual(guideLaneLinks("shipping-to-jeddah-saber", []), []);
+  assert.deepEqual(guideLaneLinks("first-shipment-checklist", active), []);
 });

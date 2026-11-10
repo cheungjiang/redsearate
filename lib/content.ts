@@ -1,4 +1,6 @@
 // Bilingual copy shared by the homepage, the guide pages and structured data.
+import { documentGuides } from "./document-guides.ts";
+
 const L = (en: string, zh: string) => ({ en, zh });
 export type Localized = ReturnType<typeof L>;
 
@@ -19,7 +21,20 @@ const LINKS = (items: [string, string, string][]): GuideBlock => ({
   items: items.map(([href, en, zh]) => ({ href, text: L(en, zh) })),
 });
 
-export const guides: { slug: string; tag: Localized; title: Localized; lead: Localized; sections: GuideSection[] }[] = [
+export type GuideFaq = { q: Localized; a: Localized };
+
+export type Guide = {
+  slug: string;
+  tag: Localized;
+  title: Localized;
+  lead: Localized;
+  published?: string;
+  updated?: string;
+  faqs?: GuideFaq[];
+  sections: GuideSection[];
+};
+
+export const guides: Guide[] = [
   {
     slug: "red-sea-freight-rate-factors",
     tag: L("MARKET OUTLOOK", "市场观察"),
@@ -440,9 +455,8 @@ export const guides: { slug: string; tag: Localized; title: Localized; lead: Loc
       },
     ],
   },
+  ...documentGuides,
 ];
-
-export type Guide = (typeof guides)[number];
 
 export const faqs = [
   {

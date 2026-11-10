@@ -238,7 +238,7 @@ export default function JebelAliPage({ lang, today }: { lang: "en" | "zh"; today
           {t("These three guides are about Red Sea ports.", "下面三篇是红海指南，写的是红海港口。")}
         </p>
         <div className="guide-grid">
-          {guides.map((guide) => (
+          {guides.filter((guide) => guide.slug === "red-sea-freight-rate-factors" || guide.slug === "jeddah-sokhna-aqaba-gateway" || guide.slug === "first-shipment-checklist").map((guide) => (
             <a className="guide-card" key={guide.slug} href={`${zh ? "/zh" : ""}/guides/${guide.slug}/`}>
               <span className="article-tag">
                 {pick(guide.tag)} <span>{t("FULL GUIDE", "全文")}</span>
