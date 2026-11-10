@@ -11,7 +11,6 @@ export function InquiryDialog({
   onCargo,
   copied,
   onCopy,
-  wechat,
   whatsappLabel,
   whatsappNumber,
   children,
@@ -24,7 +23,6 @@ export function InquiryDialog({
   onCargo: (value: string) => void;
   copied: string;
   onCopy: () => void;
-  wechat: string;
   whatsappLabel: string;
   whatsappNumber: string;
   children?: ReactNode;
@@ -73,10 +71,16 @@ export function InquiryDialog({
         />
       </label>
       <pre className="inquiry-text">{inquiryText}</pre>
+      <p className="dialog-intro">
+        {t(
+          "WeChat and WhatsApp use this same number.",
+          "微信和 WhatsApp 是同一个号码。",
+        )}
+      </p>
       <div className="contact-actions">
         <div className="contact-option">
           <span>
-            {t("WeChat", "微信")} <b>{wechat}</b>
+            {t("WeChat", "微信")} <b>{whatsappLabel}</b>
           </span>
           <button className="button dark" onClick={onCopy}>
             <Copy size={16} />

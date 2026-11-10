@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 export function useAssignedWhatsapp(numbers: string[]) {
-  const [whatsapp, setWhatsapp] = useState("");
+  const [whatsapp, setWhatsapp] = useState(numbers[0] ?? "");
   useEffect(() => {
     const saved = localStorage.getItem("whatsapp-agent");
     const number =

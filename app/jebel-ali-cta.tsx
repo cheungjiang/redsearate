@@ -11,14 +11,12 @@ export function JebelAliCta({
   transitDays,
   direct,
   carrier,
-  wechat,
   whatsapp,
 }: {
   lang: "en" | "zh";
   transitDays: number;
   direct: boolean;
   carrier: string;
-  wechat: string;
   whatsapp: string[];
 }) {
   const zh = lang === "zh";
@@ -45,8 +43,8 @@ export function JebelAliCta({
           <h2>{t("Ask about this sailing.", "问这一水船期。")}</h2>
           <p>
             {t(
-              `WeChat ${wechat}, or WhatsApp. Send the origin port and the cargo-ready date. Space is confirmed only after we reply.`,
-              `微信 ${wechat}，或 WhatsApp。把起运港和货好时间发过来。舱位以确认后为准。`,
+              "WeChat and WhatsApp use the same number. Send the origin port and the cargo-ready date. Space is confirmed only after we reply.",
+              "微信和 WhatsApp 是同一个号码。把起运港和货好时间发过来。舱位以确认后为准。",
             )}
           </p>
         </div>
@@ -72,7 +70,6 @@ export function JebelAliCta({
         onCargo={setCargo}
         copied={copied}
         onCopy={() => void copyInquiry()}
-        wechat={wechat}
         whatsappLabel={assigned}
         whatsappNumber={whatsappNumber}
         dialogRef={dialog}

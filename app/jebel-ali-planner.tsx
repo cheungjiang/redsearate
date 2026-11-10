@@ -17,7 +17,6 @@ export function JebelAliPlanner({
   transitDays,
   direct,
   carrier,
-  wechat,
   whatsapp,
   ratesHref,
 }: {
@@ -27,7 +26,6 @@ export function JebelAliPlanner({
   transitDays: number;
   direct: boolean;
   carrier: string;
-  wechat: string;
   whatsapp: string[];
   ratesHref: string;
 }) {
@@ -212,7 +210,6 @@ export function JebelAliPlanner({
         onCargo={setCargo}
         copied={copied}
         onCopy={() => void copyInquiry()}
-        wechat={wechat}
         whatsappLabel={assigned}
         whatsappNumber={whatsappNumber}
         dialogRef={dialog}

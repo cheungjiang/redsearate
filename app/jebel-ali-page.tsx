@@ -128,7 +128,6 @@ export default function JebelAliPage({ lang, today }: { lang: "en" | "zh"; today
           transitDays={JEBEL_ALI_TRANSIT_DAYS}
           direct={JEBEL_ALI_DIRECT}
           carrier={JEBEL_ALI_CARRIER}
-          wechat={contact.wechat}
           whatsapp={contact.whatsapp}
           ratesHref={zh ? "/zh/rates/" : "/rates/"}
         />
@@ -259,7 +258,6 @@ export default function JebelAliPage({ lang, today }: { lang: "en" | "zh"; today
         transitDays={JEBEL_ALI_TRANSIT_DAYS}
         direct={JEBEL_ALI_DIRECT}
         carrier={JEBEL_ALI_CARRIER}
-        wechat={contact.wechat}
         whatsapp={contact.whatsapp}
       />
     </SubpageShell>

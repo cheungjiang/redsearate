@@ -38,7 +38,7 @@ import { homeInquiryText } from "../lib/inquiry";
 import { InquiryDialog } from "./inquiry-dialog";
 import { useAssignedWhatsapp } from "./use-assigned-whatsapp";
 
-export type Contact = { wechat: string; whatsapp: string[] };
+export type Contact = { whatsapp: string[] };
 
 export default function Home({
   lang,
@@ -712,7 +712,6 @@ export default function Home({
         onCargo={setCargo}
         copied={copied}
         onCopy={() => copyInquiry()}
-        wechat={contact.wechat}
         whatsappLabel={whatsapp}
         whatsappNumber={whatsappNumber}
         dialogRef={dialog}

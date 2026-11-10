@@ -6,8 +6,8 @@ import { countries, countryStats } from "./countries";
 import { jebelAliReferences, readJebelAliQuotes } from "./jebel-ali-prices";
 
 export const contact = {
-  wechat: process.env.SITE_WECHAT ?? "uarmside",
-  // Comma-separated; each visitor is assigned one number at random.
+  // Comma-separated. Each visitor is assigned one number at random.
+  // That number is used for both WeChat and WhatsApp.
   whatsapp: (
     process.env.SITE_WHATSAPP ??
     "+86 132 3740 1856,+86 158 1879 6370,+86 158 7620 7182,+86 134 5470 1600"
