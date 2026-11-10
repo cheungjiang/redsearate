@@ -1,10 +1,11 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { ArrowUpRight } from "lucide-react";
 import { jebelAliInquiryText } from "../lib/inquiry";
+import { pickWhatsapp } from "../lib/whatsapp";
 import { InquiryDialog } from "./inquiry-dialog";
-import { useAssignedWhatsapp } from "./use-assigned-whatsapp";
 
 export function JebelAliCta({
   lang,
@@ -23,8 +24,8 @@ export function JebelAliCta({
   const t = (en: string, cn: string) => (zh ? cn : en);
   const [cargo, setCargo] = useState("");
   const [copied, setCopied] = useState("");
+  const [assigned, setAssigned] = useState("");
   const dialog = useRef<HTMLDialogElement>(null);
-  const assigned = useAssignedWhatsapp(whatsapp);
   const inquiryText = jebelAliInquiryText(lang, cargo, { transitDays, direct, carrier });
   const whatsappNumber = assigned.replace(/\D/g, "");
   async function copyInquiry() {
@@ -52,7 +53,10 @@ export function JebelAliCta({
           <button
             className="button coral"
             onClick={() => {
-              setCopied("");
+              flushSync(() => {
+                setAssigned(pickWhatsapp(whatsapp));
+                setCopied("");
+              });
               dialog.current?.showModal();
             }}
           >

@@ -1,10 +1,11 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { MessageCircle } from "lucide-react";
 import { jebelAliInquiryText } from "../lib/inquiry";
+import { pickWhatsapp, whatsappUrl } from "../lib/whatsapp";
 import { InquiryDialog } from "./inquiry-dialog";
-import { useAssignedWhatsapp } from "./use-assigned-whatsapp";
 
 type Origin = { id: string; name: string; etd: string };
 type Container = "20GP" | "40GP" | "40HQ";
@@ -37,9 +38,9 @@ export function JebelAliPlanner({
   const [quantity, setQuantity] = useState(1);
   const [cargo, setCargo] = useState("");
   const [copied, setCopied] = useState("");
+  const [assigned, setAssigned] = useState("");
   const dialog = useRef<HTMLDialogElement>(null);
-  const assigned = useAssignedWhatsapp(whatsapp);
-  const whatsappNumber = (assigned || whatsapp[0] || "").replace(/\D/g, "");
+  const whatsappNumber = assigned.replace(/\D/g, "");
   const selected = origins.find((row) => row.id === origin) ?? origins[0];
   const lanePrice = (id: string, box: Container) =>
     lanes.find((lane) => lane.origin === id && lane.container === box)?.price ?? null;
@@ -93,7 +94,10 @@ export function JebelAliPlanner({
           className="jebel-form"
           onSubmit={(event) => {
             event.preventDefault();
-            setCopied("");
+            flushSync(() => {
+              setAssigned(pickWhatsapp(whatsapp));
+              setCopied("");
+            });
             dialog.current?.showModal();
           }}
         >
@@ -130,16 +134,18 @@ export function JebelAliPlanner({
           <button className="button coral jebel-quote-button" type="submit">
             {t("Get a quote", "获取估价")}
           </button>
-          {whatsappNumber && (
-            <a
+          {whatsapp.length > 0 && (
+            <button
+              type="button"
               className="button whatsapp jebel-quote-button"
-              href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(inquiryText)}`}
-              target="_blank"
-              rel="noopener noreferrer"
+              onClick={() => {
+                const url = whatsappUrl(pickWhatsapp(whatsapp), inquiryText);
+                if (url) window.open(url, "_blank", "noopener");
+              }}
             >
               <MessageCircle size={16} />
               {t("Ask on WhatsApp", "WhatsApp 询价")}
-            </a>
+            </button>
           )}
         </form>
 

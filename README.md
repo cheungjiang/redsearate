@@ -27,7 +27,7 @@ The index snapshot shows, for each destination port, the median of 40HQ market q
 
 Prices are port-to-port USD, per container for FCL and per W/M for LCL. Expired prices drop out and lanes without data show "请询价". The weekly trend chart plots weekly market medians and stays empty until real data exists. Source links, notes, carriers and single quotes are never fetched, so they cannot appear on the site. The aggregation lives in `lib/rates.ts` and is covered by `lib/rates.test.ts`.
 
-Visitors inquire through WeChat (copy a prefilled message) or WhatsApp (opens a prefilled chat with one of the team's numbers, assigned at random). The site stores no visitor data.
+Visitors inquire through WeChat (copy a prefilled message) or WhatsApp (opens a prefilled chat). Each click draws one of the team's numbers at random. The site stores no visitor data.
 
 ## Deployment
 
@@ -39,7 +39,7 @@ Visitors inquire through WeChat (copy a prefilled message) or WhatsApp (opens a 
 
 ## Configuration
 
-Build-time environment variables: `SITE_WHATSAPP` (comma-separated international numbers; defaults to the team's four. Each visitor is assigned one at random and keeps it on later visits. That number is used for both WeChat and WhatsApp).
+Build-time environment variables: `SITE_WHATSAPP` (comma-separated international numbers; defaults to the team's four. Each click draws one at random, for both WeChat and WhatsApp).
 
 ### Simulated data
 

@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -35,8 +36,8 @@ import DailyIndexChart from "./daily-index-chart";
 import { CommunityPreview, IndexSnapshot, LatestPosts, RatesPreview } from "./platform-sections";
 import { faqs, guides, type Localized } from "../lib/content";
 import { homeInquiryText } from "../lib/inquiry";
+import { pickWhatsapp, whatsappUrl } from "../lib/whatsapp";
 import { InquiryDialog } from "./inquiry-dialog";
-import { useAssignedWhatsapp } from "./use-assigned-whatsapp";
 import BrandLogo from "./brand-logo";
 
 export type Contact = { whatsapp: string[] };
@@ -71,6 +72,7 @@ export default function Home({
   const [intent, setIntent] = useState<"quote" | "booking">("quote");
   const [cargo, setCargo] = useState("");
   const [copied, setCopied] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
   const dialog = useRef<HTMLDialogElement>(null);
   const articleDialog = useRef<HTMLDialogElement>(null);
   const [today, setToday] = useState("");
@@ -109,8 +111,11 @@ export default function Home({
     return { ...estimate(picked.lane, s), pricedOrigin: picked.origin };
   };
   function openInquiry(value: "quote" | "booking") {
-    setIntent(value);
-    setCopied("");
+    flushSync(() => {
+      setWhatsapp(pickWhatsapp(contact.whatsapp));
+      setIntent(value);
+      setCopied("");
+    });
     dialog.current?.showModal();
   }
   const quoted = (() => {
@@ -139,7 +144,6 @@ export default function Home({
     market: quoted?.market ? { median: quoted.market.median, count: quoted.market.count } : null,
     cargo,
   });
-  const whatsapp = useAssignedWhatsapp(contact.whatsapp);
   const whatsappNumber = whatsapp.replace(/\D/g, "");
   async function copyInquiry(then?: () => void) {
     try {
@@ -689,16 +693,18 @@ export default function Home({
           {t("Get a quote", "获取报价")}
           <ArrowUpRight size={16} />
         </button>
-        {whatsappNumber && (
-          <a
+        {contact.whatsapp.length > 0 && (
+          <button
+            type="button"
             className="button whatsapp icon-only"
-            href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(inquiryText)}`}
-            target="_blank"
-            rel="noopener"
             aria-label="WhatsApp"
+            onClick={() => {
+              const url = whatsappUrl(pickWhatsapp(contact.whatsapp), inquiryText);
+              if (url) window.open(url, "_blank", "noopener");
+            }}
           >
             <MessageCircle size={18} />
-          </a>
+          </button>
         )}
       </div>
       <InquiryDialog
