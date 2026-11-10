@@ -1,18 +1,20 @@
 "use client";
 
 import { ArrowLeft } from "lucide-react";
-import { type IndexEntry, type SimulationPreview } from "../lib/platform";
+import { type DailyIndexSeries, type IndexEntry, type SimulationPreview } from "../lib/platform";
 import type { JebelAliReference } from "../lib/jebel-ali-prices";
 import { defaultShipment, type Snapshot } from "../lib/rates";
+import DailyIndexChart from "./daily-index-chart";
 import { IndexSnapshot, RatesPreview } from "./platform-sections";
 import SubpageShell from "./subpage-shell";
 
 export default function RatesPage({
-  lang, snapshot, index, summary, simulation, jebelAli,
+  lang, snapshot, index, daily, summary, simulation, jebelAli,
 }: {
   lang: "en" | "zh";
   snapshot: Snapshot;
   index: IndexEntry[];
+  daily: DailyIndexSeries[];
   summary: string[];
   simulation: SimulationPreview | null;
   jebelAli: JebelAliReference[];
@@ -30,6 +32,9 @@ export default function RatesPage({
         </ul>
       </div>
       <IndexSnapshot lang={lang} liveEntries={index} demoEntries={simulation?.index ?? null} asOf={snapshot.today} />
+      <div className="wrap">
+        <DailyIndexChart lang={lang} series={daily} />
+      </div>
       <RatesPreview lang={lang} snapshot={snapshot} shipment={defaultShipment} samples={simulation?.rates ?? []} jebelAli={jebelAli} fullPage />
     </SubpageShell>
   );

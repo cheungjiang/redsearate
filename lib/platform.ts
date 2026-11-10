@@ -45,27 +45,70 @@ export type SampleRate = {
 export type SimulationPreview = { index: IndexEntry[]; rates: SampleRate[] };
 
 export const INDEX_WINDOW_DAYS = 28;
+export const DAILY_INDEX_DAYS = 14;
+// A day with fewer than this many quotes is drawn as an open dot.
+export const DAILY_SAMPLE_NOTE_BELOW = 5;
+
+export type DailyIndexPoint = { date: string; median: number | null; count: number | null };
+export type DailyIndexSeries = { port: (typeof destinations)[number]; points: DailyIndexPoint[] };
+
+// Same pool as the live index: publishable market 40HQ quotes (stored as 40HC)
+// from every origin, quote date in (end-28, end], outliers dropped.
+export function indexWindowMedian(entries: PriceEntry[], destination: string, end: string) {
+  const start = addDays(end, 1 - INDEX_WINDOW_DAYS);
+  return marketSummary(
+    entries
+      .filter((e) => {
+        const date = shanghaiDate(new Date(e.createdAt));
+        return e.tier === "market" && e.container === "40HC" &&
+          e.destination === destination && date >= start && date <= end;
+      })
+      .map((e) => e.price),
+  );
+}
+
+export function dailySampleIsThin(count: number | null) {
+  return count != null && count < DAILY_SAMPLE_NOTE_BELOW;
+}
+
+// One segment per pair of neighbouring days that both have a median.
+// A missing day breaks the line. A thin sample makes the touching segments dashed.
+export function dailyLineSegments(points: DailyIndexPoint[]) {
+  const segments: { from: number; to: number; dashed: boolean }[] = [];
+  for (let i = 0; i < points.length - 1; i++) {
+    const left = points[i];
+    const right = points[i + 1];
+    if (left.median == null || right.median == null) continue;
+    segments.push({
+      from: i,
+      to: i + 1,
+      dashed: dailySampleIsThin(left.count) || dailySampleIsThin(right.count),
+    });
+  }
+  return segments;
+}
+
+// Per destination: one rolling 28-day median for each of the last 14 days,
+// oldest first. Today is the same reading as liveIndex.
+export function dailyIndex(entries: PriceEntry[], today: string, days = DAILY_INDEX_DAYS): DailyIndexSeries[] {
+  const dates = Array.from({ length: days }, (_, index) => addDays(today, index - (days - 1)));
+  return destinations.map((port) => ({
+    port,
+    points: dates.map((date) => {
+      const summary = indexWindowMedian(entries, port.id, date);
+      return { date, median: summary?.median ?? null, count: summary?.count ?? null };
+    }),
+  }));
+}
 
 // Per destination: market quotes for 40HQ (stored as 40HC) from every China
 // origin, dated in the last 28 days, outliers dropped. Week on week compares
-// with the same window ending 7 days ago.
+// today's daily reading with the reading 7 days earlier.
 export function liveIndex(entries: PriceEntry[], today: string): IndexEntry[] {
-  const windowMedian = (destination: string, end: string) => {
-    const start = addDays(end, 1 - INDEX_WINDOW_DAYS);
-    return marketSummary(
-      entries
-        .filter((e) => {
-          const date = shanghaiDate(new Date(e.createdAt));
-          return e.tier === "market" && e.container === "40HC" &&
-            e.destination === destination && date >= start && date <= end;
-        })
-        .map((e) => e.price),
-    );
-  };
   return destinations.map((port) => {
     assertIndexCard(port);
-    const current = windowMedian(port.id, today);
-    const previous = windowMedian(port.id, addDays(today, -7));
+    const current = indexWindowMedian(entries, port.id, today);
+    const previous = indexWindowMedian(entries, port.id, addDays(today, -7));
     return {
       port,
       median: current?.median ?? null,
