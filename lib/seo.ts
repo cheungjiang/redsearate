@@ -59,7 +59,7 @@ const organization = {
   "@id": `${SITE}/#organization`,
   name: "RedSeaRate",
   url: `${SITE}/`,
-  logo: `${SITE}/icon-512.png`,
+  logo: `${SITE}/logo-lockup.png`,
   description: "Ocean freight rates, estimates and booking inquiries from China to Red Sea ports.",
   areaServed: ["Saudi Arabia", "Egypt", "Jordan", "Djibouti", "Sudan"],
 };

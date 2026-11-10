@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from "react";
 import { ArrowUpRight, Globe2, Menu, X } from "lucide-react";
 import { platformNavigation } from "../lib/platform";
+import BrandLogo from "./brand-logo";
 
 export default function SubpageShell({
   lang, className, current, languageHref, children,
@@ -22,7 +23,7 @@ export default function SubpageShell({
       <a className="skip" href="#main">{t("Skip to content", "跳至正文")}</a>
       <header className="header wrap">
         <a href={home} className="brand" aria-label="RedSeaRate home">
-          <span className="brand-symbol" aria-hidden="true">≈</span><span>RedSeaRate</span>
+          <BrandLogo />
         </a>
         <nav id="main-navigation" className={menu ? "navigation open" : "navigation"} aria-label={t("Main navigation", "主导航")}>
           {platformNavigation.map((item) => (

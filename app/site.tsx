@@ -37,6 +37,7 @@ import { faqs, guides, type Localized } from "../lib/content";
 import { homeInquiryText } from "../lib/inquiry";
 import { InquiryDialog } from "./inquiry-dialog";
 import { useAssignedWhatsapp } from "./use-assigned-whatsapp";
+import BrandLogo from "./brand-logo";
 
 export type Contact = { whatsapp: string[] };
 
@@ -174,10 +175,7 @@ export default function Home({
           className="brand"
           aria-label="RedSeaRate home"
         >
-          <span className="brand-symbol" aria-hidden="true">≈</span>
-          <span>
-            RedSeaRate
-          </span>
+          <BrandLogo />
         </a>
         <nav
           id="main-navigation"
@@ -652,8 +650,7 @@ export default function Home({
       <footer className="wrap">
         <div className="footer-main">
           <a href={zh ? "/zh/" : "/"} className="brand">
-            <span className="brand-symbol" aria-hidden="true">≈</span>
-            <span>RedSeaRate</span>
+            <BrandLogo />
           </a>
           <p>
             {t(
