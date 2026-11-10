@@ -20,11 +20,11 @@
   src: url("/fonts/playfair-display.woff2") format("woff2");
 }
 :root {
-  --ink: #142d33;
-  --muted: #758084;
-  --coral: #e96550;
-  --line: #e5e8e6;
-  --paper: #fafbf8;
+  --ink: #14252c;
+  --muted: #59676c;
+  --coral: #c94c38;
+  --line: #dedfd9;
+  --paper: #faf9f6;
   --navy: #13363e;
   --serif: "Playfair Display", "Songti SC", "Noto Serif SC", Georgia, serif;
 }
