@@ -79,7 +79,7 @@ SEO: prerendered localized pages with prices in the HTML, correct HTML language,
 
 ## SEO
 
-- Metadata, canonical/hreflang and Open Graph come from `pageMetadata` in `lib/seo.ts`; structured data (Organization, WebSite, FAQPage, Article, Dataset, BreadcrumbList) is built there too and rendered by `app/json-ld.tsx`.
+- Metadata, canonical/hreflang and Open Graph come from `pageMetadata` in `lib/seo.ts`; structured data (Organization, WebSite, Service, FAQPage, Article, CollectionPage, BreadcrumbList) is built there too and rendered by `app/json-ld.tsx`.
 - Guides live in `lib/content.ts`, one page per guide at `/guides/<slug>/` and `/zh/guides/<slug>/`. Add a guide there and it gets a page, sitemap entry and JSON-LD.
 - The rates pages open with one plain sentence per port generated from the live index, so search engines and AI answers can quote a dated figure.
 - After each push the workflow pings IndexNow (Bing, Yandex, Seznam, Naver); scheduled rebuilds (every 10 minutes) re-ping the home and rates pages once a day. The key file is `public/0780df4f6089aa1190147867ac87b0bc.txt`.

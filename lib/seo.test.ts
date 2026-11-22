@@ -4,7 +4,7 @@ import { faqs, guides } from "./content.ts";
 import { countries } from "./countries.ts";
 import { guideLaneLinks } from "./document-guides.ts";
 import { destinations } from "./rates.ts";
-import { GUIDES_PUBLISHED, GUIDES_UPDATED, countrySeoTitle, guideDescription, guideJsonLd, homeJsonLd, indexSentences, marketBrief } from "./seo.ts";
+import { GUIDES_PUBLISHED, GUIDES_UPDATED, countrySeoTitle, guideDescription, guideJsonLd, homeJsonLd, indexSentences, marketBrief, ratesJsonLd } from "./seo.ts";
 
 const [jeddah, sokhna] = destinations;
 const index = [
@@ -44,6 +44,11 @@ test("market brief names the lowest median and every port's quote count", () => 
 test("home JSON-LD carries every FAQ in the page language", () => {
   const faq = homeJsonLd("zh")["@graph"].find((node) => node["@type"] === "FAQPage") as { mainEntity: { name: string }[] };
   assert.deepEqual(faq.mainEntity.map((q) => q.name), faqs.map((f) => f.q.zh));
+});
+
+test("the rates page keeps breadcrumbs and no Dataset markup", () => {
+  assert.deepEqual(ratesJsonLd("en")["@graph"].map((node) => node["@type"]), ["BreadcrumbList"]);
+  assert.deepEqual(ratesJsonLd("zh")["@graph"].map((node) => node["@type"]), ["BreadcrumbList"]);
 });
 
 test("country title tags keep the port and brand inside a search snippet", () => {

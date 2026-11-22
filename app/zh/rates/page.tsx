@@ -17,7 +17,7 @@ export default async function Page() {
   const { snapshot, index, daily, simulation, jebelAli } = await homeData();
   return (
     <>
-      <JsonLd data={ratesJsonLd(index, snapshot.today, "zh")} />
+      <JsonLd data={ratesJsonLd("zh")} />
       <RatesPage lang="zh" snapshot={snapshot} index={index} daily={daily} summary={indexSentences(index, snapshot.today, "zh")} simulation={simulation} jebelAli={jebelAli} />
     </>
   );

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { faqs, type Guide } from "./content.ts";
-import { addDays, destinations, extraOriginNames, origins } from "./rates.ts";
+import { destinations, extraOriginNames, origins } from "./rates.ts";
 import type { Country, CountryStats } from "./countries.ts";
 import { JEBEL_ALI_SLUG, JEBEL_ALI_TITLE, jebelAliDescription, jebelAliFaqs } from "./jebel-ali.ts";
 import { briefDescription, briefHeading, briefIndexDescription, briefIndexTitle, briefPath, type MarketBrief } from "./market-brief.ts";
@@ -252,37 +252,12 @@ export function marketBrief(index: IndexEntry[], today: string, lang: Lang) {
   return `${lead}${zh ? "" : " "}${counts}`;
 }
 
-export function ratesJsonLd(index: IndexEntry[], today: string, lang: Lang) {
+export function ratesJsonLd(lang: Lang) {
   const zh = lang === "zh";
   const path = zh ? "/zh/rates/" : "/rates/";
   return {
     "@context": "https://schema.org",
     "@graph": [
-      {
-        "@type": "Dataset",
-        name: zh ? "中国至红海 40HQ 海运市场运价指数" : "China to Red Sea 40HQ ocean freight market index",
-        description: zh
-          ? `中国各起运港至吉达、苏赫纳、亚喀巴、吉布提和苏丹港的 40HQ 港到港海运费市场中位数，基于近 ${INDEX_WINDOW_DAYS} 天收集的报价，已剔除异常值。`
-          : `Median port-to-port 40HQ ocean freight market rates from China to Jeddah, Sokhna, Aqaba, Djibouti and Port Sudan, from quotes collected in the last ${INDEX_WINDOW_DAYS} days. Outliers are dropped and each median states its sample size.`,
-        url: `${SITE}${path}`,
-        inLanguage: zh ? "zh-CN" : "en",
-        isAccessibleForFree: true,
-        // Google treats `license` as recommended, not required. The index is
-        // proprietary and the site has no data-usage page yet, so do not
-        // invent a CC license here; publish terms first, then add the URL.
-        dateModified: today,
-        temporalCoverage: `${addDays(today, 1 - INDEX_WINDOW_DAYS)}/${today}`,
-        spatialCoverage: index.map((entry) => ({ "@type": "Place", name: `${entry.port.id} (${entry.port.code})` })),
-        variableMeasured: zh ? "40HQ 海运费中位数（美元/柜）" : "40HQ ocean freight median (USD per container)",
-        keywords: zh
-          ? ["40HQ", "海运费", "中国至红海", "吉达", "苏赫纳", "亚喀巴", "吉布提", "苏丹港"]
-          : ["40HQ", "ocean freight", "China to Red Sea", "Jeddah", "Sokhna", "Aqaba", "Djibouti", "Port Sudan"],
-        measurementTechnique: zh
-          ? "近 28 天收集的港到港报价中位数，剔除异常值"
-          : "Median of port-to-port quotes collected in the last 28 days, outliers dropped",
-        creator: { "@id": organization["@id"] },
-        publisher: organization,
-      },
       breadcrumbs([
         { name: "RedSeaRate", path: home(lang) },
         { name: zh ? "航线运价" : "Rates", path },
