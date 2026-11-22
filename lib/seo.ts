@@ -3,12 +3,14 @@ import { faqs, type Guide } from "./content.ts";
 import { addDays, destinations, extraOriginNames, origins } from "./rates.ts";
 import type { Country, CountryStats } from "./countries.ts";
 import { JEBEL_ALI_SLUG, JEBEL_ALI_TITLE, jebelAliDescription, jebelAliFaqs } from "./jebel-ali.ts";
-import { briefDescription, briefHeading, briefPath, type MarketBrief } from "./market-brief.ts";
+import { briefDescription, briefHeading, briefIndexDescription, briefIndexTitle, briefPath, type MarketBrief } from "./market-brief.ts";
 import { INDEX_WINDOW_DAYS, type IndexEntry } from "./platform.ts";
 
 export const SITE = "https://redsearate.com";
 export const GUIDES_PUBLISHED = "2026-10-24";
 export const GUIDES_UPDATED = "2026-11-08";
+// First publication of the country and Jebel Ali landing pages (git history).
+export const PAGES_PUBLISHED = "2026-11-08";
 type Lang = "en" | "zh";
 const home = (lang: Lang) => (lang === "zh" ? "/zh/" : "/");
 
@@ -54,35 +56,72 @@ export function pageMetadata({
   };
 }
 
+const RED_SEA_AREA = ["Saudi Arabia", "Egypt", "Jordan", "Djibouti", "Sudan"];
+
+// A square mark Google can crop cleanly. The wide lockup is for the page
+// header and footer, not for structured data.
+const organizationLogo = {
+  "@type": "ImageObject",
+  url: `${SITE}/apple-touch-icon.png`,
+  width: 498,
+  height: 498,
+};
+
 const organization = {
   "@type": "Organization",
   "@id": `${SITE}/#organization`,
   name: "RedSeaRate",
   url: `${SITE}/`,
-  logo: `${SITE}/logo-lockup.png`,
-  description: "Ocean freight rates, estimates and booking inquiries from China to Red Sea ports.",
-  areaServed: ["Saudi Arabia", "Egypt", "Jordan", "Djibouti", "Sudan"],
+  logo: organizationLogo,
+  description: "Ocean freight rates, estimates and booking inquiries from China to Red Sea ports and Jebel Ali.",
+  areaServed: [...RED_SEA_AREA, "United Arab Emirates"],
 };
 
-export function homeJsonLd(lang: Lang) {
+export function homeJsonLd(lang: Lang, whatsapp: string[] = []) {
   const zh = lang === "zh";
+  const contactPoints = whatsapp.map((telephone) => ({
+    "@type": "ContactPoint",
+    contactType: "sales",
+    telephone,
+    url: `${SITE}${home(lang)}#estimate`,
+    availableLanguage: ["English", "Chinese"],
+    areaServed: organization.areaServed,
+  }));
   return {
     "@context": "https://schema.org",
     "@graph": [
-      organization,
+      contactPoints.length ? { ...organization, contactPoint: contactPoints } : organization,
       {
         "@type": "WebSite",
         "@id": `${SITE}/#website`,
         url: `${SITE}/`,
         name: "RedSeaRate",
         alternateName: "红海运价",
+        description: "China to Red Sea ocean freight rates, estimates and booking inquiries.",
         inLanguage: ["en", "zh-CN"],
         publisher: { "@id": organization["@id"] },
+      },
+      {
+        "@type": "Service",
+        "@id": `${SITE}/#service`,
+        name: zh ? "中国至红海海运" : "China to Red Sea ocean freight",
+        serviceType: zh ? "海运整箱（FCL）与拼箱（LCL）" : "Ocean freight (FCL and LCL)",
+        description: zh
+          ? "从上海、宁波、深圳、青岛和南沙起运至吉达、苏赫纳、亚喀巴、吉布提和苏丹港的港到港海运，提供市场运价参考与订舱询价。"
+          : "Port-to-port ocean freight from Shanghai, Ningbo, Shenzhen, Qingdao and Nansha to Jeddah, Sokhna, Aqaba, Djibouti and Port Sudan, with market rate references and booking inquiries.",
+        url: `${SITE}${home(lang)}`,
+        provider: { "@id": organization["@id"] },
+        areaServed: RED_SEA_AREA,
+        availableChannel: {
+          "@type": "ServiceChannel",
+          serviceUrl: `${SITE}${home(lang)}#estimate`,
+        },
       },
       {
         "@type": "FAQPage",
         url: `${SITE}${home(lang)}`,
         inLanguage: zh ? "zh-CN" : "en",
+        isPartOf: { "@id": `${SITE}/#website` },
         mainEntity: faqs.map((f) => ({
           "@type": "Question",
           name: zh ? f.q.zh : f.q.en,
@@ -228,10 +267,19 @@ export function ratesJsonLd(index: IndexEntry[], today: string, lang: Lang) {
         url: `${SITE}${path}`,
         inLanguage: zh ? "zh-CN" : "en",
         isAccessibleForFree: true,
+        // Google treats `license` as recommended, not required. The index is
+        // proprietary and the site has no data-usage page yet, so do not
+        // invent a CC license here; publish terms first, then add the URL.
         dateModified: today,
         temporalCoverage: `${addDays(today, 1 - INDEX_WINDOW_DAYS)}/${today}`,
         spatialCoverage: index.map((entry) => ({ "@type": "Place", name: `${entry.port.id} (${entry.port.code})` })),
         variableMeasured: zh ? "40HQ 海运费中位数（美元/柜）" : "40HQ ocean freight median (USD per container)",
+        keywords: zh
+          ? ["40HQ", "海运费", "中国至红海", "吉达", "苏赫纳", "亚喀巴", "吉布提", "苏丹港"]
+          : ["40HQ", "ocean freight", "China to Red Sea", "Jeddah", "Sokhna", "Aqaba", "Djibouti", "Port Sudan"],
+        measurementTechnique: zh
+          ? "近 28 天收集的港到港报价中位数，剔除异常值"
+          : "Median of port-to-port quotes collected in the last 28 days, outliers dropped",
         creator: { "@id": organization["@id"] },
         publisher: organization,
       },
@@ -303,9 +351,27 @@ export function countryDescription(country: Country, stats: CountryStats, lang: 
   const port = destinations.find((d) => d.id === country.destination)!;
   const hq = stats.containers["40HC"];
   const transit = country.transit ? (zh ? country.transit.range.zh : country.transit.range.en) : null;
-  if (zh)
-    return `${hq ? `中国到${port.zh} 40HQ 市场中位数 ${money(hq.median)}（${hq.count} 条报价）。` : ""}各起运港运价、船公司${transit ? `、航程 ${transit}` : ""}和清关文件。`;
-  return `${hq ? `China to ${port.id} 40HQ market median: ${money(hq.median)} from ${hq.count} recent quotes. ` : ""}Rates by origin port, carriers${transit ? `, ${transit} transit` : ""} and the import documents you need.`;
+  if (zh) {
+    const price = hq ? `中国到${port.zh} 40HQ 中位数 ${money(hq.median)}（${hq.count} 条报价）。` : "";
+    return `${price}对比上海、宁波、深圳、青岛、南沙到${port.zh}的 20GP/40HQ 海运费（红海航线）${transit ? `、${transit}航程` : ""}与清关文件。`;
+  }
+  const price = hq ? `China to ${port.id} 40HQ median ${money(hq.median)} (${hq.count} quotes). ` : "";
+  return `${price}Compare 20GP and 40HQ Red Sea rates ${hq ? "by origin port" : "from Shanghai, Ningbo, Shenzhen, Qingdao and Nansha"}${transit ? `, ${transit} transit` : ""} and the import documents you need.`;
+}
+
+// A shorter title tag than the on-page H1: keeps the port keyword and the
+// brand inside the roughly 60-character snippet Google shows.
+export function countrySeoTitle(country: Country, lang: Lang) {
+  const zh = lang === "zh";
+  const port = destinations.find((d) => d.id === country.destination)!;
+  if (country.slug === "shipping-from-china-to-djibouti") {
+    return zh
+      ? "中国到吉布提及埃塞俄比亚海运：40HQ 运价 | RedSeaRate"
+      : "China to Djibouti & Ethiopia Freight Rates | RedSeaRate";
+  }
+  return zh
+    ? `中国到${country.name.zh}海运：${port.zh} 40HQ 运价 | RedSeaRate`
+    : `China to ${country.name.en}: ${port.id} Freight Rates | RedSeaRate`;
 }
 
 export function countryJsonLd(country: Country, stats: CountryStats, today: string, lang: Lang) {
@@ -320,6 +386,7 @@ export function countryJsonLd(country: Country, stats: CountryStats, today: stri
         headline: title,
         description: countryDescription(country, stats, lang),
         inLanguage: zh ? "zh-CN" : "en",
+        datePublished: PAGES_PUBLISHED,
         dateModified: today,
         image: `${SITE}/og.jpg`,
         mainEntityOfPage: `${SITE}${path}`,
@@ -358,6 +425,7 @@ export function jebelAliJsonLd(stats: CountryStats, today: string, lang: Lang) {
         headline: title,
         description: jebelAliDescription(today, lang),
         inLanguage: zh ? "zh-CN" : "en",
+        datePublished: PAGES_PUBLISHED,
         dateModified: today,
         image: `${SITE}/og.jpg`,
         mainEntityOfPage: `${SITE}${path}`,
@@ -400,15 +468,45 @@ export function marketBriefJsonLd(brief: MarketBrief, lang: Lang) {
         image: `${SITE}/og.jpg`,
         mainEntityOfPage: `${SITE}${path}`,
         author: { "@id": organization["@id"] },
-        publisher: {
-          ...organization,
-          logo: { "@type": "ImageObject", url: organization.logo },
-        },
+        publisher: organization,
       },
       breadcrumbs([
         { name: zh ? "首页" : "Home", path: home(lang) },
         { name: zh ? "市场简报" : "Market brief", path: briefPath(null, lang) },
         { name: headline, path },
+      ]),
+    ],
+  };
+}
+
+export function marketBriefIndexJsonLd(briefs: MarketBrief[], lang: Lang) {
+  const zh = lang === "zh";
+  const path = briefPath(null, lang);
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        "@id": `${SITE}${path}#page`,
+        url: `${SITE}${path}`,
+        name: briefIndexTitle(lang),
+        description: briefIndexDescription(lang),
+        inLanguage: zh ? "zh-CN" : "en",
+        publisher: organization,
+        mainEntity: {
+          "@type": "ItemList",
+          numberOfItems: briefs.length,
+          itemListElement: briefs.map((brief, index) => ({
+            "@type": "ListItem",
+            position: index + 1,
+            url: `${SITE}${briefPath(brief.date, lang)}`,
+            name: briefHeading(brief.date, lang),
+          })),
+        },
+      },
+      breadcrumbs([
+        { name: zh ? "首页" : "Home", path: home(lang) },
+        { name: zh ? "市场简报" : "Market brief", path },
       ]),
     ],
   };

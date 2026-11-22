@@ -14,10 +14,11 @@ export const metadata: Metadata = pageMetadata({
 });
 
 export default async function Page() {
+  const data = await homeData();
   return (
     <>
-      <JsonLd data={homeJsonLd("zh")} />
-      <Home lang="zh" {...await homeData()} />
+      <JsonLd data={homeJsonLd("zh", data.contact.whatsapp)} />
+      <Home lang="zh" {...data} />
     </>
   );
 }

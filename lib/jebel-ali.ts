@@ -11,6 +11,13 @@ export const JEBEL_ALI_TITLE = {
 export function jebelAliTitle(lang: "en" | "zh") {
   return `${JEBEL_ALI_TITLE[lang]} | RedSeaRate`;
 }
+
+// Title tag only. The H1 and the Article headline keep the longer wording.
+export function jebelAliSeoTitle(lang: "en" | "zh") {
+  return lang === "zh"
+    ? "中国到杰贝阿里海运：运价与航程 | RedSeaRate"
+    : "China to Jebel Ali Freight Rates & Transit | RedSeaRate";
+}
 export const JEBEL_ALI_CODE = "AEJEA";
 export const JEBEL_ALI_TRANSIT_DAYS = 26;
 export const JEBEL_ALI_DIRECT = true;
@@ -74,8 +81,8 @@ export function jebelAliDescription(_today: string, lang: "en" | "zh") {
       : "The listed China to Jebel Ali sailings have passed. Jebel Ali is in Dubai, not Saudi Arabia. Ask for a new quote.";
   }
   return lang === "zh"
-    ? "各起运港到杰贝阿里的运价，以及已列的一班船期。杰贝阿里在迪拜。此页不属于红海指数。"
-    : "Rates from China origin ports to Jebel Ali, plus one listed sailing. Jebel Ali is in Dubai, separate from the Red Sea index.";
+    ? `各起运港到杰贝阿里的运价、${JEBEL_ALI_TRANSIT_DAYS} 天直航，以及已列的一班船期。杰贝阿里在迪拜。此页不属于红海指数。`
+    : `Rates from China origin ports to Jebel Ali, ${JEBEL_ALI_TRANSIT_DAYS} days direct, plus one listed sailing. Jebel Ali is in Dubai, separate from the Red Sea index.`;
 }
 
 const quotesLabel = (n: number, lang: "en" | "zh") =>

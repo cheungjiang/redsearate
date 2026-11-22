@@ -6,13 +6,14 @@ import { JsonLd } from "./json-ld";
 import SubpageShell from "./subpage-shell";
 
 export default function CountryPage({
-  lang, country, stats, today, laneSlugs = {},
+  lang, country, stats, today, laneSlugs = {}, routeLinks = [],
 }: {
   lang: "en" | "zh";
   country: Country;
   stats: CountryStats;
   today: string;
   laneSlugs?: Record<string, string>;
+  routeLinks?: { slug: string; en: string; zh: string }[];
 }) {
   const zh = lang === "zh";
   const t = (en: string, cn: string) => zh ? cn : en;
@@ -80,6 +81,19 @@ export default function CountryPage({
             `港到港海运费，美元/柜，近 28 天收集的市场报价中位数（共 ${stats.quotes} 条）。不含起运港费用、目的港费用、关税和内陆运输。这是市场读数，不是可订舱报价。`,
           )}
         </p>
+
+        {routeLinks.length > 0 && (
+          <>
+            <h2>{t(`Routes from China to ${portName}`, `中国到${portName}的各条航线`)}</h2>
+            <ul>
+              {routeLinks.map((route) => (
+                <li key={route.slug}>
+                  <a href={`${zh ? "/zh" : ""}/${route.slug}/`}>{zh ? route.zh : route.en}</a>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
 
         <h2>{t(`How long does shipping from China to ${pick(country.name)} take?`, `中国到${pick(country.name)}海运要多久？`)}</h2>
         {country.transit ? (

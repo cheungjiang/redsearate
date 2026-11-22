@@ -230,6 +230,7 @@ export type OriginStat = {
   freeDays: [number, number] | null;
   direct: number;
   transhipped: number;
+  transit: { min: number; max: number } | null;
 };
 export type CountryStats = {
   containers: Partial<Record<"20GP" | "40GP" | "40HC", ContainerStat>>;
@@ -262,14 +263,20 @@ export function countryStats(entries: PriceEntry[], today: string, destination: 
     }));
   const origins = [...new Set(quotes.map((e) => e.origin))].map((origin): OriginStat => {
     const list = quotes.filter((e) => e.origin === origin);
+    const hqList = list.filter((e) => e.container === "40HC");
     const days = list.flatMap((e) => (e.freeDays ? [e.freeDays] : []));
+    const transitDays = hqList.flatMap((e) => {
+      if (e.transitMin == null) return [];
+      return [e.transitMin, e.transitMax ?? e.transitMin];
+    });
     return {
       origin,
       containers: byContainer(list),
       carriers: [...new Set(list.flatMap((e) => splitCarriers(e.carrier)))].sort(),
       freeDays: days.length ? [Math.min(...days), Math.max(...days)] : null,
-      direct: list.filter((e) => /直|direct/i.test(e.routing ?? "")).length,
-      transhipped: list.filter((e) => /中转|转运|tranship|transship|via/i.test(e.routing ?? "")).length,
+      direct: hqList.filter((e) => /直|direct/i.test(e.routing ?? "")).length,
+      transhipped: hqList.filter((e) => /中转|转运|tranship|transship|via/i.test(e.routing ?? "")).length,
+      transit: transitDays.length ? { min: Math.min(...transitDays), max: Math.max(...transitDays) } : null,
     };
   }).sort((a, b) => (a.containers["40HC"]?.median ?? Infinity) - (b.containers["40HC"]?.median ?? Infinity));
   const dates = quotes.map((e) => shanghaiDate(new Date(e.createdAt))).sort();

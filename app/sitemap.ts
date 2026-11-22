@@ -16,7 +16,11 @@ export default async function sitemap() {
     { en: "/", zh: "/zh/", modified: today },
     { en: "/rates/", zh: "/zh/rates/", modified: today },
     ...countries.map(({ slug }) => ({ en: `/${slug}/`, zh: `/zh/${slug}/`, modified: today })),
-    ...lanes.active.map(({ slug }) => ({ en: lanePath(slug, "en"), zh: lanePath(slug, "zh"), modified: today })),
+    ...[...new Set([...lanes.active, ...lanes.curated].map(({ slug }) => slug))].map((slug) => ({
+      en: lanePath(slug, "en"),
+      zh: lanePath(slug, "zh"),
+      modified: today,
+    })),
     { en: `/${JEBEL_ALI_SLUG}/`, zh: `/zh/${JEBEL_ALI_SLUG}/`, modified: today },
     ...guides.map((guide) => ({
       en: `/guides/${guide.slug}/`,
@@ -29,7 +33,7 @@ export default async function sitemap() {
     [en, zh].map((path) => ({
       url: `${SITE}${path}`,
       lastModified: modified,
-      alternates: { languages: { en: `${SITE}${en}`, "zh-CN": `${SITE}${zh}` } },
+      alternates: { languages: { en: `${SITE}${en}`, "zh-CN": `${SITE}${zh}`, "x-default": `${SITE}${en}` } },
     })),
   );
 }

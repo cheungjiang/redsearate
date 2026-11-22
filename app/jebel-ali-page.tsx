@@ -136,10 +136,13 @@ export default function JebelAliPage({ lang, today }: { lang: "en" | "zh"; today
       <section className="jebel-band" aria-labelledby="jebel-gateway">
         <img
           src="/images/jebel-ali/terminal-night.webp"
+          srcSet="/images/jebel-ali/terminal-night-800.webp 800w, /images/jebel-ali/terminal-night-1280.webp 1280w, /images/jebel-ali/terminal-night.webp 1920w"
+          sizes="100vw"
           width={1920}
           height={1272}
           alt={t("Container terminal at night, cranes lit above the water", "夜间集装箱码头，岸桥灯火映在水面")}
           loading="lazy"
+          decoding="async"
         />
         <div className="jebel-band-copy">
           <div>

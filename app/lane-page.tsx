@@ -1,5 +1,6 @@
+import { ArrowRight } from "lucide-react";
 import { countries, type Country } from "../lib/countries";
-import { laneFaqs, laneHeading, laneJsonLd, lanePath, type LanePageData } from "../lib/lanes";
+import { laneFaqs, laneHeading, laneJsonLd, lanePath, laneRouting, laneTransit, type LanePageData } from "../lib/lanes";
 import { JsonLd } from "./json-ld";
 import SubpageShell from "./subpage-shell";
 
@@ -19,6 +20,7 @@ export default function LanePage({
   const faqs = laneFaqs(lane, today, lang);
   const countryHref = lanePath(lane.countrySlug, lang);
   const ratesHref = zh ? "/zh/rates/" : "/rates/";
+  const home = zh ? "/zh/" : "/";
   const quotes = (n: number) => zh ? `${n} 条报价` : `${n} ${n === 1 ? "quote" : "quotes"}`;
   return (
     <SubpageShell lang={lang} className="guide-page country-page" languageHref={lanePath(lane.slug, zh ? "en" : "zh")}>
@@ -65,18 +67,29 @@ export default function LanePage({
           </p>
         )}
         <p className="platform-note">
+          {lane.median === null
+            ? lane.count > 0
+              ? t(
+                  `Only ${lane.count} recent 40HQ quotes; the sample is too thin for a median.`,
+                  `近 28 天仅 ${lane.count} 条 40HQ 报价，样本不足，暂不给出中位数。`,
+                )
+              : t("No current market reading for this route.", "该航线暂无市场读数。")
+            : t("A market reading, not a bookable offer.", "这是市场读数，不是可订舱报价。")}
+          {zh ? "" : " "}
           {t(
-            "Origin charges, destination charges, duty and inland transport are not included. A market reading, not a bookable offer.",
-            "不含起运港费用、目的港费用、关税和内陆运输。这是市场读数，不是可订舱报价。",
+            "Origin charges, destination charges, duty and inland transport are not included.",
+            "不含起运港费用、目的港费用、关税和内陆运输。",
           )}
         </p>
+        <p>
+          <a className="text-button" href={`${home}#estimate`}>
+            {t("Ask for a quote on this route", "获取这条航线的报价")}
+            <ArrowRight size={15} />
+          </a>
+        </p>
 
-        <h2>{t(`How long does shipping from China to ${pick(country.name)} take?`, `中国到${pick(country.name)}海运要多久？`)}</h2>
-        {country.transit ? (
-          <p><strong>{pick(country.transit.range)}{t(".", "。")}</strong>{t(" ", "")}{pick(country.transit.note)}</p>
-        ) : (
-          <p>{faqs[1].a}</p>
-        )}
+        <h2>{t(`How long does shipping from ${lane.originEn} to ${lane.destEn} take?`, `${lane.originZh}到${lane.destZh}海运要多久？`)}</h2>
+        <p>{laneTransit(lane, lang)}{zh ? "" : " "}{laneRouting(lane, lang)}</p>
 
         <h2>{t("Documents and customs", "单证与清关")}</h2>
         <ul>{country.documents.map((item) => <li key={item.en}>{pick(item)}</li>)}</ul>
@@ -91,11 +104,18 @@ export default function LanePage({
           ))}
         </div>
 
-        <p>
-          <a href={countryHref}>{t(`${pick(country.name)} rates by origin`, `${pick(country.name)}各起运港运价`)}</a>
-          {" · "}
-          <a href={ratesHref}>{t("All Red Sea rates", "全部红海运价")}</a>
-        </p>
+        <div className="guide-cta">
+          <a className="button coral" href={`${home}#estimate`}>
+            {t("Get a quote for this route", "获取这条航线的报价")}
+            <ArrowRight size={16} />
+          </a>
+          <a className="text-button" href={countryHref}>
+            {t(`${pick(country.name)} rates by origin`, `${pick(country.name)}各起运港运价`)}
+          </a>
+          <a className="text-button" href={ratesHref}>
+            {t("All Red Sea rates", "全部红海运价")}
+          </a>
+        </div>
       </article>
     </SubpageShell>
   );

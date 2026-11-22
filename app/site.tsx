@@ -271,6 +271,8 @@ export default function Home({
           <div className="hero-visual">
             <img
               src="/ship.webp"
+              srcSet="/ship-800.webp 800w, /ship-1200.webp 1200w, /ship.webp 1536w"
+              sizes="(max-width: 540px) 100vw, (max-width: 1024px) 95vw, 78vw"
               alt={t(
                 "Aerial view of a container ship crossing deep teal ocean",
                 "集装箱船航行于深蓝海面的航拍画面",

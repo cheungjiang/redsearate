@@ -57,9 +57,9 @@ export default async function GuidePage({ lang, guide }: { lang: "en" | "zh"; gu
   const related = originalGuides.has(guide.slug)
     ? guides.filter((item) => originalGuides.has(item.slug) && item.slug !== guide.slug)
     : guides.filter((item) => item.slug !== guide.slug);
-  const laneLinks = guide.published
-    ? guideLaneLinks(guide.slug, (await getLanePlan()).active)
-    : [];
+  const plan = await getLanePlan();
+  const publishedLanes = [...new Map([...plan.active, ...plan.curated].map((lane) => [lane.slug, lane])).values()];
+  const laneLinks = guide.published ? guideLaneLinks(guide.slug, publishedLanes) : [];
   return (
     <SubpageShell lang={lang} className="guide-page" current="guides" languageHref={href(guide.slug, !zh)}>
       <JsonLd data={guideJsonLd(guide, lang)} />

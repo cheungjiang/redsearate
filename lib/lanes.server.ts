@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { shanghaiDate, type PriceEntry } from "./rates.ts";
 import {
+  curatedLanes,
   emptyLaneRegistry,
   parseLaneRegistry,
   planLanes,
@@ -36,6 +37,7 @@ export type LanePlan = {
   today: string;
   active: LanePageData[];
   retired: LaneKey[];
+  curated: LanePageData[];
   registry: LaneRegistry;
 };
 
@@ -46,11 +48,12 @@ export function getLanePlan(): Promise<LanePlan> {
     pending = (async () => {
       const today = shanghaiDate();
       const previous = await loadPrevious();
-      const { active, retired } = planLanes(readEntries(), today, previous);
+      const { active, retired, measured } = planLanes(readEntries(), today, previous);
+      const curated = curatedLanes(active, measured);
       const registry = { active, retired };
-      console.log(`Lanes: ${active.length} published, ${retired.length} retired.`);
+      console.log(`Lanes: ${active.length} published, ${retired.length} retired, ${curated.length} curated.`);
       for (const lane of active) console.log(`Lane ${lane.slug}: ${lane.count} quotes, median ${lane.median}`);
-      return { today, active, retired, registry };
+      return { today, active, retired, curated, registry };
     })();
   }
   return pending;

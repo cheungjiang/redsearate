@@ -5,6 +5,8 @@ import {
   type MarketBrief,
 } from "../lib/market-brief";
 import { destinations } from "../lib/rates";
+import { marketBriefIndexJsonLd } from "../lib/seo";
+import { JsonLd } from "./json-ld";
 import SubpageShell from "./subpage-shell";
 
 export default function MarketBriefIndex({ lang, briefs }: { lang: "en" | "zh"; briefs: MarketBrief[] }) {
@@ -14,6 +16,7 @@ export default function MarketBriefIndex({ lang, briefs }: { lang: "en" | "zh"; 
   const portName = (id: string) => (zh ? destinations.find((item) => item.id === id)?.zh ?? id : id);
   return (
     <SubpageShell lang={lang} className="guide-page country-page" languageHref={briefPath(null, zh ? "en" : "zh")}>
+      <JsonLd data={marketBriefIndexJsonLd(briefs, lang)} />
       <article className="guide-article country-article wrap">
         <nav className="breadcrumbs" aria-label={t("Breadcrumb", "面包屑导航")}>
           <a href={home}>{t("Home", "首页")}</a>

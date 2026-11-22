@@ -16,12 +16,15 @@ export type LaneQuoteStat = { median: number; count: number; low: number; high: 
 
 export type LanePageData = LaneKey & {
   count: number;
-  median: number;
-  low: number;
-  high: number;
+  median: number | null;
+  low: number | null;
+  high: number | null;
   twenty: LaneQuoteStat | null;
   carriers: string[];
   freeDays: [number, number] | null;
+  direct: number;
+  transhipped: number;
+  transit: { min: number; max: number } | null;
   originEn: string;
   originZh: string;
   destEn: string;
@@ -97,6 +100,9 @@ function measuredLanes(entries: PriceEntry[], today: string): Map<string, LanePa
         twenty,
         carriers: row.carriers,
         freeDays: row.freeDays,
+        direct: row.direct,
+        transhipped: row.transhipped,
+        transit: row.transit,
         originEn: name.en,
         originZh: name.zh,
         destEn: port.id,
@@ -110,6 +116,60 @@ function measuredLanes(entries: PriceEntry[], today: string): Map<string, LanePa
 
 function sameKey(list: LaneKey[], slug: string) {
   return list.some((item) => item.slug === slug);
+}
+
+// Four origins × five destinations stay online as route landing pages even
+// when the quote window is empty. A route with quotes reuses the measured
+// lane; a route without quotes still answers transit, routing and documents.
+export const ROUTE_ORIGINS = ["Shanghai", "Ningbo", "Shenzhen", "Qingdao"] as const;
+export const ROUTE_DESTINATIONS = ["Jeddah", "Sokhna", "Aqaba", "Djibouti", "Port Sudan"] as const;
+
+export function curatedLanes(active: LanePageData[], measured: LanePageData[] = []): LanePageData[] {
+  const bySlug = new Map(active.map((lane) => [lane.slug, lane]));
+  const measuredBySlug = new Map(measured.map((lane) => [lane.slug, lane]));
+  const lanes: LanePageData[] = [];
+  for (const origin of ROUTE_ORIGINS) {
+    const name = originName(origin);
+    if (!name) throw new Error(`No lane slug for curated origin ${origin}.`);
+    for (const destination of ROUTE_DESTINATIONS) {
+      const slug = laneSlug(name.slug, destination);
+      const published = bySlug.get(slug);
+      if (published) {
+        lanes.push(published);
+        continue;
+      }
+      const thin = measuredBySlug.get(slug);
+      if (thin) {
+        // 1–4 quotes are too few for a median, but the sample still belongs
+        // on the route page as a count, not as a price.
+        lanes.push({ ...thin, median: null });
+        continue;
+      }
+      const country = countryFor(destination);
+      const port = destinations.find((item) => item.id === destination)!;
+      lanes.push({
+        slug,
+        origin,
+        destination,
+        count: 0,
+        median: null,
+        low: null,
+        high: null,
+        twenty: null,
+        carriers: [],
+        freeDays: null,
+        direct: 0,
+        transhipped: 0,
+        transit: null,
+        originEn: name.en,
+        originZh: name.zh,
+        destEn: port.id,
+        destZh: port.zh,
+        countrySlug: country.slug,
+      });
+    }
+  }
+  return lanes;
 }
 
 // previous is the registry published by the last deploy. This build replaces
@@ -140,7 +200,7 @@ export function planLanes(entries: PriceEntry[], today: string, previous: LaneRe
 
   active.sort((a, b) => a.slug.localeCompare(b.slug));
   retired.sort((a, b) => a.slug.localeCompare(b.slug));
-  return { active, retired };
+  return { active, retired, measured: [...measured.values()] };
 }
 
 export function laneRegistry(active: LanePageData[], retired: LaneKey[]): LaneRegistry {
@@ -168,44 +228,85 @@ const money = (n: number) => `US$${n.toLocaleString("en-US")}`;
 
 export function laneTitle(lane: LanePageData, lang: "en" | "zh") {
   return lang === "zh"
-    ? `${lane.originZh}到${lane.destZh} 40HQ 运价 | RedSeaRate`
-    : `${lane.originEn} to ${lane.destEn} Freight Rates: 40HQ | RedSeaRate`;
+    ? `${lane.originZh}到${lane.destZh}海运费 | RedSeaRate`
+    : `${lane.originEn} to ${lane.destEn} Shipping Rates | RedSeaRate`;
 }
 
 export function laneHeading(lane: LanePageData, lang: "en" | "zh") {
   return lang === "zh"
-    ? `${lane.originZh}到${lane.destZh} 40HQ 运价`
-    : `${lane.originEn} to ${lane.destEn} 40HQ Freight Rates`;
+    ? `${lane.originZh}到${lane.destZh}海运费`
+    : `${lane.originEn} to ${lane.destEn} Shipping Rates`;
 }
 
 export function laneDescription(lane: LanePageData, lang: "en" | "zh") {
+  const zh = lang === "zh";
+  if (lane.median === null) {
+    const sample = lane.count > 0
+      ? zh ? `近 28 天 ${lane.count} 条 40HQ 报价，` : `${lane.count} recent 40HQ quotes, `
+      : "";
+    return zh
+      ? `${lane.originZh}到${lane.destZh}海运费与航线指南：${sample}航程、直航或中转说明，直接获取港到港报价。`
+      : `${lane.originEn} to ${lane.destEn} shipping rates and route guide: ${sample}transit time, direct or transhipment routing and a port-to-port quote.`;
+  }
   const price = money(lane.median);
-  return lang === "zh"
-    ? `${lane.originZh}到${lane.destZh} 40HQ 中位数 ${price}（${lane.count} 条）。港到港海运费。`
-    : `${lane.originEn} to ${lane.destEn} 40HQ median ${price} from ${lane.count} quotes. Port-to-port ocean freight.`;
+  return zh
+    ? `${lane.originZh}到${lane.destZh} 40HQ 海运中位数 ${price}（${lane.count} 条报价），港到港海运费、航程与订舱询价。`
+    : `${lane.originEn} to ${lane.destEn} 40HQ median ${price} from ${lane.count} quotes. Port-to-port ocean freight, transit and booking inquiries.`;
+}
+
+export function laneTransit(lane: LanePageData, lang: "en" | "zh") {
+  const zh = lang === "zh";
+  if (lane.transit) {
+    return zh
+      ? `这些报价的航程为 ${lane.transit.min}–${lane.transit.max} 天。`
+      : `The quotes on this route list ${lane.transit.min}–${lane.transit.max} days transit.`;
+  }
+  const country = countryFor(lane.destination);
+  if (country.transit) {
+    return zh
+      ? `大致航程 ${country.transit.range.zh}。`
+      : `Typical transit is ${country.transit.range.en}.`;
+  }
+  return zh ? "航程以询价确认为准。" : "Confirm the transit time with your quote.";
+}
+
+export function laneRouting(lane: LanePageData, lang: "en" | "zh") {
+  const zh = lang === "zh";
+  if (lane.direct > 0 && lane.transhipped === 0) {
+    return zh ? "这条航线有直航船期，具体以询价确认为准。" : "Direct sailings appear on this route; confirm the routing with your quote.";
+  }
+  if (lane.direct === 0 && lane.transhipped > 0) {
+    return zh ? "这条航线有中转船期，订舱时请确认中转港。" : "Some quotes on this route tranship; confirm the connection port when you book.";
+  }
+  if (lane.direct > 0 && lane.transhipped > 0) {
+    return zh ? "这些报价中既有直航，也有中转。" : "The quotes include both direct and transhipment sailings.";
+  }
+  return zh ? "直航或中转以具体船期为准，询价时请确认。" : "Direct or transhipment depends on the sailing; confirm it with your quote.";
 }
 
 export function laneFaqs(lane: LanePageData, today: string, lang: "en" | "zh") {
   const country = countryFor(lane.destination);
   const zh = lang === "zh";
-  const price = money(lane.median);
   const quotes = zh ? `${lane.count} 条报价` : `${lane.count} ${lane.count === 1 ? "quote" : "quotes"}`;
-  const transit = country.transit
-    ? zh
-      ? `${country.transit.range.zh}。${country.transit.note.zh}`
-      : `${country.transit.range.en}. ${country.transit.note.en}`
-    : zh
-      ? `中国到${lane.destZh}直航有限，很多货物需中转，时效取决于衔接情况，请在询价时确认航线。`
-      : `Direct sailings from China to ${lane.destEn} are limited and much cargo is transhipped, so transit depends on the connection. Confirm the routing when you ask for a quote.`;
+  const range = lane.low != null && lane.high != null ? `${money(lane.low)}–${money(lane.high)}` : "—";
+  const transit = `${laneTransit(lane, lang)}${zh ? "" : " "}${laneRouting(lane, lang)}`;
   const documents = country.documents.slice(0, 2).map((item) => (zh ? item.zh : item.en)).join(zh ? "" : " ");
   return [
     {
       q: zh
         ? `${lane.originZh}到${lane.destZh}一个 40HQ 海运费多少钱？`
         : `How much is 40HQ ocean freight from ${lane.originEn} to ${lane.destEn}?`,
-      a: zh
-        ? `截至 ${today}，${lane.originZh}到${lane.destZh}的 40HQ 中位数为每柜 ${price}，基于近 ${INDEX_WINDOW_DAYS} 天的 ${quotes}（区间 ${money(lane.low)}–${money(lane.high)}）。以上为港到港海运费，不含港杂、关税和内陆运输。`
-        : `As of ${today}, the 40HQ median from ${lane.originEn} to ${lane.destEn} is ${price} per container, based on ${quotes} in the last ${INDEX_WINDOW_DAYS} days (range ${money(lane.low)}–${money(lane.high)}). These are port-to-port ocean freight figures, excluding local charges, duty and inland transport.`,
+      a: lane.median === null
+        ? lane.count > 0
+          ? zh
+            ? `近 ${INDEX_WINDOW_DAYS} 天只收集到${lane.originZh}到${lane.destZh}的 ${quotes}，样本不足，暂不给出中位数，请直接询价。`
+            : `We collected only ${quotes} for ${lane.originEn} to ${lane.destEn} in the last ${INDEX_WINDOW_DAYS} days, too few for a median. Ask us for a quote.`
+          : zh
+            ? `近 ${INDEX_WINDOW_DAYS} 天暂未收集到${lane.originZh}到${lane.destZh}的 40HQ 市场报价，请直接询价。`
+            : `We have no 40HQ market quotes from ${lane.originEn} to ${lane.destEn} in the last ${INDEX_WINDOW_DAYS} days. Ask us for a quote.`
+        : zh
+          ? `截至 ${today}，${lane.originZh}到${lane.destZh}的 40HQ 中位数为每柜 ${money(lane.median)}，基于近 ${INDEX_WINDOW_DAYS} 天的 ${quotes}（区间 ${range}）。以上为港到港海运费，不含港杂、关税和内陆运输。`
+          : `As of ${today}, the 40HQ median from ${lane.originEn} to ${lane.destEn} is ${money(lane.median)} per container, based on ${quotes} in the last ${INDEX_WINDOW_DAYS} days (range ${range}). These are port-to-port ocean freight figures, excluding local charges, duty and inland transport.`,
     },
     {
       q: zh
@@ -238,6 +339,16 @@ export function laneJsonLd(lane: LanePageData, today: string, lang: "en" | "zh")
   return {
     "@context": "https://schema.org",
     "@graph": [
+      {
+        "@type": "Service",
+        "@id": `${SITE}${path}#service`,
+        name: laneHeading(lane, lang),
+        serviceType: zh ? "海运整箱（FCL）" : "Ocean freight (FCL)",
+        description: laneDescription(lane, lang),
+        url: `${SITE}${path}`,
+        provider: { "@type": "Organization", name: "RedSeaRate", url: `${SITE}/` },
+        areaServed: zh ? country.name.zh : country.name.en,
+      },
       {
         "@type": "FAQPage",
         url: `${SITE}${path}`,

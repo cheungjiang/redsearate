@@ -16,7 +16,7 @@ import {
 } from "./market-brief.ts";
 import { readMarketBriefs } from "./market-brief.server.ts";
 import { liveIndex } from "./platform.ts";
-import { marketBriefJsonLd } from "./seo.ts";
+import { marketBriefIndexJsonLd, marketBriefJsonLd } from "./seo.ts";
 import type { PriceEntry } from "./rates.ts";
 
 let nextId = 0;
@@ -121,6 +121,16 @@ test("brief descriptions stay inside the snippet limits and name the frozen medi
   assert.deepEqual(graph.map((node) => node["@type"]), ["Article", "BreadcrumbList"]);
   const article = graph.find((node) => node["@type"] === "Article");
   assert.equal(article && "datePublished" in article ? article.datePublished : null, "2026-11-09");
+});
+
+test("the market brief index lists every issue as a CollectionPage", () => {
+  const briefs = readMarketBriefs(join(process.cwd(), "data/market-brief"));
+  const graph = marketBriefIndexJsonLd(briefs, "en")["@graph"];
+  assert.deepEqual(graph.map((node) => node["@type"]), ["CollectionPage", "BreadcrumbList"]);
+  const page = graph[0] as { mainEntity: { numberOfItems: number; itemListElement: { url: string }[] } };
+  assert.equal(page.mainEntity.numberOfItems, briefs.length);
+  assert.equal(page.mainEntity.itemListElement.length, briefs.length);
+  assert.match(page.mainEntity.itemListElement[0].url, /^https:\/\/redsearate\.com\/market-brief\/\d{4}-\d{2}-\d{2}\/$/);
 });
 
 test("the published 2026-11-09 snapshot stays at the frozen readings", () => {

@@ -5,20 +5,24 @@ import LaneRedirect from "../../lane-redirect";
 import { countries } from "../../../lib/countries";
 import { laneDescription, lanePath, laneTitle } from "../../../lib/lanes";
 import { getLanePlan } from "../../../lib/lanes.server";
-import { countryDescription, pageMetadata } from "../../../lib/seo";
+import { countryDescription, countrySeoTitle, pageMetadata } from "../../../lib/seo";
 import { countryData } from "../../../lib/site-data";
 
 type Props = { params: Promise<{ country: string }> };
 
 export const dynamicParams = false;
 
+const uniqueParams = (params: { country: string }[]) =>
+  [...new Map(params.map((param) => [param.country, param])).values()];
+
 export async function generateStaticParams() {
   const plan = await getLanePlan();
-  return [
+  return uniqueParams([
     ...countries.map((country) => ({ country: country.slug })),
     ...plan.active.map((lane) => ({ country: lane.slug })),
+    ...plan.curated.map((lane) => ({ country: lane.slug })),
     ...plan.retired.map((lane) => ({ country: lane.slug })),
-  ];
+  ]);
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -32,6 +36,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       alternates: { en: lanePath(lane.slug, "en"), zh: lanePath(lane.slug, "zh") },
       title: laneTitle(lane, "zh"),
       description: laneDescription(lane, "zh"),
+    });
+  }
+  const curated = plan.curated.find((item) => item.slug === slug);
+  if (curated) {
+    return pageMetadata({
+      lang: "zh",
+      path: lanePath(curated.slug, "zh"),
+      alternates: { en: lanePath(curated.slug, "en"), zh: lanePath(curated.slug, "zh") },
+      title: laneTitle(curated, "zh"),
+      description: laneDescription(curated, "zh"),
     });
   }
   const retired = plan.retired.find((item) => item.slug === slug);
@@ -48,7 +62,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     lang: "zh",
     path: `/zh/${country.slug}/`,
     alternates: { en: `/${country.slug}/`, zh: `/zh/${country.slug}/` },
-    title: `${country.title.zh} | RedSeaRate`,
+    title: countrySeoTitle(country, "zh"),
     description: countryDescription(country, stats, "zh"),
     type: "article",
   });
@@ -59,11 +73,24 @@ export default async function Page({ params }: Props) {
   const plan = await getLanePlan();
   const lane = plan.active.find((item) => item.slug === slug);
   if (lane) return <LanePage lang="zh" lane={lane} today={plan.today} />;
+  const curated = plan.curated.find((item) => item.slug === slug);
+  if (curated) return <LanePage lang="zh" lane={curated} today={plan.today} />;
   const retired = plan.retired.find((item) => item.slug === slug);
   if (retired) return <LaneRedirect lang="zh" lane={retired} />;
   const { country, stats, today } = countryData(slug);
   const laneSlugs = Object.fromEntries(
-    plan.active.filter((item) => item.destination === country.destination).map((item) => [item.origin, item.slug]),
+    [...plan.active, ...plan.curated]
+      .filter((item) => item.destination === country.destination)
+      .map((item) => [item.origin, item.slug]),
   );
-  return <CountryPage lang="zh" country={country} stats={stats} today={today} laneSlugs={laneSlugs} />;
+  const routeLinks = [...new Map(
+    [...plan.active, ...plan.curated]
+      .filter((item) => item.destination === country.destination)
+      .map((item) => [item.slug, {
+        slug: item.slug,
+        en: `${item.originEn} to ${item.destEn}`,
+        zh: `${item.originZh}到${item.destZh}`,
+      }]),
+  ).values()].sort((a, b) => a.en.localeCompare(b.en));
+  return <CountryPage lang="zh" country={country} stats={stats} today={today} laneSlugs={laneSlugs} routeLinks={routeLinks} />;
 }

@@ -1,12 +1,15 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
+  curatedLanes,
   emptyLaneRegistry,
   laneDescription,
   laneFaqs,
   laneJsonLd,
+  laneRouting,
   laneSlug,
   laneTitle,
+  laneTransit,
   planLanes,
   type LaneRegistry,
 } from "./lanes.ts";
@@ -51,12 +54,59 @@ test("five quotes publish a lane and one to three quotes do not", () => {
   assert.deepEqual(lane.carriers, ["COSCO"]);
   assert.deepEqual(lane.freeDays, [14, 14]);
   assert.equal(laneSlug("nansha", "Aqaba"), lane.slug);
-  assert.equal(laneTitle(lane, "en"), "Nansha to Aqaba Freight Rates: 40HQ | RedSeaRate");
+  assert.equal(laneTitle(lane, "en"), "Nansha to Aqaba Shipping Rates | RedSeaRate");
   assert.ok(laneDescription(lane, "en").length <= 155);
   assert.ok(laneDescription(lane, "zh").length <= 80);
   const graph = laneJsonLd(lane, "2026-11-09", "en")["@graph"] as { "@type": string }[];
-  assert.deepEqual(graph.map((item) => item["@type"]), ["FAQPage", "BreadcrumbList"]);
+  assert.deepEqual(graph.map((item) => item["@type"]), ["Service", "FAQPage", "BreadcrumbList"]);
   assert.equal(laneFaqs(lane, "2026-11-09", "en").length, 3);
+});
+
+test("twenty curated routes stay published when the quote window is empty", () => {
+  const lanes = curatedLanes([]);
+  assert.equal(lanes.length, 20);
+  assert.deepEqual(lanes.map((lane) => lane.slug).slice(0, 5), [
+    "shipping-from-shanghai-to-jeddah",
+    "shipping-from-shanghai-to-sokhna",
+    "shipping-from-shanghai-to-aqaba",
+    "shipping-from-shanghai-to-djibouti",
+    "shipping-from-shanghai-to-port-sudan",
+  ]);
+  const thin = lanes.find((lane) => lane.slug === "shipping-from-shanghai-to-jeddah")!;
+  assert.equal(thin.median, null);
+  assert.equal(thin.count, 0);
+  assert.equal(laneTitle(thin, "zh"), "上海到吉达海运费 | RedSeaRate");
+  assert.match(laneDescription(thin, "zh"), /^上海到吉达海运费与航线指南：/);
+  assert.match(laneFaqs(thin, "2026-11-09", "en")[0].a, /no 40HQ market quotes/);
+  assert.equal(laneJsonLd(thin, "2026-11-09", "en")["@graph"][0]["@type"], "Service");
+});
+
+test("a curated route reuses measured quotes, direct routing and transit", () => {
+  const active = planLanes(
+    times(7, "Shanghai", "Jeddah", 8500, { routing: "直达", transitMin: 18, transitMax: 20 }),
+    "2026-11-09",
+    emptyLaneRegistry(),
+  ).active;
+  const jeddah = curatedLanes(active).find((lane) => lane.slug === "shipping-from-shanghai-to-jeddah")!;
+  assert.equal(jeddah.median, 8500);
+  assert.equal(jeddah.direct, 7);
+  assert.equal(jeddah.transhipped, 0);
+  assert.deepEqual(jeddah.transit, { min: 18, max: 20 });
+  assert.match(laneTransit(jeddah, "en"), /18–20 days/);
+  assert.match(laneRouting(jeddah, "en"), /Direct sailings appear on this route/);
+});
+
+test("a thin curated route keeps the sample count without a median", () => {
+  const measured = planLanes(
+    times(3, "Shanghai", "Djibouti", 7200, { routing: "中转" }),
+    "2026-11-09",
+    emptyLaneRegistry(),
+  ).measured;
+  const thin = curatedLanes([], measured).find((lane) => lane.slug === "shipping-from-shanghai-to-djibouti")!;
+  assert.equal(thin.median, null);
+  assert.equal(thin.count, 3);
+  assert.match(laneDescription(thin, "en"), /3 recent 40HQ quotes/);
+  assert.match(laneFaqs(thin, "2026-11-09", "en")[0].a, /only 3 quotes .* too few for a median/);
 });
 
 test("three or four quotes keep an existing lane and do not start a new one", () => {

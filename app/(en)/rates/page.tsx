@@ -8,9 +8,9 @@ export const metadata: Metadata = pageMetadata({
   lang: "en",
   path: "/rates/",
   alternates: { en: "/rates/", zh: "/zh/rates/" },
-  title: "China to Red Sea Freight Rates: Jeddah, Sokhna, Aqaba, Djibouti, Port Sudan | RedSeaRate",
+  title: "China to Red Sea 40HQ Freight Rate Index | RedSeaRate",
   description:
-    "Current 40HQ ocean freight market medians from China to Jeddah, Sokhna, Aqaba, Djibouti and Port Sudan, built from collected quotes, plus port-to-port references by origin.",
+    "Current 40HQ market medians from China to Jeddah, Sokhna, Aqaba, Djibouti and Port Sudan, with 20GP and 40HQ references by origin port.",
 });
 
 export default async function Page() {

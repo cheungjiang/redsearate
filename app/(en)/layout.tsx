@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { preload } from "react-dom";
 import "../globals.css";
 import "../editorial.css";
 import "../platform.css";
@@ -14,6 +15,8 @@ export const metadata: Metadata = {
   },
 };
 export default function Layout({ children }: { children: React.ReactNode }) {
+  preload("/fonts/playfair-display.woff2", { as: "font", type: "font/woff2", crossOrigin: "anonymous" });
+  preload("/fonts/dm-sans.woff2", { as: "font", type: "font/woff2", crossOrigin: "anonymous" });
   return (
     <html lang="en">
       <body>{children}</body>

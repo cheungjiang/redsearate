@@ -29,7 +29,7 @@ test("one country page per destination, at the slug the index links to", () => {
 
 test("country stats pool recent market quotes and break them down by origin", () => {
   const entries = [
-    quote({ price: 3000, carrier: "COSCO", freeDays: 14, routing: "直达" }),
+    quote({ price: 3000, carrier: "COSCO", freeDays: 14, routing: "直达", transitMin: 18, transitMax: 22 }),
     quote({ price: 3400, carrier: "MSC / CMA", freeDays: 21, routing: "中转" }),
     quote({ origin: "Shenzhen", price: 2800, carrier: "COSCO" }),
     quote({ origin: "Shenzhen", container: "20GP", price: 1800 }),
@@ -50,6 +50,7 @@ test("country stats pool recent market quotes and break them down by origin", ()
   assert.deepEqual(shanghai.freeDays, [14, 21]);
   assert.equal(shanghai.direct, 1);
   assert.equal(shanghai.transhipped, 1);
+  assert.deepEqual(shanghai.transit, { min: 18, max: 22 });
 });
 
 test("country FAQ answers lead with the live median and the cheapest origin", () => {

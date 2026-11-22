@@ -1,9 +1,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { faqs, guides } from "./content.ts";
+import { countries } from "./countries.ts";
 import { guideLaneLinks } from "./document-guides.ts";
 import { destinations } from "./rates.ts";
-import { GUIDES_PUBLISHED, GUIDES_UPDATED, guideDescription, guideJsonLd, homeJsonLd, indexSentences, marketBrief } from "./seo.ts";
+import { GUIDES_PUBLISHED, GUIDES_UPDATED, countrySeoTitle, guideDescription, guideJsonLd, homeJsonLd, indexSentences, marketBrief } from "./seo.ts";
 
 const [jeddah, sokhna] = destinations;
 const index = [
@@ -43,6 +44,20 @@ test("market brief names the lowest median and every port's quote count", () => 
 test("home JSON-LD carries every FAQ in the page language", () => {
   const faq = homeJsonLd("zh")["@graph"].find((node) => node["@type"] === "FAQPage") as { mainEntity: { name: string }[] };
   assert.deepEqual(faq.mainEntity.map((q) => q.name), faqs.map((f) => f.q.zh));
+});
+
+test("country title tags keep the port and brand inside a search snippet", () => {
+  // CJK characters take roughly twice the pixel width of Latin ones.
+  const width = (text: string) =>
+    [...text].reduce((total, char) => total + (/[\u0000-\u00ff]/.test(char) ? 1 : 2), 0);
+  for (const country of countries) {
+    const en = countrySeoTitle(country, "en");
+    const zh = countrySeoTitle(country, "zh");
+    assert.ok(width(en) <= 60, `${country.slug} en ${width(en)}: ${en}`);
+    assert.ok(width(zh) <= 60, `${country.slug} zh ${width(zh)}: ${zh}`);
+    assert.match(en, /RedSeaRate$/);
+    assert.match(zh, /RedSeaRate$/);
+  }
 });
 
 function guidePlain(guide: (typeof guides)[number], lang: "en" | "zh") {
