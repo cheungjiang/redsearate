@@ -40,6 +40,8 @@ export default function FaqPage({
     "dangerous-goods-battery-red-sea",
     "port-sudan-clearance-transit-local-charges",
     "djibouti-clearance-transit-local-charges",
+    "red-sea-vs-jebel-ali",
+    "direct-vs-transhipment-red-sea",
   ];
   const related = guides.filter((guide) => relatedSlugs.includes(guide.slug));
   return (

@@ -254,6 +254,11 @@ export default function JebelAliPage({ lang, today }: { lang: "en" | "zh"; today
             </a>
           ))}
         </div>
+        <p>
+          <a className="text-button" href={`${zh ? "/zh" : ""}/guides/red-sea-vs-jebel-ali/`}>
+            {t("Red Sea vs Jebel Ali: which gateway?", "红海还是杰贝阿里：怎么选门户？")}
+          </a>
+        </p>
       </section>
 
       <JebelAliCta

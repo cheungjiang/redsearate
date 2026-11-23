@@ -113,6 +113,15 @@ export default function CountryPage({
         {country.slug === "shipping-from-china-to-egypt" && (
           <p><a href={`${zh ? "/zh" : ""}/guides/shipping-to-sokhna-acid/`}>{t("Sokhna: the ACID number in 3 steps", "苏赫纳：ACID 编号分三步")}</a></p>
         )}
+        {country.slug === "shipping-from-china-to-jordan" && (
+          <p><a href={`${zh ? "/zh" : ""}/guides/jordan-import-clearance-aqaba/`}>{t("Jordan: Aqaba import clearance", "约旦：亚喀巴进口清关")}</a></p>
+        )}
+        {country.slug === "shipping-from-china-to-djibouti" && (
+          <p><a href={`${zh ? "/zh" : ""}/guides/djibouti-import-clearance-ethiopia-transit/`}>{t("Djibouti: ECTN and Ethiopia transit", "吉布提：ECTN 与埃塞过境")}</a></p>
+        )}
+        {country.slug === "shipping-from-china-to-sudan" && (
+          <p><a href={`${zh ? "/zh" : ""}/guides/sudan-import-clearance-port-sudan/`}>{t("Sudan: ACD and Port Sudan clearance", "苏丹：ACD 与苏丹港清关")}</a></p>
+        )}
         {country.taxes && <p>{pick(country.taxes)}</p>}
 
         <h2>{t("Current situation", "当前航线状况")}</h2>
