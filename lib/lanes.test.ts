@@ -4,6 +4,7 @@ import {
   curatedLanes,
   emptyLaneRegistry,
   laneDescription,
+  laneDocumentGuidePath,
   laneFaqs,
   laneJsonLd,
   laneRouting,
@@ -78,6 +79,12 @@ test("twenty curated routes stay published when the quote window is empty", () =
   assert.equal(laneTitle(thin, "zh"), "上海到吉达海运费 | RedSeaRate");
   assert.match(laneDescription(thin, "zh"), /^上海到吉达海运费与航线指南：/);
   assert.match(laneFaqs(thin, "2026-11-09", "en")[0].a, /no 40HQ market quotes/);
+  assert.equal(laneDocumentGuidePath("Jeddah", "en"), "/guides/shipping-to-jeddah-saber/");
+  assert.equal(laneDocumentGuidePath("Jeddah", "zh"), "/zh/guides/shipping-to-jeddah-saber/");
+  assert.equal(laneDocumentGuidePath("Sokhna", "en"), "/guides/shipping-to-sokhna-acid/");
+  assert.equal(laneDocumentGuidePath("Sokhna", "zh"), "/zh/guides/shipping-to-sokhna-acid/");
+  assert.equal(laneDocumentGuidePath("Aqaba", "en"), null);
+  assert.equal(laneFaqs(thin, "2026-11-09", "en").some((faq) => faq.a.includes("/guides/")), false);
   assert.equal(laneJsonLd(thin, "2026-11-09", "en")["@graph"][0]["@type"], "Service");
 });
 

@@ -1,6 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import { countries, type Country } from "../lib/countries";
-import { laneFaqs, laneHeading, laneJsonLd, lanePath, laneRouting, laneTransit, type LanePageData } from "../lib/lanes";
+import { laneDocumentGuidePath, laneFaqs, laneHeading, laneJsonLd, lanePath, laneRouting, laneTransit, type LanePageData } from "../lib/lanes";
 import { JsonLd } from "./json-ld";
 import SubpageShell from "./subpage-shell";
 
@@ -92,7 +92,17 @@ export default function LanePage({
         <p>{laneTransit(lane, lang)}{zh ? "" : " "}{laneRouting(lane, lang)}</p>
 
         <h2>{t("Documents and customs", "单证与清关")}</h2>
-        <ul>{country.documents.map((item) => <li key={item.en}>{pick(item)}</li>)}</ul>
+        <ul>
+          {country.documents.map((item) => {
+            const text = pick(item);
+            const guideHref = laneDocumentGuidePath(lane.destination, lang);
+            const linkSentence = guideHref != null && (
+              (lane.destination === "Jeddah" && item.en.startsWith("SABER Shipment Certificate"))
+              || (lane.destination === "Sokhna" && item.en.startsWith("ACID number:"))
+            );
+            return <li key={item.en}>{linkSentence ? <a className="document-guide-link" href={guideHref}>{text}</a> : text}</li>;
+          })}
+        </ul>
 
         <h2>{t("Frequently asked questions", "常见问题")}</h2>
         <div className="faq-list">

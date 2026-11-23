@@ -61,6 +61,16 @@ export function lanePath(slug: string, lang: "en" | "zh") {
   return `${lang === "zh" ? "/zh" : ""}/${slug}/`;
 }
 
+const laneDocumentGuides: Record<string, string> = {
+  Jeddah: "shipping-to-jeddah-saber",
+  Sokhna: "shipping-to-sokhna-acid",
+};
+
+export function laneDocumentGuidePath(destination: string, lang: "en" | "zh") {
+  const slug = laneDocumentGuides[destination];
+  return slug ? `${lang === "zh" ? "/zh" : ""}/guides/${slug}/` : null;
+}
+
 function originName(id: string) {
   return laneOrigins.find((origin) => origin.id === id);
 }
