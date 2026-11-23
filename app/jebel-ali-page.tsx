@@ -183,7 +183,7 @@ export default function JebelAliPage({ lang, today }: { lang: "en" | "zh"; today
                     <th scope="row">{jebelAliOriginName(origin.origin, lang)}</th>
                     <td>{cell(origin.containers["20GP"])}</td>
                     <td>{cell(origin.containers["40HC"])}</td>
-                    <td>{origin.carriers.join(", ") || t("Unavailable", "未注明")}</td>
+                    <td>{origin.carriers.join(", ") || "—"}</td>
                   </tr>
                 ))}
               </tbody>

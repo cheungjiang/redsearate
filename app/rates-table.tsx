@@ -32,6 +32,7 @@ export function RatesTable({
   ];
   const testLabel = t("TEST DATA · Simulated · not bookable", "TEST DATA · 模拟数据 · 不可订舱");
   const unavailable = t("Unavailable", "暂不可用");
+  const emptyCarrier = "—";
   const today = snapshot.today;
   const validUntil = addDays(today, 7);
   const jebelBox = shipment.mode === "LCL" ? null : shipment.container === "40HC" ? "40HQ" : shipment.container;
@@ -95,7 +96,7 @@ export function RatesTable({
                     : row.market ? `≈ ${money(row.market.median)}` : t("On request", "请询价")}</strong>
                   <small>{row.offer ? t("Bookable offer", "本站报价") : row.market ? (row.market.count === 1 ? t("Market price · 1 quote", "市场价 · 1 条报价") : t(`Market median · ${row.market.count} quotes`, `市场中位数 · ${row.market.count} 条报价`)) : t("No current price", "暂无有效价格")}</small>
                 </td>
-                <td data-label={labels[4]}>{row.carriers.length ? row.carriers.join(", ") : unavailable}</td>
+                <td data-label={labels[4]}>{row.carriers.length ? row.carriers.join(", ") : emptyCarrier}</td>
                 <td data-label={labels[5]}>{row.rating ? <span className="rating" data-rating={row.rating}>{ratingLabel(row.rating)}</span> : unavailable}</td>
                 <td data-label={labels[6]}><time dateTime={today}>{today}</time></td>
                 <td data-label={labels[7]}><time dateTime={validUntil}>{validUntil}</time></td>
@@ -114,7 +115,7 @@ export function RatesTable({
                 <strong className="rate-value">{jebelPrice == null ? t("On request", "请询价") : `≈ ${money(jebelPrice)}`}</strong>
                 <small>{t("Market reference. The reply price applies.", "市场参考。确认价以回复为准。")}</small>
               </td>
-              <td data-label={labels[4]}>{unavailable}</td>
+              <td data-label={labels[4]}>{emptyCarrier}</td>
               <td data-label={labels[5]}>{t("Reference", "参考")}</td>
               <td data-label={labels[6]}><time dateTime={today}>{today}</time></td>
               <td data-label={labels[7]}><a href={jebelHref}>{t("Jebel Ali page", "杰贝阿里页")}</a></td>
