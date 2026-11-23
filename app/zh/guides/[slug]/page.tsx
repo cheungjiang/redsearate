@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import GuidePage from "../../../../app/guide-page";
-import { guides } from "../../../../lib/content";
+import { getGuides } from "../../../../lib/content-store";
 import { guideDescription, pageMetadata } from "../../../../lib/seo";
 
 export const dynamicParams = false;
-export const generateStaticParams = () => guides.map(({ slug }) => ({ slug }));
+export const generateStaticParams = () => getGuides().map(({ slug }) => ({ slug }));
 const find = async (params: Promise<{ slug: string }>) => {
   const { slug } = await params;
-  return guides.find((g) => g.slug === slug) ?? notFound();
+  return getGuides().find((g) => g.slug === slug) ?? notFound();
 };
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {

@@ -65,7 +65,13 @@ export default function MarketBriefPage({
           )}
         </p>
 
-        {brief.note && <p className="guide-lead">{zh ? brief.note.zh : brief.note.en}</p>}
+        {brief.note && (zh ? brief.note.zh : brief.note.en)
+          .split(/\n{2,}/)
+          .map((paragraph, index) => (
+            <p className={index === 0 ? "guide-lead" : undefined} key={`${index}-${paragraph.slice(0, 24)}`}>
+              {paragraph}
+            </p>
+          ))}
 
         <h2>{t("This week in numbers", "本周数字")}</h2>
         <ul>

@@ -34,7 +34,8 @@ import type { JebelAliReference } from "../lib/jebel-ali-prices";
 import { marketBrief } from "../lib/seo";
 import DailyIndexChart from "./daily-index-chart";
 import { CommunityPreview, IndexSnapshot, LatestPosts, RatesPreview } from "./platform-sections";
-import { faqs, guides, type Localized } from "../lib/content";
+import type { Guide, Localized } from "../lib/content";
+import type { HomeFaq } from "../lib/content-map";
 import { homeInquiryText } from "../lib/inquiry";
 import { pickWhatsapp, whatsappUrl } from "../lib/whatsapp";
 import { InquiryDialog } from "./inquiry-dialog";
@@ -51,6 +52,8 @@ export default function Home({
   contact,
   simulation,
   jebelAli,
+  guides,
+  faqs,
 }: {
   lang: "en" | "zh";
   snapshot: Snapshot;
@@ -60,6 +63,8 @@ export default function Home({
   contact: Contact;
   simulation: SimulationPreview | null;
   jebelAli: JebelAliReference[];
+  guides: Guide[];
+  faqs: HomeFaq[];
 }) {
   const zh = lang === "zh";
   const t = (en: string, cn: string) => (zh ? cn : en);
@@ -169,7 +174,7 @@ export default function Home({
       ?.scrollIntoView({ block: "center" });
   }
   return (
-    <div className="editorial-site">
+    <div className="editorial-site home-page">
       <a className="skip" href="#main">
         {t("Skip to content", "跳至正文")}
       </a>
@@ -290,7 +295,7 @@ export default function Home({
             </div>
           </div>
         </section>
-        <IndexSnapshot lang={lang} liveEntries={index} demoEntries={simulation?.index ?? null} asOf={snapshot.today} brief={marketBrief(index, snapshot.today, lang)} />
+        <IndexSnapshot lang={lang} liveEntries={index} demoEntries={simulation?.index ?? null} asOf={snapshot.today} brief={marketBrief(index, snapshot.today, lang)} home />
         <RatesPreview lang={lang} snapshot={snapshot} shipment={shipment} samples={simulation?.rates ?? []} jebelAli={jebelAli} onSelect={selectRoute} />
         <LatestPosts lang={lang} quotes={latest} />
         <section id="estimate" className="estimator wrap">
@@ -683,6 +688,9 @@ export default function Home({
               "运营信息待确认",
             )}
           </span>
+          <a className="text-button" href={zh ? "/zh/methodology/" : "/methodology/"}>
+            {t("Methodology & data", "方法与数据")}
+          </a>
           <button
             onClick={() => {
               articleDialog.current?.showModal();

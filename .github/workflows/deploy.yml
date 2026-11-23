@@ -31,9 +31,12 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run typecheck
+      # Prices are required; content is publish-only and falls back to the
+      # committed snapshot if Notion is unavailable.
       - run: npm run fetch-prices
         env:
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_CONTENT_DATA_SOURCE_ID: ${{ vars.NOTION_CONTENT_DATA_SOURCE_ID || secrets.NOTION_CONTENT_DATA_SOURCE_ID }}
       - run: npm run build
         env:
           NEXT_TELEMETRY_DISABLED: 1

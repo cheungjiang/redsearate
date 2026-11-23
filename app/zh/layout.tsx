@@ -3,6 +3,7 @@ import { preload } from "react-dom";
 import "../globals.css";
 import "../editorial.css";
 import "../platform.css";
+import "../home.css";
 export const metadata: Metadata = {
   metadataBase: new URL("https://redsearate.com"),
   robots: { index: true, follow: true },
@@ -17,6 +18,7 @@ export const metadata: Metadata = {
 export default function Layout({ children }: { children: React.ReactNode }) {
   preload("/fonts/playfair-display.woff2", { as: "font", type: "font/woff2", crossOrigin: "anonymous" });
   preload("/fonts/dm-sans.woff2", { as: "font", type: "font/woff2", crossOrigin: "anonymous" });
+  preload("/fonts/manrope.woff2", { as: "font", type: "font/woff2", crossOrigin: "anonymous" });
   return (
     <html lang="zh-CN">
       <body>{children}</body>

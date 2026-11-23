@@ -1,5 +1,6 @@
 import { ArrowRight } from "lucide-react";
-import { guides, type Guide, type GuideBlock } from "../lib/content";
+import type { Guide, GuideBlock } from "../lib/content";
+import { getGuides } from "../lib/content-store";
 import { guideLaneLinks } from "../lib/document-guides";
 import { getLanePlan } from "../lib/lanes.server";
 import { GUIDES_UPDATED, guideJsonLd } from "../lib/seo";
@@ -20,7 +21,7 @@ function sectionIds(guide: Guide) {
 
 function Blocks({ lang, blocks }: { lang: "en" | "zh"; blocks: GuideBlock[] }) {
   const pick = (text: { en: string; zh: string }) => (lang === "zh" ? text.zh : text.en);
-  const href = (path: string) => `${lang === "zh" ? "/zh" : ""}${path}`;
+  const href = (path: string) => /^https?:\/\//.test(path) ? path : `${lang === "zh" ? "/zh" : ""}${path}`;
   return blocks.map((block, index) => {
     if (block.kind === "p") return <p key={index}>{pick(block.text)}</p>;
     if (block.kind === "ul") {
@@ -28,6 +29,13 @@ function Blocks({ lang, blocks }: { lang: "en" | "zh"; blocks: GuideBlock[] }) {
         <ul key={index}>
           {block.items.map((item) => <li key={item.en}>{pick(item)}</li>)}
         </ul>
+      );
+    }
+    if (block.kind === "ol") {
+      return (
+        <ol key={index}>
+          {block.items.map((item) => <li key={item.en}>{pick(item)}</li>)}
+        </ol>
       );
     }
     return (
@@ -54,11 +62,12 @@ export default async function GuidePage({ lang, guide }: { lang: "en" | "zh"; gu
   const pick = (text: { en: string; zh: string }) => zh ? text.zh : text.en;
   const ids = sectionIds(guide);
   const updated = guide.updated ?? GUIDES_UPDATED;
+  const allGuides = getGuides();
   const related = originalGuides.has(guide.slug)
-    ? guides.filter((item) => originalGuides.has(item.slug) && item.slug !== guide.slug)
+    ? allGuides.filter((item) => originalGuides.has(item.slug) && item.slug !== guide.slug)
     : [
-        ...guides.filter((item) => item.slug !== guide.slug && item.tag.en === guide.tag.en),
-        ...guides.filter((item) => item.slug !== guide.slug && item.tag.en !== guide.tag.en),
+        ...allGuides.filter((item) => item.slug !== guide.slug && item.tag.en === guide.tag.en),
+        ...allGuides.filter((item) => item.slug !== guide.slug && item.tag.en !== guide.tag.en),
       ].slice(0, 5);
   const plan = await getLanePlan();
   const publishedLanes = [...new Map([...plan.active, ...plan.curated].map((lane) => [lane.slug, lane])).values()];

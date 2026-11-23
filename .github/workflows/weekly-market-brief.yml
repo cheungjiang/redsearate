@@ -1,0 +1,105 @@
+name: Weekly Red Sea market brief
+
+on:
+  # Monday 02:00 UTC = 10:00 Asia/Shanghai. GitHub may start scheduled jobs late;
+  # the script normalises the run date back to that week's Monday.
+  schedule:
+    - cron: "0 2 * * 1"
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "Issue date (YYYY-MM-DD). Leave blank for the current Monday in Asia/Shanghai."
+        required: false
+        type: string
+      dry_run:
+        description: "Generate and test only; do not commit, push or deploy."
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: weekly-market-brief
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Fetch Notion quotes
+        run: npm run fetch-prices
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_CONTENT_DATA_SOURCE_ID: ${{ vars.NOTION_CONTENT_DATA_SOURCE_ID || secrets.NOTION_CONTENT_DATA_SOURCE_ID }}
+
+      - name: Generate this week's brief
+        env:
+          ISSUE_DATE: ${{ inputs.date }}
+        run: |
+          if [ -n "$ISSUE_DATE" ]; then
+            npm run market-brief -- "$ISSUE_DATE" --skip-existing
+          else
+            npm run market-brief -- --skip-existing
+          fi
+
+      - name: Validate generated brief
+        run: npm test
+
+      - name: Show dry-run result
+        if: inputs.dry_run == true
+        run: |
+          echo "Dry run: no commit, push or deploy."
+          git status --short -- data/market-brief
+
+      - name: Commit and push only when a new issue exists
+        id: publish
+        if: inputs.dry_run != true
+        run: |
+          if [ -z "$(git status --porcelain -- data/market-brief)" ]; then
+            echo "No new market brief; nothing to commit."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- data/market-brief
+
+          if git diff --cached --quiet; then
+            echo "No staged market brief; nothing to commit."
+            exit 0
+          fi
+
+          ISSUE=$(git diff --cached --name-only -- data/market-brief | sed -n 's#^data/market-brief/\([0-9-]*\)\.json$#\1#p' | head -n 1)
+          if [ -z "$ISSUE" ]; then
+            echo "No dated JSON file staged; refusing to commit."
+            exit 1
+          fi
+
+          git commit -m "chore: publish Red Sea market brief ${ISSUE}"
+          git pull --rebase origin main
+          git push origin HEAD:main
+          echo "pushed=true" >> "$GITHUB_OUTPUT"
+
+      # A push made with GITHUB_TOKEN does not trigger another workflow run.
+      # Dispatch deploy.yml explicitly so the new issue reaches GitHub Pages.
+      - name: Trigger deploy
+        if: steps.publish.outputs.pushed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy.yml --ref main --repo "$GITHUB_REPOSITORY"

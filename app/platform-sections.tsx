@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { ArrowRight, ArrowUpRight, PackageOpen, Ship, Users } from "lucide-react";
 import { type IndexEntry, type LatestQuote, type SampleRate } from "../lib/platform";
 import { sparklinePoints } from "../lib/sparkline";
 import { RatesTable } from "./rates-table";
@@ -10,7 +10,7 @@ type Locale = { lang: "en" | "zh" };
 const translate = (lang: Locale["lang"]) =>
   (en: string, zh: string) => lang === "zh" ? zh : en;
 
-export function IndexSnapshot({ lang, liveEntries, demoEntries, asOf, brief }: Locale & { liveEntries: IndexEntry[]; demoEntries: IndexEntry[] | null; asOf: string; brief?: string }) {
+export function IndexSnapshot({ lang, liveEntries, demoEntries, asOf, brief, home = false }: Locale & { liveEntries: IndexEntry[]; demoEntries: IndexEntry[] | null; asOf: string; brief?: string; home?: boolean }) {
   const t = translate(lang);
   const [showDemo, setShowDemo] = useState(demoEntries !== null);
   const displayingDemo = demoEntries !== null && showDemo;
@@ -26,7 +26,7 @@ export function IndexSnapshot({ lang, liveEntries, demoEntries, asOf, brief }: L
       <div className="platform-heading">
         <h2 id="index-title">{t("Red Sea index snapshot", "红海运价指数快照")}</h2>
         <div className="index-mode">
-          <span className="platform-status">{displayingDemo ? t("Simulated data", "模拟数据") : live ? t("Market data", "市场数据") : t("Not enough data yet", "样本不足")}</span>
+          <span className="platform-status">{displayingDemo ? t("Simulated data", "模拟数据") : live ? t("Market data", "市场数据") : home ? t("Awaiting first published quotes", "等待首批报价") : t("Not enough data yet", "样本不足")}</span>
           {demoEntries !== null && <button className="text-button" type="button" aria-pressed={displayingDemo} aria-controls="index-values" onClick={() => setShowDemo((value) => !value)}>
             {showDemo ? t("Hide demo", "隐藏模拟") : t("Show demo", "查看模拟")}
           </button>}
@@ -43,13 +43,13 @@ export function IndexSnapshot({ lang, liveEntries, demoEntries, asOf, brief }: L
       </p>
       <div id="index-values" className="index-grid" aria-live="polite">
         {entries.map(({ port, median, weekChange, sampleSize, weeklyMedians }) => (
-          <article className="index-port" key={port.id}>
+          <article className="index-port" key={port.id} data-state={median === null ? "awaiting" : "live"}>
             <span className="index-code">{assertIndexCard(port)}</span>
             <h3><a href={`${lang === "zh" ? "/zh" : ""}/${countrySlug(port.id)}/`}>{lang === "zh" ? port.zh : port.id}</a></h3>
             <dl>
-              <div className="index-price-row"><dt>{t("40HQ median", "40HQ 中位数")}</dt><dd className="index-median">{median === null ? t("Unavailable", "暂不可用") : `$${median.toLocaleString("en-US")}`}</dd></div>
+              <div className="index-price-row"><dt>{t("40HQ median", "40HQ 中位数")}</dt><dd className="index-median">{median === null ? home ? t("Awaiting first quote", "等待首批报价") : t("Unavailable", "暂不可用") : `$${median.toLocaleString("en-US")}`}</dd></div>
               <div><dt>{t("Week on week", "周环比")}</dt><dd className="index-change" data-direction={weekChange === null ? "building" : weekChange > 0 ? "up" : weekChange < 0 ? "down" : "flat"}>{changeText(weekChange)}</dd></div>
-              <div><dt>{t("Samples", "样本量")}</dt><dd>{sampleSize === null ? t("Unavailable", "暂不可用") : sampleSize}</dd></div>
+              <div><dt>{t("Samples", "样本量")}</dt><dd>{sampleSize === null ? home ? "—" : t("Unavailable", "暂不可用") : sampleSize}</dd></div>
             </dl>
             {displayingDemo && weeklyMedians.length > 1 && (
               <figure className="index-trend">
@@ -140,12 +140,24 @@ export function LatestPosts({ lang, quotes }: Locale & { quotes: LatestQuote[] }
               ))}
             </ol>
           ) : (
-            <div className="post-empty"><p>{t("No spaces published yet.", "暂无已发布舱位，发布来源确认后展示。")}</p>{lang !== "zh" && <span>Space listings will appear here once a publication source is confirmed.</span>}</div>
+            <div className="post-empty">
+              <span className="post-empty-icon" aria-hidden="true"><Ship size={18} /></span>
+              <div>
+                <p>{t("No spaces published yet.", "暂无已发布舱位")}</p>
+                <span>{t("Space listings will appear here once a publication source is confirmed.", "发布来源确认后，这里会显示舱位。")}</span>
+              </div>
+            </div>
           )}
         </section>
         <section id="loads" aria-labelledby="loads-title">
           <div className="post-heading"><h3 id="loads-title">{t("Latest loads", "最新货盘")}</h3><span>{t("Loads", "货盘")}</span></div>
-          <div className="post-empty"><p>{t("No loads published yet.", "暂无已发布货盘，发布来源确认后展示。")}</p>{lang !== "zh" && <span>Cargo listings will appear here once a publication source is confirmed.</span>}</div>
+          <div className="post-empty">
+            <span className="post-empty-icon" aria-hidden="true"><PackageOpen size={18} /></span>
+            <div>
+              <p>{t("No loads published yet.", "暂无已发布货盘")}</p>
+              <span>{t("Cargo listings will appear here once a publication source is confirmed.", "发布来源确认后，这里会显示货盘。")}</span>
+            </div>
+          </div>
         </section>
       </div>
     </section>
@@ -158,7 +170,14 @@ export function CommunityPreview({ lang, onContact }: Locale & { onContact: () =
     <section className="community-preview platform-section wrap">
       <div id="agents">
         <h2>{t("Agents", "代理")}</h2>
-        <p className="platform-note">{t("The agent directory is not open yet. No agent profiles have been published.", "代理名录尚未开放，目前没有已发布的代理资料。")}</p>
+        <div className="agent-empty">
+          <span className="post-empty-icon" aria-hidden="true"><Users size={18} /></span>
+          <div>
+            <p className="platform-note">{t("The agent directory is not open yet.", "代理名录尚未开放。")}</p>
+            <span>{t("Verified agent profiles will appear here once the directory opens.", "通过审核的代理资料会显示在这里。")}</span>
+            <button className="text-button" onClick={onContact}>{t("Ask the team", "咨询团队")}<ArrowRight size={15} /></button>
+          </div>
+        </div>
       </div>
       <div id="join">
         <h2>{t("Join RedSeaRate", "加入 RedSeaRate")}</h2>

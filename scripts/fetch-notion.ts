@@ -1,7 +1,8 @@
-// Pulls RedSeaRate 报价库 into .data. Rows for Jebel Ali stay in their own
-// file and never enter the Red Sea index. The scheduled deploy runs this every
-// 10 minutes.
-// Usage: NOTION_TOKEN=... npm run fetch-prices
+// Pulls RedSeaRate 报价库 into .data, then pulls publish-only human content
+// from the separate RedSeaRate Content data source. Rows for Jebel Ali stay in
+// their own file and never enter the Red Sea index. The scheduled deploy runs
+// this every 10 minutes.
+// Usage: NOTION_TOKEN=... NOTION_CONTENT_DATA_SOURCE_ID=... npm run fetch-prices
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import {
@@ -9,6 +10,7 @@ import {
   isJebelAliPage,
   type JebelAliMarketQuote,
 } from "../lib/jebel-ali-prices.ts";
+import { fetchNotionContent } from "../lib/notion-content.ts";
 import {
   fromNotionPage,
   REJECTED,
@@ -96,3 +98,7 @@ console.log(`Notion: ${pages.length - jebelRows} Red Sea rows, ${entries.length}
 for (const [reason, count] of skipped) console.log(`  skipped ${count}: ${reason}`);
 console.log(`Jebel Ali: ${jebelRows} rows, ${jebelQuotes.length} market quotes.`);
 for (const [reason, count] of jebelSkipped) console.log(`  skipped ${count}: ${reason}`);
+
+// Content uses its own data source and is deliberately non-fatal. A missing
+// token or a Notion outage leaves the committed snapshot in place.
+await fetchNotionContent();

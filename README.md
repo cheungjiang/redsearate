@@ -29,11 +29,23 @@ Prices are port-to-port USD, per container for FCL and per W/M for LCL. Expired 
 
 Visitors inquire through WeChat (copy a prefilled message) or WhatsApp (opens a prefilled chat). Each click draws one of the team's numbers at random. The site stores no visitor data.
 
+## How content works
+
+Human-written content lives in the Notion database `RedSeaRate Content`: guides, FAQ answers, the methodology page and weekly market-brief narratives. Muse AI writes in `draft`; a human changes Status to `publish`; the next 10-minute deploy fetches it and builds the pages. Prices stay in the separate `RedSeaRate 报价库` and are unchanged.
+
+- `npm run fetch-prices` also calls the content fetcher. `npm run fetch-content` runs only the content fetch.
+- `NOTION_CONTENT_DATA_SOURCE_ID` is the Content data-source ID. If it is missing or Notion is unavailable, the build reads the committed fallback `data/content-snapshot.json` and does not fail.
+- The live fetch writes `.data/notion-content.json`; the build prefers it when it contains at least one publishable document.
+- Seed/export: `npm run export-content-seed` rewrites the snapshot and `data/notion-content-seed.json`. `npm run import-content-seed` imports into an existing Notion data source; `DRY_RUN=1` prints the payload without calling Notion. After migration, do not rerun the exporter casually: it would replace the fallback snapshot with the old code seed.
+- Writing rules: `docs/muse-content-writing-guide.md`. Notion setup and secret configuration: `docs/notion-content-setup.md`.
+- Technical SEO remains code-owned: canonical, hreflang, sitemap and JSON-LD are generated in `lib/seo.ts` and the routes; Notion only supplies Title, Description, Tags and body copy.
+
 ## Deployment
 
-`.github/workflows/deploy.yml` tests, fetches prices from Notion, builds and publishes `out/` to GitHub Pages on every push to `main`, every 10 minutes, and on manual runs (Actions → Deploy to GitHub Pages → Run workflow). Pages are prerendered, so a Notion change, including marking a row 拒绝, appears after the next run. The scheduled runs also retire expired prices.
+`.github/workflows/deploy.yml` tests, fetches prices and content from Notion, builds and publishes `out/` to GitHub Pages on every push to `main`, every 10 minutes, and on manual runs (Actions → Deploy to GitHub Pages → Run workflow). Pages are prerendered, so a Notion change, including marking a row 拒绝 or a content page draft, appears after the next run. The scheduled runs also retire expired prices.
 
-- Repository secret `NOTION_TOKEN`: an internal Notion integration token with read access to "RedSeaRate 报价库". Without it the workflow fails and the last deployed site stays up.
+- Repository secret `NOTION_TOKEN`: an internal Notion integration token with read access to "RedSeaRate 报价库" and "RedSeaRate Content". Without it the price workflow fails and the last deployed site stays up.
+- Repository variable `NOTION_CONTENT_DATA_SOURCE_ID`: the Content data-source ID. If unset, the content fetch warns and the build uses `data/content-snapshot.json`.
 - `NOTION_DATA_SOURCE_ID` (default: the 报价库 data source) and `PUBLIC_PRICES` (default `.data/public-prices.json`) are optional overrides.
 - `public/CNAME` sets the custom domain `redsearate.com`. DNS: apex A records `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`, and `www` CNAME `cheungjiang.github.io`.
 
@@ -80,6 +92,6 @@ SEO: prerendered localized pages with prices in the HTML, correct HTML language,
 ## SEO
 
 - Metadata, canonical/hreflang and Open Graph come from `pageMetadata` in `lib/seo.ts`; structured data (Organization, WebSite, Service, FAQPage, Article, CollectionPage, BreadcrumbList) is built there too and rendered by `app/json-ld.tsx`.
-- Guides live in `lib/content.ts`, one page per guide at `/guides/<slug>/` and `/zh/guides/<slug>/`. Add a guide there and it gets a page, sitemap entry and JSON-LD.
+- Guides are read from the Notion content snapshot at build time, one page per bilingual pair at `/guides/<slug>/` and `/zh/guides/<slug>/`. Publishing a guide in Notion adds the page, sitemap entry and JSON-LD; no code edit is needed.
 - The rates pages open with one plain sentence per port generated from the live index, so search engines and AI answers can quote a dated figure.
 - After each push the workflow pings IndexNow (Bing, Yandex, Seznam, Naver); scheduled rebuilds (every 10 minutes) re-ping the home and rates pages once a day. The key file is `public/0780df4f6089aa1190147867ac87b0bc.txt`.

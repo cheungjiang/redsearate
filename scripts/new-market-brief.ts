@@ -1,7 +1,10 @@
 // Writes one frozen market brief from the quote file produced by
-// `npm run fetch-prices`. It does not deploy. Check the file, then commit it.
+// `npm run fetch-prices`. It does not deploy. For a manual run, check the file
+// before committing; the weekly workflow uses --skip-existing and commits only
+// a newly created issue.
 // Usage: npm run fetch-prices && npm run market-brief
 //        npm run market-brief -- 2026-11-09
+//        npm run market-brief -- --skip-existing
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import {
@@ -13,7 +16,9 @@ import {
 import { readMarketBriefs } from "../lib/market-brief.server.ts";
 import { shanghaiDate, type PriceEntry } from "../lib/rates.ts";
 
-const requested = process.argv[2] ?? shanghaiDate();
+const args = process.argv.slice(2);
+const skipExisting = args.includes("--skip-existing");
+const requested = args.find((arg) => !arg.startsWith("--")) ?? shanghaiDate();
 if (!/^\d{4}-\d{2}-\d{2}$/.test(requested)) {
   console.error(`Expected a date, received ${requested}.`);
   process.exit(1);
@@ -21,6 +26,10 @@ if (!/^\d{4}-\d{2}-\d{2}$/.test(requested)) {
 const date = briefMonday(requested);
 const file = `${MARKET_BRIEF_DIR}/${date}.json`;
 if (existsSync(file)) {
+  if (skipExisting) {
+    console.log(`Already published ${file}; nothing to do.`);
+    process.exit(0);
+  }
   console.error(`Refusing to overwrite ${file}. A published brief stays frozen.`);
   process.exit(1);
 }

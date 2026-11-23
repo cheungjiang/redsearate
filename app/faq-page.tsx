@@ -1,6 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import { countries } from "../lib/countries";
-import { guides } from "../lib/content";
+import { getGuides } from "../lib/content-store";
 import type { FaqItem, FaqRow } from "../lib/faq";
 import { destinations } from "../lib/rates";
 import { faqPageJsonLd } from "../lib/seo";
@@ -43,7 +43,7 @@ export default function FaqPage({
     "red-sea-vs-jebel-ali",
     "direct-vs-transhipment-red-sea",
   ];
-  const related = guides.filter((guide) => relatedSlugs.includes(guide.slug));
+  const related = getGuides().filter((guide) => relatedSlugs.includes(guide.slug));
   return (
     <SubpageShell lang={lang} className="guide-page country-page" languageHref={zh ? "/faq/" : "/zh/faq/"}>
       <JsonLd data={faqPageJsonLd(items, lang, path)} />
@@ -115,6 +115,7 @@ export default function FaqPage({
           ))}
           <li><a href={briefHref}>{t("This week's market brief", "本周市场简报")}</a></li>
           <li><a href={ratesHref}>{t("Current Red Sea rates", "查看当前红海运价")}</a></li>
+          <li><a href={zh ? "/zh/methodology/" : "/methodology/"}>{t("How the rate index is built", "红海运价指数的方法与边界")}</a></li>
           {countries.map((country) => (
             <li key={country.slug}>
               <a href={`${zh ? "/zh" : ""}/${country.slug}/`}>{portName(country.destination)}</a>

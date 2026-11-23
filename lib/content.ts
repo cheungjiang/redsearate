@@ -11,9 +11,10 @@ export type Localized = ReturnType<typeof L>;
 export type GuideBlock =
   | { kind: "p"; text: Localized }
   | { kind: "ul"; items: Localized[] }
+  | { kind: "ol"; items: Localized[] }
   | { kind: "links"; items: { href: string; text: Localized }[] };
 
-type GuideSection = { heading: Localized; blocks: GuideBlock[] };
+export type GuideSection = { heading: Localized; blocks: GuideBlock[] };
 
 const P = (en: string, zh: string): GuideBlock => ({ kind: "p", text: L(en, zh) });
 const UL = (items: [string, string][]): GuideBlock => ({

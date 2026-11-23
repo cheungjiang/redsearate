@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import MarketBriefPage from "../../../market-brief-page";
+import { getBriefNote } from "../../../../lib/content-store";
 import { briefDescription, briefTitle } from "../../../../lib/market-brief";
 import { readMarketBriefs } from "../../../../lib/market-brief.server";
 import { pageMetadata } from "../../../../lib/seo";
@@ -30,10 +31,14 @@ export default async function Page({ params }: Props) {
   const briefs = readMarketBriefs();
   const index = briefs.findIndex((item) => item.date === date);
   const brief = briefs[index];
+  const note = getBriefNote(date);
+  const withNote = note.en || note.zh
+    ? { ...brief, note: { en: note.en ?? note.zh!, zh: note.zh ?? note.en! } }
+    : brief;
   return (
     <MarketBriefPage
       lang="en"
-      brief={brief}
+      brief={withNote}
       previous={briefs[index + 1]?.date ?? null}
       next={briefs[index - 1]?.date ?? null}
     />

@@ -1,5 +1,5 @@
 import { ArrowRight, ClipboardList, MapPin, Package, Ship } from "lucide-react";
-import { guides } from "../lib/content";
+import { getGuides } from "../lib/content-store";
 import {
   JEBEL_ALI_CARRIER,
   JEBEL_ALI_CODE,
@@ -33,6 +33,7 @@ export default function JebelAliPage({ lang, today }: { lang: "en" | "zh"; today
   const quotes = readJebelAliQuotes();
   const market = jebelAliMarketStats(quotes, today);
   const faqs = jebelAliFaqs(today, lang, market);
+  const guides = getGuides();
   const containers: JebelAliContainer[] = ["20GP", "40GP", "40HQ"];
   const origins = jebelAliSailings.map((sailing) => ({
     id: sailing.origin,
@@ -254,11 +255,13 @@ export default function JebelAliPage({ lang, today }: { lang: "en" | "zh"; today
             </a>
           ))}
         </div>
-        <p>
-          <a className="text-button" href={`${zh ? "/zh" : ""}/guides/red-sea-vs-jebel-ali/`}>
-            {t("Red Sea vs Jebel Ali: which gateway?", "红海还是杰贝阿里：怎么选门户？")}
-          </a>
-        </p>
+        {guides.some((guide) => guide.slug === "red-sea-vs-jebel-ali") && (
+          <p>
+            <a className="text-button" href={`${zh ? "/zh" : ""}/guides/red-sea-vs-jebel-ali/`}>
+              {t("Red Sea vs Jebel Ali: which gateway?", "红海还是杰贝阿里：怎么选门户？")}
+            </a>
+          </p>
+        )}
       </section>
 
       <JebelAliCta

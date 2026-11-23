@@ -1,0 +1,56 @@
+# RedSeaRate
+
+> China-to-Red-Sea ocean freight rates, transit guides and booking inquiries for Jeddah, Sokhna, Aqaba, Djibouti and Port Sudan.
+
+## Rates and data
+
+- [China to Red Sea 40HQ rate index](https://redsearate.com/rates/): 28-day market medians by destination, with sample counts and origin-level references. Port-to-port ocean freight only.
+- [Red Sea market brief archive](https://redsearate.com/market-brief/): Frozen Monday issues with medians, week-on-week readings, sample counts and ranges.
+- [How the rate index is built](https://redsearate.com/methodology/): What is measured, how outliers are removed, and what the numbers leave out.
+- [Shipping FAQ](https://redsearate.com/faq/): Transit times, 20GP/40GP/40HQ rates, booking steps, documents and dangerous goods.
+- [Jebel Ali rates and transit](https://redsearate.com/jebel-ali/): A separate UAE page, not part of the Red Sea index.
+
+## Destination pages
+
+- [China to Saudi Arabia: Jeddah](https://redsearate.com/shipping-from-china-to-saudi-arabia/): Jeddah rates, 17–31 day transit and SABER documents.
+- [China to Egypt: Sokhna](https://redsearate.com/shipping-from-china-to-egypt/): Sokhna rates, 20–35 day transit and ACID documents.
+- [China to Jordan: Aqaba](https://redsearate.com/shipping-from-china-to-jordan/): Aqaba rates, 20–35 day transit and Jordanian customs documents.
+- [China to Djibouti and Ethiopia](https://redsearate.com/shipping-from-china-to-djibouti/): Djibouti rates, 19–30 day transit, ECTN and Ethiopia transit notes.
+- [China to Sudan: Port Sudan](https://redsearate.com/shipping-from-china-to-sudan/): Port Sudan rates, ACD, SSMO and current routing notes.
+
+## Route pages
+
+- [Shanghai to Jeddah](https://redsearate.com/shipping-from-shanghai-to-jeddah/): Route rates, transit, direct or transhipment routing and documents.
+- [Ningbo to Sokhna](https://redsearate.com/shipping-from-ningbo-to-sokhna/): Route rates, transit and Suez gateway notes.
+- [Shenzhen to Aqaba](https://redsearate.com/shipping-from-shenzhen-to-aqaba/): Route rates, transit and Jordan customs notes.
+- [Qingdao to Djibouti](https://redsearate.com/shipping-from-qingdao-to-djibouti/): Route rates, transit and Ethiopia transit notes.
+- [Shanghai to Port Sudan](https://redsearate.com/shipping-from-shanghai-to-port-sudan/): Route rates, ACD/SSMO documents and connection notes.
+
+## Guides
+
+- [What moves a Red Sea freight rate](https://redsearate.com/guides/red-sea-freight-rate-factors/): Capacity, demand, routing, surcharges and how to compare two quotes.
+- [First shipment checklist](https://redsearate.com/guides/first-shipment-checklist/): Quote inputs, Incoterms, documents and booking steps.
+- [FCL vs LCL to the Red Sea](https://redsearate.com/guides/fcl-vs-lcl-red-sea/): Cost structure, handling and when each mode fits.
+- [Direct vs transhipment](https://redsearate.com/guides/direct-vs-transhipment-red-sea/): Connection risk, free time and total-cost comparison.
+- [Red Sea vs Jebel Ali](https://redsearate.com/guides/red-sea-vs-jebel-ali/): Final address, customs regime and inland leg.
+- [Port Sudan clearance and local charges](https://redsearate.com/guides/port-sudan-clearance-transit-local-charges/): ACD, SSMO, transit and charge categories.
+- [Djibouti clearance and Ethiopia transit](https://redsearate.com/guides/djibouti-clearance-transit-local-charges/): ECTN, Modjo dry port and local charge categories.
+
+## Chinese
+
+- [中文首页](https://redsearate.com/zh/): 中国至红海海运运价、估价与订舱询价。
+- [中国到红海 40HQ 运价指数](https://redsearate.com/zh/rates/): 五个目的港的近 28 天市场读数。
+- [中国到红海海运常见问题](https://redsearate.com/zh/faq/): 航程、柜型价格、订舱与单证。
+- [红海运价指数的方法与边界](https://redsearate.com/zh/methodology/): 中位数怎么算，数字不包含什么。
+
+## Key facts
+
+- Coverage: Shanghai, Ningbo, Shenzhen, Qingdao and Nansha to Jeddah, Sokhna, Aqaba, Djibouti and Port Sudan.
+- Scope: Port-to-port 40HQ ocean freight readings; not bookable offers and not a landed-cost quote.
+- Data window: the last 28 days, with outliers removed and the sample count shown.
+- Languages: English and Simplified Chinese, with reciprocal hreflang and localized pages.
+
+## Contact
+
+- [Get a quote](https://redsearate.com/#estimate): Send cargo, origin, destination and date for a route-specific quote.
+- [Shipping FAQ](https://redsearate.com/faq/): Answers before a booking, including what the rate excludes.

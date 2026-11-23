@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { faqs, type Guide } from "./content.ts";
+import type { Guide, Localized } from "./content.ts";
 import { destinations, extraOriginNames, origins } from "./rates.ts";
 import type { Country, CountryStats } from "./countries.ts";
 import { JEBEL_ALI_SLUG, JEBEL_ALI_TITLE, jebelAliDescription, jebelAliFaqs } from "./jebel-ali.ts";
@@ -11,6 +11,15 @@ export const GUIDES_PUBLISHED = "2026-10-24";
 export const GUIDES_UPDATED = "2026-11-08";
 // First publication of the country and Jebel Ali landing pages (git history).
 export const PAGES_PUBLISHED = "2026-11-08";
+export const METHODOLOGY_UPDATED = "2026-11-23";
+export const METHODOLOGY_TITLE = {
+  en: "How RedSeaRate Builds Its Rate Index",
+  zh: "红海运价指数的方法与边界",
+} as const;
+export const METHODOLOGY_DESCRIPTION = {
+  en: "How RedSeaRate collects China–Red Sea 40HQ quotes, builds the 28-day median, removes outliers and what the index leaves out.",
+  zh: "红海运价指数如何收集中国至红海 40HQ 报价、计算近 28 天中位数、剔除离群值，以及这些数字不包含什么。",
+} as const;
 type Lang = "en" | "zh";
 const home = (lang: Lang) => (lang === "zh" ? "/zh/" : "/");
 
@@ -77,7 +86,11 @@ const organization = {
   areaServed: [...RED_SEA_AREA, "United Arab Emirates"],
 };
 
-export function homeJsonLd(lang: Lang, whatsapp: string[] = []) {
+export function homeJsonLd(
+  lang: Lang,
+  whatsapp: string[] = [],
+  homeFaqs: { q: Localized; a: Localized }[] = [],
+) {
   const zh = lang === "zh";
   const contactPoints = whatsapp.map((telephone) => ({
     "@type": "ContactPoint",
@@ -117,17 +130,19 @@ export function homeJsonLd(lang: Lang, whatsapp: string[] = []) {
           serviceUrl: `${SITE}${home(lang)}#estimate`,
         },
       },
-      {
-        "@type": "FAQPage",
-        url: `${SITE}${home(lang)}`,
-        inLanguage: zh ? "zh-CN" : "en",
-        isPartOf: { "@id": `${SITE}/#website` },
-        mainEntity: faqs.map((f) => ({
-          "@type": "Question",
-          name: zh ? f.q.zh : f.q.en,
-          acceptedAnswer: { "@type": "Answer", text: zh ? f.a.zh : f.a.en },
-        })),
-      },
+      ...(homeFaqs.length
+        ? [{
+            "@type": "FAQPage",
+            url: `${SITE}${home(lang)}`,
+            inLanguage: zh ? "zh-CN" : "en",
+            isPartOf: { "@id": `${SITE}/#website` },
+            mainEntity: homeFaqs.map((f) => ({
+              "@type": "Question",
+              name: zh ? f.q.zh : f.q.en,
+              acceptedAnswer: { "@type": "Answer", text: zh ? f.a.zh : f.a.en },
+            })),
+          }]
+        : []),
     ],
   };
 }
@@ -160,6 +175,49 @@ export function faqPageJsonLd(items: { q: string; a: string }[], lang: Lang, pat
       breadcrumbs([
         { name: "RedSeaRate", path: home(lang) },
         { name: zh ? "常见问题" : "FAQ", path },
+      ]),
+    ],
+  };
+}
+
+export type MethodologyMeta = {
+  title: Localized;
+  description: Localized;
+  published: string;
+  updated: string;
+};
+
+export function methodologyJsonLd(
+  lang: Lang,
+  meta: MethodologyMeta = {
+    title: METHODOLOGY_TITLE,
+    description: METHODOLOGY_DESCRIPTION,
+    published: PAGES_PUBLISHED,
+    updated: METHODOLOGY_UPDATED,
+  },
+) {
+  const zh = lang === "zh";
+  const path = `${zh ? "/zh" : ""}/methodology/`;
+  const title = zh ? meta.title.zh : meta.title.en;
+  const description = zh ? meta.description.zh : meta.description.en;
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Article",
+        headline: title,
+        description,
+        inLanguage: zh ? "zh-CN" : "en",
+        datePublished: meta.published,
+        dateModified: meta.updated,
+        image: `${SITE}/og.jpg`,
+        mainEntityOfPage: `${SITE}${path}`,
+        author: { "@id": organization["@id"] },
+        publisher: organization,
+      },
+      breadcrumbs([
+        { name: "RedSeaRate", path: home(lang) },
+        { name: zh ? "方法与数据" : "Methodology", path },
       ]),
     ],
   };
@@ -349,12 +407,28 @@ export function countryDescription(country: Country, stats: CountryStats, lang: 
   const port = destinations.find((d) => d.id === country.destination)!;
   const hq = stats.containers["40HC"];
   const transit = country.transit ? (zh ? country.transit.range.zh : country.transit.range.en) : null;
+  const documents = (() => {
+    switch (country.slug) {
+      case "shipping-from-china-to-saudi-arabia":
+        return zh ? "SABER 单证" : "SABER documents";
+      case "shipping-from-china-to-egypt":
+        return zh ? "ACID 单证" : "ACID documents";
+      case "shipping-from-china-to-jordan":
+        return zh ? "亚喀巴清关单证" : "Aqaba customs documents";
+      case "shipping-from-china-to-djibouti":
+        return zh ? "ECTN 与埃塞过境单证" : "ECTN and Ethiopia transit documents";
+      case "shipping-from-china-to-sudan":
+        return zh ? "ACD 与 SSMO 单证" : "ACD and SSMO documents";
+      default:
+        return zh ? "进口单证" : "import documents";
+    }
+  })();
   if (zh) {
     const price = hq ? `中国到${port.zh} 40HQ 中位数 ${money(hq.median)}（${hq.count} 条报价）。` : "";
-    return `${price}对比上海、宁波、深圳、青岛、南沙到${port.zh}的 20GP/40HQ 海运费（红海航线）${transit ? `、${transit}航程` : ""}与清关文件。`;
+    return `${price}对比上海、宁波、深圳、青岛、南沙到${port.zh}的 20GP/40HQ 海运费（红海航线）${transit ? `、${transit}航程` : ""}与${documents}。`;
   }
   const price = hq ? `China to ${port.id} 40HQ median ${money(hq.median)} (${hq.count} quotes). ` : "";
-  return `${price}Compare 20GP and 40HQ Red Sea rates ${hq ? "by origin port" : "from Shanghai, Ningbo, Shenzhen, Qingdao and Nansha"}${transit ? `, ${transit} transit` : ""} and the import documents you need.`;
+  return `${price}Compare 20GP and 40HQ Red Sea rates ${hq ? "by origin port" : "from Shanghai, Ningbo, Shenzhen, Qingdao and Nansha"}${transit ? `, ${transit} transit` : ""} plus ${documents}.`;
 }
 
 // A shorter title tag than the on-page H1: keeps the port keyword and the

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import FaqPage from "../../faq-page";
+import { getFaqPageItems } from "../../../lib/content-store";
 import { faqItems, faqRows } from "../../../lib/faq";
 import { pageMetadata } from "../../../lib/seo";
 
@@ -14,5 +15,5 @@ export const metadata: Metadata = pageMetadata({
 
 export default function Page() {
   const rows = faqRows();
-  return <FaqPage lang="en" rows={rows} items={faqItems("en", rows)} />;
+  return <FaqPage lang="en" rows={rows} items={[...faqItems("en", rows), ...getFaqPageItems("en")]} />;
 }

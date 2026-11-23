@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Home from "../site";
+import { getGuides, getHomeFaqs } from "../../lib/content-store";
 import { homeData } from "../../lib/site-data";
 import { homeJsonLd, pageMetadata } from "../../lib/seo";
 import { JsonLd } from "../json-ld";
@@ -15,10 +16,11 @@ export const metadata: Metadata = pageMetadata({
 
 export default async function Page() {
   const data = await homeData();
+  const faqs = getHomeFaqs();
   return (
     <>
-      <JsonLd data={homeJsonLd("zh", data.contact.whatsapp)} />
-      <Home lang="zh" {...data} />
+      <JsonLd data={homeJsonLd("zh", data.contact.whatsapp, faqs)} />
+      <Home lang="zh" {...data} guides={getGuides()} faqs={faqs} />
     </>
   );
 }

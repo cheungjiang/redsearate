@@ -1,4 +1,5 @@
 import { ArrowRight } from "lucide-react";
+import { getGuides } from "../lib/content-store";
 import { countries, type Country, type CountryStats } from "../lib/countries";
 import { countryFaqs, countryJsonLd } from "../lib/seo";
 import { destinations, extraOriginNames, origins } from "../lib/rates";
@@ -28,6 +29,7 @@ export default function CountryPage({
   const cell = (s?: { median: number; count: number }) =>
     s ? `${money(s.median)} (${s.count})` : "—";
   const faqs = countryFaqs(country, stats, today, lang);
+  const publishedGuides = new Set(getGuides().map((guide) => guide.slug));
   const hasFreeDays = stats.origins.some((o) => o.freeDays);
   return (
     <SubpageShell lang={lang} className="guide-page country-page" languageHref={href(country.slug, !zh)}>
@@ -107,19 +109,19 @@ export default function CountryPage({
 
         <h2>{t("Documents and customs", "单证与清关")}</h2>
         <ul>{country.documents.map((d) => <li key={d.en}>{pick(d)}</li>)}</ul>
-        {country.slug === "shipping-from-china-to-saudi-arabia" && (
+        {country.slug === "shipping-from-china-to-saudi-arabia" && publishedGuides.has("shipping-to-jeddah-saber") && (
           <p><a href={`${zh ? "/zh" : ""}/guides/shipping-to-jeddah-saber/`}>{t("Jeddah: SABER in 5 steps", "吉达：SABER 分五步")}</a></p>
         )}
-        {country.slug === "shipping-from-china-to-egypt" && (
+        {country.slug === "shipping-from-china-to-egypt" && publishedGuides.has("shipping-to-sokhna-acid") && (
           <p><a href={`${zh ? "/zh" : ""}/guides/shipping-to-sokhna-acid/`}>{t("Sokhna: the ACID number in 3 steps", "苏赫纳：ACID 编号分三步")}</a></p>
         )}
-        {country.slug === "shipping-from-china-to-jordan" && (
+        {country.slug === "shipping-from-china-to-jordan" && publishedGuides.has("jordan-import-clearance-aqaba") && (
           <p><a href={`${zh ? "/zh" : ""}/guides/jordan-import-clearance-aqaba/`}>{t("Jordan: Aqaba import clearance", "约旦：亚喀巴进口清关")}</a></p>
         )}
-        {country.slug === "shipping-from-china-to-djibouti" && (
+        {country.slug === "shipping-from-china-to-djibouti" && publishedGuides.has("djibouti-import-clearance-ethiopia-transit") && (
           <p><a href={`${zh ? "/zh" : ""}/guides/djibouti-import-clearance-ethiopia-transit/`}>{t("Djibouti: ECTN and Ethiopia transit", "吉布提：ECTN 与埃塞过境")}</a></p>
         )}
-        {country.slug === "shipping-from-china-to-sudan" && (
+        {country.slug === "shipping-from-china-to-sudan" && publishedGuides.has("sudan-import-clearance-port-sudan") && (
           <p><a href={`${zh ? "/zh" : ""}/guides/sudan-import-clearance-port-sudan/`}>{t("Sudan: ACD and Port Sudan clearance", "苏丹：ACD 与苏丹港清关")}</a></p>
         )}
         {country.taxes && <p>{pick(country.taxes)}</p>}

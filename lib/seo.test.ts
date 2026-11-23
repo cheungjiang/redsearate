@@ -1,10 +1,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { faqs, guides } from "./content.ts";
-import { countries } from "./countries.ts";
+import { countries, countryStats } from "./countries.ts";
 import { guideLaneLinks } from "./document-guides.ts";
 import { destinations } from "./rates.ts";
-import { GUIDES_PUBLISHED, GUIDES_UPDATED, countrySeoTitle, guideDescription, guideJsonLd, homeJsonLd, indexSentences, marketBrief, ratesJsonLd } from "./seo.ts";
+import { GUIDES_PUBLISHED, GUIDES_UPDATED, countryDescription, countrySeoTitle, guideDescription, guideJsonLd, homeJsonLd, indexSentences, marketBrief, ratesJsonLd } from "./seo.ts";
 
 const [jeddah, sokhna] = destinations;
 const index = [
@@ -42,7 +42,7 @@ test("market brief names the lowest median and every port's quote count", () => 
 });
 
 test("home JSON-LD carries every FAQ in the page language", () => {
-  const faq = homeJsonLd("zh")["@graph"].find((node) => node["@type"] === "FAQPage") as { mainEntity: { name: string }[] };
+  const faq = homeJsonLd("zh", [], faqs)["@graph"].find((node) => node["@type"] === "FAQPage") as { mainEntity: { name: string }[] };
   assert.deepEqual(faq.mainEntity.map((q) => q.name), faqs.map((f) => f.q.zh));
 });
 
@@ -65,6 +65,18 @@ test("country title tags keep the port and brand inside a search snippet", () =>
   }
 });
 
+test("country descriptions are unique and name the right import document", () => {
+  const today = "2026-11-23";
+  const en = countries.map((country) => countryDescription(country, countryStats([], today, country.destination), "en"));
+  const zh = countries.map((country) => countryDescription(country, countryStats([], today, country.destination), "zh"));
+  assert.equal(new Set(en).size, en.length);
+  assert.equal(new Set(zh).size, zh.length);
+  const description = (slug: string) => en[countries.findIndex((country) => country.slug === slug)];
+  assert.match(description("shipping-from-china-to-jordan"), /Aqaba customs documents/);
+  assert.match(description("shipping-from-china-to-egypt"), /ACID documents/);
+  assert.match(description("shipping-from-china-to-djibouti"), /ECTN and Ethiopia transit documents/);
+});
+
 function guidePlain(guide: (typeof guides)[number], lang: "en" | "zh") {
   const bits = [guide.lead[lang]];
   for (const section of guide.sections) {
@@ -72,6 +84,7 @@ function guidePlain(guide: (typeof guides)[number], lang: "en" | "zh") {
     for (const block of section.blocks) {
       if (block.kind === "p") bits.push(block.text[lang]);
       if (block.kind === "ul") bits.push(...block.items.map((item) => item[lang]));
+      if (block.kind === "ol") bits.push(...block.items.map((item) => item[lang]));
       if (block.kind === "links") bits.push(...block.items.map((item) => item.text[lang]));
     }
   }

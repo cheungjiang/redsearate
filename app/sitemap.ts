@@ -1,4 +1,4 @@
-import { guides } from "../lib/content";
+import { getGuides, getMethodology } from "../lib/content-store";
 import { countries } from "../lib/countries";
 import { JEBEL_ALI_SLUG } from "../lib/jebel-ali";
 import { marketBriefSitemap } from "../lib/market-brief.server";
@@ -11,11 +11,14 @@ export const dynamic = "force-static";
 
 export default async function sitemap() {
   const today = shanghaiDate();
+  const guides = getGuides();
+  const methodology = getMethodology();
   const lanes = await getLanePlan();
   const pages = [
     { en: "/", zh: "/zh/", modified: today },
     { en: "/rates/", zh: "/zh/rates/", modified: today },
     { en: "/faq/", zh: "/zh/faq/", modified: today },
+    { en: "/methodology/", zh: "/zh/methodology/", modified: methodology.updated },
     ...countries.map(({ slug }) => ({ en: `/${slug}/`, zh: `/zh/${slug}/`, modified: today })),
     ...[...new Set([...lanes.active, ...lanes.curated].map(({ slug }) => slug))].map((slug) => ({
       en: lanePath(slug, "en"),
