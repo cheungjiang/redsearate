@@ -1917,6 +1917,22 @@
               "text": "A: There is no shipment certificate without a valid product certificate. Jeddah customs checks the shipment certificate electronically, because SABER is linked to the customs platform. Changing the declared specification stalls the shipment certificate, and the product certificate has to be renewed before it expires."
             }
           ]
+        },
+        {
+          "type": "paragraph",
+          "richText": [
+            {
+              "text": "Q: What are the SABER certificate requirements for Jeddah?"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "richText": [
+            {
+              "text": "A: The HS code decides whether the product is regulated. A regulated product needs a product certificate (PCoC), valid for up to 1 year. Every shipment needs a shipment certificate (SCoC) at SAR 350 before VAT, valid for 90 days, and it must match the bill of lading and the commercial invoice. A product that is not regulated only needs its basic information recorded (an importer self-declaration), and the shipment still needs the SCoC."
+            }
+          ]
         }
       ]
     },
@@ -2190,6 +2206,22 @@
           "richText": [
             {
               "text": "答：没有有效的产品符合性证书，就没有货物符合性证书。吉达海关电子核验货物证书，因为 SABER 与海关平台联动。中途改申报规格会卡住货物证书。产品证书要在到期前续好。"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "richText": [
+            {
+              "text": "问：吉达的 SABER 证书要求是什么？"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "richText": [
+            {
+              "text": "答：HS 编码决定产品是否受管制。受管制产品需要产品证书（PCoC），有效期最长 1 年。每一票都需要装运证书（SCoC），费用为 SAR 350（不含增值税），有效期 90 天，并且必须与提单和商业发票一致。不受管制的产品只录入基本信息（进口商自我声明），这一票仍然需要装运证书。"
             }
           ]
         }

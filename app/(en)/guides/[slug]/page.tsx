@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import GuidePage from "../../../../app/guide-page";
 import { getGuides } from "../../../../lib/content-store";
-import { guideDescription, pageMetadata } from "../../../../lib/seo";
+import { guideSeoDescription, guideSeoTitle, pageMetadata } from "../../../../lib/seo";
 
 export const dynamicParams = false;
 export const generateStaticParams = () => getGuides().map(({ slug }) => ({ slug }));
@@ -17,8 +17,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     lang: "en",
     path: `/guides/${guide.slug}/`,
     alternates: { en: `/guides/${guide.slug}/`, zh: `/zh/guides/${guide.slug}/` },
-    title: `${guide.title.en} | RedSeaRate`,
-    description: guideDescription(guide, "en"),
+    title: guideSeoTitle(guide, "en"),
+    description: guideSeoDescription(guide, "en"),
     type: "article",
   });
 }

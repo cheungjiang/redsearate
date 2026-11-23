@@ -2,18 +2,6 @@
    single teal accent and a more consistent vertical rhythm. */
 
 .editorial-site.home-page {
-  --ink: #0f2a31;
-  --muted: #4d6267;
-  --paper: #f7f8f4;
-  --line: #d6e2de;
-  --coral: #17666b;
-  --coral-hover: #0e4d52;
-  --navy: #0e343b;
-  --teal: #17666b;
-  --teal-strong: #0e4d52;
-  --teal-soft: #e7f1ee;
-  --teal-line: #b9d3cd;
-  --focus-ring: #2a8f94;
   --hero-text: #2d464d;
 }
 

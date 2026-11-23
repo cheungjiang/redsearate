@@ -745,8 +745,12 @@
 .editorial-site .guide-article > ul li + li {
   margin-top: 8px;
 }
+.editorial-site .guide-article li::marker,
+.editorial-site.rates-page li::marker {
+  color: var(--teal);
+}
 .editorial-site .answer-box {
-  border-left: 3px solid var(--ink);
+  border-left: 3px solid var(--teal);
   padding: 4px 0 4px 20px;
 }
 .editorial-site .answer-box p {
@@ -805,7 +809,7 @@
   content: "+";
   flex: none;
   margin-left: 16px;
-  color: var(--muted);
+  color: var(--teal);
   font-size: 18px;
   font-weight: 300;
   line-height: 1;
@@ -824,4 +828,53 @@
 }
 .editorial-site .index-port h3 a:hover {
   text-decoration: underline;
+}
+
+/* Inner pages use the same teal as the homepage, without its hero layout. */
+.editorial-site.guide-page .article-tag,
+.editorial-site.rates-page .article-tag {
+  color: var(--teal);
+}
+.editorial-site.guide-page .guide-links a,
+.editorial-site.guide-page .related-guides a,
+.editorial-site.guide-page .country-table a,
+.editorial-site.guide-page .guide-toc a,
+.editorial-site.rates-page .market-summary a {
+  color: var(--teal-strong);
+}
+.editorial-site.guide-page .related-guides,
+.editorial-site.guide-page .country-table thead th {
+  border-top-color: var(--teal-line);
+  border-bottom-color: var(--teal-line);
+}
+.editorial-site.guide-page .country-table thead th {
+  color: var(--teal-strong);
+}
+.editorial-site.guide-page .button.coral,
+.editorial-site.rates-page .button.coral {
+  background: var(--teal);
+  color: #fff;
+  box-shadow: 0 1px 0 #0f2a3114;
+}
+.editorial-site .navigation a[aria-current="page"] {
+  color: var(--teal-strong);
+  box-shadow: inset 0 -2px 0 var(--teal);
+}
+@media (hover: hover) {
+  .editorial-site.guide-page .button.coral:hover,
+  .editorial-site.rates-page .button.coral:hover {
+    background: var(--teal-strong);
+    box-shadow: 0 6px 18px #17666b2e;
+    transform: translateY(-1px);
+  }
+  .editorial-site.guide-page .text-button:hover,
+  .editorial-site.rates-page .text-button:hover,
+  .editorial-site.guide-page .breadcrumbs a:hover {
+    color: var(--teal-strong);
+  }
+  .editorial-site.guide-page .join-button:hover,
+  .editorial-site.rates-page .join-button:hover {
+    border-color: var(--teal);
+    background: var(--teal-soft);
+  }
 }

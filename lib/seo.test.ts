@@ -4,7 +4,7 @@ import { faqs, guides } from "./content.ts";
 import { countries, countryStats } from "./countries.ts";
 import { guideLaneLinks } from "./document-guides.ts";
 import { destinations } from "./rates.ts";
-import { GUIDES_PUBLISHED, GUIDES_UPDATED, countryDescription, countrySeoTitle, guideDescription, guideJsonLd, homeJsonLd, indexSentences, marketBrief, ratesJsonLd } from "./seo.ts";
+import { GUIDES_PUBLISHED, GUIDES_UPDATED, countryDescription, countrySeoTitle, guideDescription, guideJsonLd, guideSeoDescription, guideSeoTitle, homeJsonLd, indexSentences, marketBrief, ratesJsonLd } from "./seo.ts";
 
 const [jeddah, sokhna] = destinations;
 const index = [
@@ -107,7 +107,7 @@ test("guide slugs are unique and descriptions fit search snippets", () => {
     const faq = graph.find((node) => node["@type"] === "FAQPage");
     if (guide.faqs?.length) {
       assert.ok(faq, guide.slug);
-      assert.ok(guide.faqs.length >= 2 && guide.faqs.length <= 4, guide.slug);
+      assert.ok(guide.faqs.length >= 2 && guide.faqs.length <= 5, guide.slug);
       assert.equal(faq?.mainEntity?.length, guide.faqs.length);
     } else {
       assert.equal(faq, undefined);
@@ -132,6 +132,21 @@ test("SABER and ACID guides stay inside the draft and the country pages", () => 
   assert.deepEqual(saberHrefs, ["/shipping-from-china-to-saudi-arabia/"]);
   const acidHrefs = acid.sections.flatMap((section) => section.blocks.flatMap((block) => block.kind === "links" ? block.items.map((item) => item.href) : []));
   assert.deepEqual(acidHrefs, ["/shipping-from-china-to-egypt/"]);
+  assert.equal(saber.title.en, "Shipping to Jeddah: SABER in 5 steps");
+  assert.equal(saber.title.zh, "运往吉达：SABER 分五步");
+  assert.equal(guideSeoTitle(saber, "en"), "Shipping to Jeddah: SABER Certificate Requirements in 5 Steps | RedSeaRate");
+  assert.match(guideSeoTitle(saber, "zh"), /SABER 证书要求/);
+  assert.match(guideSeoTitle(saber, "zh"), /吉达/);
+  const enMeta = guideSeoDescription(saber, "en");
+  const zhMeta = guideSeoDescription(saber, "zh");
+  assert.ok(enMeta.length >= 150 && enMeta.length <= 160, String(enMeta.length));
+  assert.match(enMeta, /shipment certificate \(SCoC\)/);
+  assert.match(enMeta, /SAR 350 before VAT/);
+  assert.match(enMeta, /90 days/);
+  assert.match(zhMeta, /装运证书/);
+  assert.match(zhMeta, /SAR 350/);
+  assert.match(zhMeta, /90 天/);
+  assert.equal(saber.faqs?.at(-1)?.q.en, "What are the SABER certificate requirements for Jeddah?");
   assert.match(guidePlain(saber, "en"), /up to 1 year/);
   assert.match(guidePlain(saber, "zh"), /最长 1 年/);
   assert.match(guidePlain(saber, "en"), /2–4 weeks/);

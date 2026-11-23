@@ -267,6 +267,29 @@ export function guideDescription(guide: Guide, lang: Lang) {
   return lead.length > limit ? `${lead.slice(0, limit - 1).trimEnd()}…` : lead;
 }
 
+// The SABER H1 stays the short step title. The query-aligned title and
+// description are search metadata only.
+const SABER_SEO = {
+  en: {
+    title: "Shipping to Jeddah: SABER Certificate Requirements in 5 Steps | RedSeaRate",
+    description: "A Jeddah shipment needs a shipment certificate (SCoC) at SAR 350 before VAT, valid for 90 days, and the HS code sets which SABER certificate requirements apply.",
+  },
+  zh: {
+    title: "运往吉达：SABER 证书要求分五步 | RedSeaRate",
+    description: "吉达每一票货都要装运证书（SCoC），费用 SAR 350（不含增值税），有效期 90 天，HS 编码决定具体的 SABER 证书要求。",
+  },
+} as const;
+
+export function guideSeoTitle(guide: Guide, lang: Lang) {
+  if (guide.slug === "shipping-to-jeddah-saber") return SABER_SEO[lang].title;
+  return `${lang === "zh" ? guide.title.zh : guide.title.en} | RedSeaRate`;
+}
+
+export function guideSeoDescription(guide: Guide, lang: Lang) {
+  if (guide.slug === "shipping-to-jeddah-saber") return SABER_SEO[lang].description;
+  return guideDescription(guide, lang);
+}
+
 const portName = (entry: IndexEntry, lang: Lang) => (lang === "zh" ? entry.port.zh : entry.port.id);
 
 // One answer-first sentence per port, built only from computed index values.
