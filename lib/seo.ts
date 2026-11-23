@@ -142,6 +142,29 @@ const breadcrumbs = (items: { name: string; path: string }[]) => ({
   })),
 });
 
+export function faqPageJsonLd(items: { q: string; a: string }[], lang: Lang, path: string) {
+  const zh = lang === "zh";
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "FAQPage",
+        url: `${SITE}${path}`,
+        inLanguage: zh ? "zh-CN" : "en",
+        mainEntity: items.map((item) => ({
+          "@type": "Question",
+          name: item.q,
+          acceptedAnswer: { "@type": "Answer", text: item.a },
+        })),
+      },
+      breadcrumbs([
+        { name: "RedSeaRate", path: home(lang) },
+        { name: zh ? "常见问题" : "FAQ", path },
+      ]),
+    ],
+  };
+}
+
 export function guideJsonLd(guide: Guide, lang: Lang) {
   const zh = lang === "zh";
   const path = `${zh ? "/zh" : ""}/guides/${guide.slug}/`;

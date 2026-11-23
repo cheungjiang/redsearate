@@ -648,6 +648,14 @@
 }
 .editorial-site .guide-links a {
   color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+.editorial-site .related-guides a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
 }
 .editorial-site .guide-cta {
   display: flex;
@@ -753,6 +761,7 @@
 }
 .editorial-site .country-table {
   width: 100%;
+  min-width: 720px;
   border-collapse: collapse;
   font-size: 14px;
 }
@@ -791,6 +800,18 @@
   cursor: pointer;
   font-size: 16px;
   font-weight: 500;
+}
+.editorial-site .faq-list summary::after {
+  content: "+";
+  flex: none;
+  margin-left: 16px;
+  color: var(--muted);
+  font-size: 18px;
+  font-weight: 300;
+  line-height: 1;
+}
+.editorial-site .faq-list details[open] summary::after {
+  content: "−";
 }
 .editorial-site .faq-list p {
   margin-top: 10px;

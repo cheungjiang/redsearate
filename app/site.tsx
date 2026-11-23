@@ -651,6 +651,12 @@ export default function Home({
               </details>
             ))}
           </div>
+          <p>
+            <a className="text-button" href={zh ? "/zh/faq/" : "/faq/"}>
+              {t("See all shipping FAQs", "查看全部海运常见问题")}
+              <ArrowRight size={15} />
+            </a>
+          </p>
         </section>
       </main>
       <footer className="wrap">

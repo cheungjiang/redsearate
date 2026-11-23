@@ -1,5 +1,5 @@
 import { countryStats } from "./countries.ts";
-import { INDEX_WINDOW_DAYS } from "./platform.ts";
+import { INDEX_WINDOW_DAYS, liveIndex } from "./platform.ts";
 import { addDays, destinations, type PriceEntry } from "./rates.ts";
 
 // Frozen Monday issues. Pages render these files and never recompute them.
@@ -18,14 +18,20 @@ export type BriefPort = {
   low: number | null;
   high: number | null;
   weekChange: number | null;
+  // The live 28-day index change. `weekChange` is the change against the
+  // previous frozen issue, which can be older than one week.
+  indexWeekChange?: number | null;
 };
 
 export type MarketBrief = {
   date: string;
+  dataAsOf?: string;
   windowDays: number;
   container: "40HQ";
   outliersDropped: true;
   comparedWith: string | null;
+  source?: { en: string; zh: string };
+  note?: { en: string; zh: string };
   method: { en: string; zh: string };
   ports: BriefPort[];
 };
@@ -77,11 +83,61 @@ export function briefChangeText(value: number) {
   return `${value > 0 ? "+" : ""}${value.toFixed(1)}%`;
 }
 
+const joinPorts = (names: string[], zh: boolean) => {
+  if (names.length <= 1) return names[0] ?? "";
+  if (zh) return names.join("、");
+  return names.length === 2 ? `${names[0]} and ${names[1]}` : `${names.slice(0, -1).join(", ")}, and ${names.at(-1)}`;
+};
+
+// Data-driven bullets for the weekly report template. The first issue can
+// carry a hand-written `note`; these lines keep every later issue useful even
+// when nobody writes new copy.
+export function briefHighlights(brief: MarketBrief, lang: "en" | "zh"): string[] {
+  const zh = lang === "zh";
+  const name = (port: BriefPort) => {
+    const destination = destinations.find((item) => item.id === port.destination);
+    return zh ? destination?.zh ?? port.destination : port.destination;
+  };
+  const change = (port: BriefPort) => port.indexWeekChange ?? port.weekChange;
+  const moved = brief.ports.filter((port) => change(port) != null && change(port) !== 0);
+  const riser = moved.filter((port) => (change(port) ?? 0) > 0).sort((a, b) => (change(b) ?? 0) - (change(a) ?? 0))[0];
+  const faller = moved.filter((port) => (change(port) ?? 0) < 0).sort((a, b) => (change(a) ?? 0) - (change(b) ?? 0))[0];
+  const flat = brief.ports.filter((port) => change(port) === 0);
+  const thin = brief.ports.filter((port) => port.count != null && port.count < BRIEF_SAMPLE_NOTE_BELOW);
+  const format = (port: BriefPort) => `${name(port)} ${change(port) == null ? "—" : briefChangeText(change(port)!)}`;
+  const lines: string[] = [];
+  if (riser) {
+    lines.push(zh
+      ? `${format(riser)} 周环比涨幅最大，样本 ${riser.count ?? "—"} 条。`
+      : `${format(riser)} had the largest week-on-week rise, on ${riser.count ?? "—"} quotes.`);
+  }
+  if (faller) {
+    lines.push(zh
+      ? `${format(faller)} 周环比跌幅最大，样本 ${faller.count ?? "—"} 条。`
+      : `${format(faller)} had the largest week-on-week fall, on ${faller.count ?? "—"} quotes.`);
+  }
+  if (flat.length) {
+    lines.push(zh
+      ? `${joinPorts(flat.map(name), true)}持平。`
+      : `${joinPorts(flat.map(name), false)} ${flat.length === 1 ? "was" : "were"} flat.`);
+  }
+  if (thin.length) {
+    lines.push(zh
+      ? `${joinPorts(thin.map(name), true)}的样本低于 ${BRIEF_SAMPLE_NOTE_BELOW} 条，应当作读数，不要当成趋势。`
+      : `${joinPorts(thin.map(name), false)} ${thin.length === 1 ? "has" : "have"} fewer than ${BRIEF_SAMPLE_NOTE_BELOW} quotes; treat ${thin.length === 1 ? "it" : "them"} as a reading, not a trend.`);
+  }
+  if (!lines.length) {
+    lines.push(zh ? "这是首期读数，暂无可比的上一期。" : "This is the first reading; there is no earlier issue to compare.");
+  }
+  return lines;
+}
+
 // Same 40HQ pool as the rates index: country stats for that destination,
-// container 40HC, which is how 40HQ is stored. Week on week is not taken
-// from the live index. It is the change from the previous frozen brief.
+// container 40HC, which is how 40HQ is stored. `weekChange` compares with the
+// previous frozen issue; `indexWeekChange` is the live 28-day index change.
 export function buildMarketBrief(entries: PriceEntry[], date: string, previous?: MarketBrief | null): MarketBrief {
   const prior = new Map((previous?.ports ?? []).map((port) => [port.destination, port]));
+  const live = new Map(liveIndex(entries, date).map((entry) => [entry.port.id, entry]));
   const ports = destinations.map((destination): BriefPort => {
     const stat = countryStats(entries, date, destination.id).containers["40HC"];
     const before = prior.get(destination.id);
@@ -94,10 +150,12 @@ export function buildMarketBrief(entries: PriceEntry[], date: string, previous?:
       weekChange: stat && before?.median
         ? Math.round(((stat.median - before.median) / before.median) * 1000) / 10
         : null,
+      indexWeekChange: live.get(destination.id)?.weekChange ?? null,
     };
   });
   return {
     date,
+    dataAsOf: date,
     windowDays: INDEX_WINDOW_DAYS,
     container: "40HQ",
     outliersDropped: true,

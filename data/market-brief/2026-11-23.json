@@ -1,0 +1,67 @@
+{
+  "date": "2026-11-23",
+  "dataAsOf": "2026-11-22",
+  "windowDays": 28,
+  "container": "40HQ",
+  "outliersDropped": true,
+  "comparedWith": "2026-11-09",
+  "source": {
+    "en": "RedSeaRate Red Sea index, data as of 22 Nov 2026",
+    "zh": "RedSeaRate 红海指数，数据截至 2026 年 11 月 22 日"
+  },
+  "note": {
+    "en": "Sokhna was the only port to rise this week. Jeddah and Port Sudan eased, while Aqaba and Djibouti held flat. The moves are small next to the sample counts, so read them as market readings rather than a forecast.",
+    "zh": "本周只有苏赫纳上涨，吉达和苏丹港回落，亚喀巴与吉布提持平。相对样本量，这些波动不大，应当作市场读数，而不是涨跌预测。"
+  },
+  "method": {
+    "en": "Each 40HQ median uses market quotes collected in the last 28 days, with outliers removed. It is a market reading, not a bookable offer. A change in the quotes that make up the sample also moves the week-on-week figure, so that figure is not a forecast.",
+    "zh": "每个 40HQ 中位数取近 28 天收集到的市场报价，已剔除离群值。这是市场读数，不是可订舱报价。样本构成变化也会影响周环比，所以周环比不是涨跌预测。"
+  },
+  "ports": [
+    {
+      "destination": "Jeddah",
+      "median": 8300,
+      "count": 84,
+      "low": 7200,
+      "high": 11714,
+      "weekChange": -1.8,
+      "indexWeekChange": -1.2
+    },
+    {
+      "destination": "Sokhna",
+      "median": 7000,
+      "count": 55,
+      "low": 5965,
+      "high": 9414,
+      "weekChange": 2.9,
+      "indexWeekChange": 2.2
+    },
+    {
+      "destination": "Aqaba",
+      "median": 7600,
+      "count": 109,
+      "low": 6450,
+      "high": 10014,
+      "weekChange": 0.0,
+      "indexWeekChange": 0.0
+    },
+    {
+      "destination": "Djibouti",
+      "median": 7550,
+      "count": 24,
+      "low": 6732,
+      "high": 9714,
+      "weekChange": -4.4,
+      "indexWeekChange": 0.0
+    },
+    {
+      "destination": "Port Sudan",
+      "median": 7800,
+      "count": 24,
+      "low": 4890,
+      "high": 8200,
+      "weekChange": -2.7,
+      "indexWeekChange": -0.6
+    }
+  ]
+}

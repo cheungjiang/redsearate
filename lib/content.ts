@@ -1,5 +1,6 @@
 // Bilingual copy shared by the homepage, the guide pages and structured data.
 import { documentGuides } from "./document-guides.ts";
+import { topicGuides } from "./topic-guides.ts";
 
 const L = (en: string, zh: string) => ({ en, zh });
 export type Localized = ReturnType<typeof L>;
@@ -456,6 +457,7 @@ export const guides: Guide[] = [
     ],
   },
   ...documentGuides,
+  ...topicGuides,
 ];
 
 export const faqs = [

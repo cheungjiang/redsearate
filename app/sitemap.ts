@@ -15,6 +15,7 @@ export default async function sitemap() {
   const pages = [
     { en: "/", zh: "/zh/", modified: today },
     { en: "/rates/", zh: "/zh/rates/", modified: today },
+    { en: "/faq/", zh: "/zh/faq/", modified: today },
     ...countries.map(({ slug }) => ({ en: `/${slug}/`, zh: `/zh/${slug}/`, modified: today })),
     ...[...new Set([...lanes.active, ...lanes.curated].map(({ slug }) => slug))].map((slug) => ({
       en: lanePath(slug, "en"),

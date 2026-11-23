@@ -8,6 +8,7 @@ import {
   BRIEF_METHOD,
   briefChangeText,
   briefDescription,
+  briefHighlights,
   briefMonday,
   briefSampleNote,
   briefTitle,
@@ -133,8 +134,28 @@ test("the market brief index lists every issue as a CollectionPage", () => {
   assert.match(page.mainEntity.itemListElement[0].url, /^https:\/\/redsearate\.com\/market-brief\/\d{4}-\d{2}-\d{2}\/$/);
 });
 
+test("the 2026-11-23 issue keeps the live index readings and the last-issue comparison", () => {
+  const brief = readMarketBriefs(join(process.cwd(), "data/market-brief")).find((item) => item.date === "2026-11-23")!;
+  assert.equal(brief.dataAsOf, "2026-11-22");
+  assert.equal(brief.comparedWith, "2026-11-09");
+  assert.deepEqual(
+    brief.ports.map((port) => [port.destination, port.median, port.count, port.indexWeekChange, port.weekChange]),
+    [
+      ["Jeddah", 8300, 84, -1.2, -1.8],
+      ["Sokhna", 7000, 55, 2.2, 2.9],
+      ["Aqaba", 7600, 109, 0, 0],
+      ["Djibouti", 7550, 24, 0, -4.4],
+      ["Port Sudan", 7800, 24, -0.6, -2.7],
+    ],
+  );
+  const en = briefHighlights(brief, "en");
+  assert.match(en[0], /Sokhna \+2\.2%/);
+  assert.match(en[1], /Jeddah -1\.2%/);
+  assert.match(en[2], /Aqaba and Djibouti were flat/);
+});
+
 test("the published 2026-11-09 snapshot stays at the frozen readings", () => {
-  const [brief] = readMarketBriefs(join(process.cwd(), "data/market-brief"));
+  const brief = readMarketBriefs(join(process.cwd(), "data/market-brief")).find((item) => item.date === "2026-11-09")!;
   assert.equal(brief.date, "2026-11-09");
   assert.equal(brief.comparedWith, null);
   assert.deepEqual(

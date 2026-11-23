@@ -1072,8 +1072,10 @@ footer {
 }
 .footer-bottom {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
+  gap: 6px 18px;
   border-top: 1px solid var(--line);
   padding: 19px 0 25px;
   font-size: 8px;
