@@ -27,7 +27,17 @@ The index snapshot shows, for each destination port, the median of 40HQ market q
 
 Prices are port-to-port USD, per container for FCL and per W/M for LCL. Expired prices drop out and lanes without data show "请询价". The weekly trend chart plots weekly market medians and stays empty until real data exists. Source links, notes, carriers and single quotes are never fetched, so they cannot appear on the site. The aggregation lives in `lib/rates.ts` and is covered by `lib/rates.test.ts`.
 
-Visitors inquire through WeChat (copy a prefilled message) or WhatsApp (opens a prefilled chat). Each click draws one of the team's numbers at random. The site stores no visitor data.
+Visitors inquire through WeChat (copy a prefilled message) or WhatsApp (opens a prefilled chat). Each click draws one of the team's numbers at random. Optional newsletter signup happens on Substack, not in the site's repository or static pages. Browsing rates and using the estimator never require an email address.
+
+## Free weekly newsletter
+
+The homepage, rates page, market-brief archive and each issue include a bilingual newsletter panel. Signup opens [RedSeaRate on Substack](https://redsearate.substack.com/subscribe): no third-party embed, API key, server or subscriber database is added to this static site.
+
+- `en` and `zh` in `data/newsletter.json` both point to `https://redsearate.substack.com/subscribe`. These are public links, not secrets. Both site languages subscribe to the **same English-language publication**, as disclosed on the Chinese panel. There is no separate Chinese email list or automatic language selection.
+- Set an entry to `null` to pause that site's signup link. The panel then links to the online brief, with no fake signup button or language fallback. Only this publication's HTTPS `/subscribe` URL is accepted.
+- The website's weekly brief generation remains unchanged. **Email delivery is manual after review**; deploying or rebuilding never sends a campaign.
+- Privacy pages: `/privacy/` and `/zh/privacy/`. The operator must check sender identity, signup notices, cross-border processing disclosures and applicable obligations in the publication settings.
+- Publication setup, email outlines and the real signup/delivery/unsubscribe checklist: [免费邮件周报配置说明](docs/newsletter-setup.md).
 
 ## How content works
 

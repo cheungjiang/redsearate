@@ -8,6 +8,7 @@ import { destinations } from "../lib/rates";
 import { marketBriefIndexJsonLd } from "../lib/seo";
 import { JsonLd } from "./json-ld";
 import SubpageShell from "./subpage-shell";
+import NewsletterSignup from "./newsletter-signup";
 
 export default function MarketBriefIndex({ lang, briefs }: { lang: "en" | "zh"; briefs: MarketBrief[] }) {
   const zh = lang === "zh";
@@ -58,6 +59,7 @@ export default function MarketBriefIndex({ lang, briefs }: { lang: "en" | "zh"; 
           <p>{t("No issue has been frozen yet.", "还没有冻结的期数。")}</p>
         )}
       </article>
+      <NewsletterSignup lang={lang} />
     </SubpageShell>
   );
 }

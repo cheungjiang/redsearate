@@ -40,6 +40,7 @@ import { homeInquiryText } from "../lib/inquiry";
 import { pickWhatsapp, whatsappUrl } from "../lib/whatsapp";
 import { InquiryDialog } from "./inquiry-dialog";
 import BrandLogo from "./brand-logo";
+import NewsletterSignup from "./newsletter-signup";
 
 export type Contact = { whatsapp: string[] };
 
@@ -79,7 +80,6 @@ export default function Home({
   const [copied, setCopied] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const dialog = useRef<HTMLDialogElement>(null);
-  const articleDialog = useRef<HTMLDialogElement>(null);
   const [today, setToday] = useState("");
   const [estimatorVisible, setEstimatorVisible] = useState(false);
   useEffect(() => {
@@ -555,6 +555,7 @@ export default function Home({
             <DailyIndexChart lang={lang} series={daily} />
           </section>
         </div>
+        <NewsletterSignup lang={lang} />
         <CommunityPreview lang={lang} onContact={() => openInquiry("quote")} />
         <section className="approach wrap">
           <h2>
@@ -691,13 +692,10 @@ export default function Home({
           <a className="text-button" href={zh ? "/zh/methodology/" : "/methodology/"}>
             {t("Methodology & data", "方法与数据")}
           </a>
-          <button
-            onClick={() => {
-              articleDialog.current?.showModal();
-            }}
-          >
+          <a className="text-button" href="#newsletter">{t("Weekly brief", "每周运价简报")}</a>
+          <a className="text-button" href={zh ? "/zh/privacy/" : "/privacy/"}>
             {t("Privacy & data", "隐私与数据")}
-          </button>
+          </a>
         </div>
       </footer>
       <div className={`mobile-bar${estimatorVisible ? " context-hidden" : ""}`}>
@@ -735,34 +733,6 @@ export default function Home({
         whatsappNumber={whatsappNumber}
         dialogRef={dialog}
       />
-      <dialog
-        ref={articleDialog}
-        className="article-dialog"
-        aria-labelledby="article-title"
-        onClick={(e) => {
-          if (e.target === e.currentTarget) articleDialog.current?.close();
-        }}
-      >
-        <button
-          className="dialog-close"
-          aria-label={t("Close", "关闭")}
-          onClick={() => articleDialog.current?.close()}
-        >
-          <X size={21} />
-        </button>
-        <div className="eyebrow">
-          {t("YOUR DATA", "您的数据")}
-        </div>
-        <h2 id="article-title">
-          {t("Privacy, without the fine print.", "关于隐私，清楚说明。")}
-        </h2>
-        <p>
-          {t(
-            "This website does not collect names, emails or other personal data, and uses no analytics or advertising cookies. When you contact us, your message is handled in WeChat or WhatsApp under those apps' terms. Market prices are shown without their source.",
-            "本网站不收集姓名、邮箱等个人信息，也不使用统计或广告 Cookie。您联系我们时，消息在微信或 WhatsApp 中处理，适用各自的条款。市场价格展示时不包含来源信息。",
-          )}
-        </p>
-      </dialog>
     </div>
   );
 }

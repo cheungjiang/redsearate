@@ -15,6 +15,7 @@ import { destinations } from "../lib/rates";
 import { marketBriefJsonLd } from "../lib/seo";
 import { JsonLd } from "./json-ld";
 import SubpageShell from "./subpage-shell";
+import NewsletterSignup from "./newsletter-signup";
 
 export default function MarketBriefPage({
   lang, brief, previous, next,
@@ -159,6 +160,7 @@ export default function MarketBriefPage({
           {next && <a href={briefPath(next, lang)}>{t("Next issue", "下一期")} {next}</a>}
         </p>
       </article>
+      <NewsletterSignup lang={lang} />
     </SubpageShell>
   );
 }

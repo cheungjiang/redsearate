@@ -1175,8 +1175,7 @@ dialog::backdrop {
   width: 30px;
   height: 30px;
 }
-.inquiry-dialog h2,
-.article-dialog h2 {
+.inquiry-dialog h2 {
   font-size: 28px;
   font-weight: 500;
   letter-spacing: -0.7px;
@@ -1268,18 +1267,6 @@ dialog::backdrop {
   background: #f4f5f1;
   border-radius: 4px;
   font-size: 16px;
-}
-.article-dialog > p {
-  font-size: 15px;
-  line-height: 2;
-  color: var(--muted);
-  margin: 22px 0 25px;
-}
-.article-dialog {
-  max-width: 650px;
-}
-.article-dialog h2 {
-  font-size: 32px;
 }
 .inquiry-dialog label {
   font-size: 11px;
@@ -2028,12 +2015,6 @@ dialog::backdrop {
   }
   .contact-grid {
     grid-template-columns: 1fr;
-  }
-  .article-dialog h2 {
-    font-size: 26px;
-  }
-  .article-dialog > p {
-    font-size: 13px;
   }
   .dialog-route {
     gap: 8px;

@@ -19,6 +19,7 @@ export default async function sitemap() {
     { en: "/rates/", zh: "/zh/rates/", modified: today },
     { en: "/faq/", zh: "/zh/faq/", modified: today },
     { en: "/methodology/", zh: "/zh/methodology/", modified: methodology.updated },
+    { en: "/privacy/", zh: "/zh/privacy/", modified: "2026-11-24" },
     ...countries.map(({ slug }) => ({ en: `/${slug}/`, zh: `/zh/${slug}/`, modified: today })),
     ...[...new Set([...lanes.active, ...lanes.curated].map(({ slug }) => slug))].map((slug) => ({
       en: lanePath(slug, "en"),

@@ -7,6 +7,7 @@ import { defaultShipment, type Snapshot } from "../lib/rates";
 import DailyIndexChart from "./daily-index-chart";
 import { IndexSnapshot, RatesPreview } from "./platform-sections";
 import SubpageShell from "./subpage-shell";
+import NewsletterSignup from "./newsletter-signup";
 
 export default function RatesPage({
   lang, snapshot, index, daily, summary, simulation, jebelAli,
@@ -36,6 +37,7 @@ export default function RatesPage({
         <DailyIndexChart lang={lang} series={daily} />
       </div>
       <RatesPreview lang={lang} snapshot={snapshot} shipment={defaultShipment} samples={simulation?.rates ?? []} jebelAli={jebelAli} fullPage />
+      <NewsletterSignup lang={lang} />
     </SubpageShell>
   );
 }
