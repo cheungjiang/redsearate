@@ -99,6 +99,9 @@ export default function LanePage({
             const linkSentence = guideHref != null && (
               (lane.destination === "Jeddah" && item.en.startsWith("SABER Shipment Certificate"))
               || (lane.destination === "Sokhna" && item.en.startsWith("ACID number:"))
+              || (lane.destination === "Aqaba" && item.en.startsWith("Commercial invoice, packing list, bill of lading and certificate of origin"))
+              || (lane.destination === "Djibouti" && item.en.startsWith("ECTN (Electronic Cargo Tracking Note)"))
+              || (lane.destination === "Port Sudan" && item.en.startsWith("Advance Cargo Declaration (ACD"))
             );
             return <li key={item.en}>{linkSentence ? <a className="document-guide-link" href={guideHref}>{text}</a> : text}</li>;
           })}

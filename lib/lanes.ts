@@ -64,6 +64,9 @@ export function lanePath(slug: string, lang: "en" | "zh") {
 const laneDocumentGuides: Record<string, string> = {
   Jeddah: "shipping-to-jeddah-saber",
   Sokhna: "shipping-to-sokhna-acid",
+  Aqaba: "jordan-import-clearance-aqaba",
+  Djibouti: "djibouti-import-clearance-ethiopia-transit",
+  "Port Sudan": "sudan-import-clearance-port-sudan",
 };
 
 export function laneDocumentGuidePath(destination: string, lang: "en" | "zh") {
